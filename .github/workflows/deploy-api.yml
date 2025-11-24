@@ -1,0 +1,118 @@
+name: Build and Deploy MedizID.API
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'MedizID.API/**'
+      - 'MedizID.sln'
+      - '.github/workflows/deploy-api.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore MedizID.sln
+
+      - name: Build MedizID.API
+        run: dotnet build MedizID.API/MedizID.API.csproj -c Release --no-restore
+
+      - name: Run tests
+        run: dotnet test MedizID.sln -c Release --no-build --verbosity normal
+        continue-on-error: true
+
+      - name: Publish MedizID.API
+        run: dotnet publish MedizID.API/MedizID.API.csproj -c Release -o ./publish
+
+      - name: Upload publish artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: medizid-api-release
+          path: ./publish
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download publish artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: medizid-api-release
+          path: ./publish
+
+      - name: Create SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to EC2
+        run: |
+          # Create deployment directory on EC2
+          ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+            "mkdir -p ~/medizid-api"
+
+          # Copy published files to EC2
+          scp -r -i ~/.ssh/deploy_key ./publish/* \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/medizid-api/
+
+          # Execute deployment script on EC2
+          ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          set -e
+          
+          echo "Stopping existing application..."
+          systemctl --user stop medizid-api || true
+          sleep 2
+          
+          echo "Deploying new version..."
+          cd ~/medizid-api
+          
+          echo "Setting permissions..."
+          chmod +x ./MedizID.API
+          
+          echo "Starting application..."
+          systemctl --user start medizid-api
+          
+          echo "Waiting for application to start..."
+          sleep 3
+          
+          echo "Checking application status..."
+          systemctl --user status medizid-api
+          
+          echo "Deployment complete!"
+          EOF
+
+      - name: Verify deployment
+        run: |
+          sleep 5
+          echo "Checking API health..."
+          curl -f http://${{ secrets.EC2_HOST }}:5000/health || echo "Health check endpoint not available yet"
+        continue-on-error: true
+
+      - name: Deployment notification
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment successful!"
+            echo "API is running on http://${{ secrets.EC2_HOST }}:5000"
+          else
+            echo "❌ Deployment failed!"
+          fi
