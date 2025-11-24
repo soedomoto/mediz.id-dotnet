@@ -66,39 +66,155 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          # Create deployment directory on EC2
           ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
             "mkdir -p ~/medizid-api"
-
-          # Copy published files to EC2
           scp -r -i ~/.ssh/deploy_key ./publish/* \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/medizid-api/
-
-          # Execute deployment script on EC2
-          ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'DEPLOYMENT_EOF'
           set -e
-          
+          echo "Starting MedizID.API Deployment..."
+          ENV_FILE="$HOME/medizid-api/.env"
+          if [ ! -f "$ENV_FILE" ]; then
+            cat > "$ENV_FILE" << 'ENVEOF'
+          ASPNETCORE_ENVIRONMENT=Production
+          ASPNETCORE_URLS=http://+:5000
+          DB_HOST=localhost
+          DB_PORT=5432
+          DB_NAME=mediz_db
+          DB_USER=mediz_user
+          DB_PASSWORD=mediz_password
+          JWT_SECRET_KEY=your-super-secret-key-at-least-32-characters-long-for-hmac256
+          JWT_ISSUER=mediz.id
+          JWT_AUDIENCE=mediz.id-api
+          JWT_EXPIRATION_MINUTES=1440
+          OPENAI_API_KEY=
+          ENVEOF
+            echo "Environment file created"
+          else
+            echo "Environment file already exists"
+          fi
+          SERVICE_DIR="$HOME/.config/systemd/user"
+          SERVICE_FILE="$SERVICE_DIR/medizid-api.service"
+          mkdir -p "$SERVICE_DIR"
+          if [ ! -f "$SERVICE_FILE" ]; then
+            cat > "$SERVICE_FILE" << 'SVCEOF'
+          [Unit]
+          Description=MedizID API Service
+          After=network.target
+          [Service]
+          Type=simple
+          User=%u
+          WorkingDirectory=%h/medizid-api
+          ExecStart=%h/medizid-api/MedizID.API
+          Restart=always
+          RestartSec=10
+          StandardOutput=journal
+          StandardError=journal
+          SyslogIdentifier=medizid-api
+          Environment="ASPNETCORE_ENVIRONMENT=Production"
+          Environment="ASPNETCORE_URLS=http://+:5000"
+          EnvironmentFile=%h/medizid-api/.env
+          [Install]
+          WantedBy=default.target
+          SVCEOF
+            systemctl --user daemon-reload
+            systemctl --user enable medizid-api
+            echo "Systemd service created and enabled"
+          else
+            echo "Systemd service already exists"
+            systemctl --user daemon-reload
+          fi
+          if ! command -v nginx &> /dev/null; then
+            if [ -f /etc/os-release ]; then
+              . /etc/os-release
+              if [[ "$ID" == "ubuntu" ]] || [[ "$ID" == "debian" ]]; then
+                sudo apt-get update && sudo apt-get install -y nginx
+              elif [[ "$ID" == "rhel" ]] || [[ "$ID" == "centos" ]]; then
+                sudo dnf install -y nginx
+              fi
+            fi
+            sudo systemctl enable nginx
+            sudo systemctl start nginx
+            echo "Nginx installed and started"
+          else
+            echo "Nginx already installed"
+          fi
+          NGINX_SITE="/etc/nginx/sites-available/medizid-api"
+          NGINX_ENABLED="/etc/nginx/sites-enabled/medizid-api"
+          if [ ! -f "$NGINX_SITE" ]; then
+            cat > /tmp/medizid-api-nginx << 'NGINXEOF'
+          upstream medizid_backend {
+              server 127.0.0.1:5000;
+              keepalive 32;
+          }
+          server {
+              listen 80;
+              listen [::]:80;
+              server_name _;
+              access_log /var/log/nginx/medizid-api.access.log;
+              error_log /var/log/nginx/medizid-api.error.log;
+              location /api/ {
+                  proxy_pass http://medizid_backend/;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+                  proxy_connect_timeout 60s;
+                  proxy_send_timeout 60s;
+                  proxy_read_timeout 60s;
+                  proxy_cache_bypass $http_upgrade;
+              }
+              location /health {
+                  proxy_pass http://medizid_backend/health;
+                  proxy_http_version 1.1;
+                  proxy_set_header Host $host;
+                  access_log off;
+              }
+              location /swagger/ {
+                  proxy_pass http://medizid_backend/swagger/;
+                  proxy_http_version 1.1;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              }
+              location / {
+                  return 404;
+              }
+          }
+          NGINXEOF
+            sudo mv /tmp/medizid-api-nginx "$NGINX_SITE"
+            sudo chmod 644 "$NGINX_SITE"
+            if [ ! -d /etc/nginx/sites-enabled ]; then
+              sudo mkdir -p /etc/nginx/sites-enabled
+            fi
+            sudo ln -sf "$NGINX_SITE" "$NGINX_ENABLED"
+            echo "Nginx virtual host created"
+          else
+            echo "Nginx virtual host already exists"
+          fi
+          if sudo nginx -t; then
+            echo "Nginx configuration is valid"
+            sudo systemctl reload nginx
+            echo "Nginx reloaded"
+          else
+            echo "Nginx configuration has errors!"
+            exit 1
+          fi
           echo "Stopping existing application..."
           systemctl --user stop medizid-api || true
           sleep 2
-          
-          echo "Deploying new version..."
           cd ~/medizid-api
-          
-          echo "Setting permissions..."
           chmod +x ./MedizID.API
-          
           echo "Starting application..."
           systemctl --user start medizid-api
-          
-          echo "Waiting for application to start..."
           sleep 3
-          
           echo "Checking application status..."
           systemctl --user status medizid-api
-          
           echo "Deployment complete!"
-          EOF
+          DEPLOYMENT_EOF
 
       - name: Verify deployment
         run: |
