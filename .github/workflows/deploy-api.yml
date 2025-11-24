@@ -91,32 +91,6 @@ jobs:
             echo ".NET 8 Runtime already installed"
           fi
           
-          # Create environment file
-          ENV_FILE="/etc/medizid-api/.env"
-          if [ ! -f "$ENV_FILE" ]; then
-            echo "Creating environment file..."
-            sudo mkdir -p /etc/medizid-api
-            sudo tee "$ENV_FILE" > /dev/null << 'ENVEOF'
-          ASPNETCORE_ENVIRONMENT=Production
-          ASPNETCORE_URLS=http://+:5000
-          DB_HOST=localhost
-          DB_PORT=5432
-          DB_NAME=mediz_db
-          DB_USER=postgres
-          DB_PASSWORD=@2Miawmiaw
-          JWT_SECRET_KEY=your-super-secret-key-at-least-32-characters-long-for-hmac256
-          JWT_ISSUER=mediz.id
-          JWT_AUDIENCE=mediz.id-api
-          JWT_EXPIRATION_MINUTES=1440
-          OPENAI_API_KEY=
-          ENVEOF
-            sudo chmod 644 "$ENV_FILE"
-            echo "Environment file created at $ENV_FILE"
-          else
-            echo "Environment file already exists at $ENV_FILE"
-            echo "To update, edit: sudo nano $ENV_FILE && sudo systemctl restart medizid-api"
-          fi
-          
           # Create systemd service file
           SERVICE_FILE="/etc/systemd/system/medizid-api.service"
           if [ ! -f "$SERVICE_FILE" ]; then
@@ -130,13 +104,24 @@ jobs:
           Type=simple
           User=root
           WorkingDirectory=/opt/medizid-api
-          EnvironmentFile=-/etc/medizid-api/.env
-          ExecStart=/bin/bash -c 'source /etc/medizid-api/.env && exec /opt/medizid-api/MedizID.API'
+          ExecStart=/opt/medizid-api/MedizID.API
           Restart=always
           RestartSec=10
           StandardOutput=journal
           StandardError=journal
           SyslogIdentifier=medizid-api
+          Environment="DB_HOST=localhost"
+          Environment="DB_PORT=5432"
+          Environment="DB_NAME=mediz_db"
+          Environment="DB_USER=postgres"
+          Environment="DB_PASSWORD=@2Miawmiaw"
+          Environment="ASPNETCORE_ENVIRONMENT=Production"
+          Environment="ASPNETCORE_URLS=http://+:5000"
+          Environment="JWT_SECRET_KEY=your-super-secret-key-at-least-32-characters-long-for-hmac256"
+          Environment="JWT_ISSUER=mediz.id"
+          Environment="JWT_AUDIENCE=mediz.id-api"
+          Environment="JWT_EXPIRATION_MINUTES=1440"
+          Environment="OPENAI_API_KEY=add-your-openai-api-key-here"
           
           [Install]
           WantedBy=multi-user.target
