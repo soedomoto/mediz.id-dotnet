@@ -73,9 +73,25 @@ jobs:
           ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'DEPLOYMENT_EOF'
           set -e
           echo "Starting MedizID.API Deployment..."
-          ENV_FILE="$HOME/medizid-api/.env"
+          if ! command -v dotnet &> /dev/null; then
+            echo "Installing .NET 8 Runtime..."
+            if [ -f /etc/os-release ]; then
+              . /etc/os-release
+              if [[ "$ID" == "ubuntu" ]] || [[ "$ID" == "debian" ]]; then
+                sudo apt-get update
+                sudo apt-get install -y dotnet8
+              elif [[ "$ID" == "rhel" ]] || [[ "$ID" == "centos" ]] || [[ "$ID" == "fedora" ]]; then
+                sudo dnf install -y dotnet8
+              fi
+            fi
+            echo ".NET 8 Runtime installed"
+          else
+            echo ".NET 8 Runtime already installed"
+          fi
+          ENV_FILE="/etc/medizid-api/.env"
           if [ ! -f "$ENV_FILE" ]; then
-            cat > "$ENV_FILE" << 'ENVEOF'
+            sudo mkdir -p /etc/medizid-api
+            cat > /tmp/medizid-api.env << 'ENVEOF'
           ASPNETCORE_ENVIRONMENT=Production
           ASPNETCORE_URLS=http://+:5000
           DB_HOST=localhost
@@ -89,47 +105,48 @@ jobs:
           JWT_EXPIRATION_MINUTES=1440
           OPENAI_API_KEY=
           ENVEOF
+            sudo mv /tmp/medizid-api.env "$ENV_FILE"
+            sudo chmod 644 "$ENV_FILE"
             echo "Environment file created"
           else
             echo "Environment file already exists"
           fi
-          SERVICE_DIR="$HOME/.config/systemd/user"
-          SERVICE_FILE="$SERVICE_DIR/medizid-api.service"
-          mkdir -p "$SERVICE_DIR"
+          SERVICE_FILE="/etc/systemd/system/medizid-api.service"
           if [ ! -f "$SERVICE_FILE" ]; then
-            cat > "$SERVICE_FILE" << 'SVCEOF'
+            cat > /tmp/medizid-api.service << 'SVCEOF'
           [Unit]
           Description=MedizID API Service
           After=network.target
           [Service]
           Type=simple
-          User=%u
-          WorkingDirectory=%h/medizid-api
-          ExecStart=%h/medizid-api/MedizID.API
+          User=root
+          WorkingDirectory=/opt/medizid-api
+          ExecStart=/opt/medizid-api/MedizID.API
           Restart=always
           RestartSec=10
           StandardOutput=journal
           StandardError=journal
           SyslogIdentifier=medizid-api
-          Environment="ASPNETCORE_ENVIRONMENT=Production"
-          Environment="ASPNETCORE_URLS=http://+:5000"
-          EnvironmentFile=%h/medizid-api/.env
+          EnvironmentFile=/etc/medizid-api/.env
           [Install]
-          WantedBy=default.target
+          WantedBy=multi-user.target
           SVCEOF
-            systemctl --user daemon-reload
-            systemctl --user enable medizid-api
+            sudo mv /tmp/medizid-api.service "$SERVICE_FILE"
+            sudo chmod 644 "$SERVICE_FILE"
+            sudo systemctl daemon-reload
+            sudo systemctl enable medizid-api
             echo "Systemd service created and enabled"
           else
             echo "Systemd service already exists"
-            systemctl --user daemon-reload
+            sudo systemctl daemon-reload
           fi
           if ! command -v nginx &> /dev/null; then
+            echo "Installing Nginx..."
             if [ -f /etc/os-release ]; then
               . /etc/os-release
               if [[ "$ID" == "ubuntu" ]] || [[ "$ID" == "debian" ]]; then
                 sudo apt-get update && sudo apt-get install -y nginx
-              elif [[ "$ID" == "rhel" ]] || [[ "$ID" == "centos" ]]; then
+              elif [[ "$ID" == "rhel" ]] || [[ "$ID" == "centos" ]] || [[ "$ID" == "fedora" ]]; then
                 sudo dnf install -y nginx
               fi
             fi
@@ -203,16 +220,19 @@ jobs:
             echo "Nginx configuration has errors!"
             exit 1
           fi
+          echo "Preparing application directory..."
+          sudo mkdir -p /opt/medizid-api
+          sudo cp -r ~/medizid-api/* /opt/medizid-api/
+          sudo chown -R root:root /opt/medizid-api
+          sudo chmod +x /opt/medizid-api/MedizID.API
           echo "Stopping existing application..."
-          systemctl --user stop medizid-api || true
+          sudo systemctl stop medizid-api || true
           sleep 2
-          cd ~/medizid-api
-          chmod +x ./MedizID.API
           echo "Starting application..."
-          systemctl --user start medizid-api
+          sudo systemctl start medizid-api
           sleep 3
           echo "Checking application status..."
-          systemctl --user status medizid-api
+          sudo systemctl status medizid-api
           echo "Deployment complete!"
           DEPLOYMENT_EOF
 
