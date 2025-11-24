@@ -73,65 +73,74 @@ jobs:
           ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'DEPLOYMENT_EOF'
           set -e
           echo "Starting MedizID.API Deployment..."
+          
+          # Install .NET 8 Runtime if not present
           if ! command -v dotnet &> /dev/null; then
             echo "Installing .NET 8 Runtime..."
             if [ -f /etc/os-release ]; then
               . /etc/os-release
               if [[ "$ID" == "ubuntu" ]] || [[ "$ID" == "debian" ]]; then
                 sudo apt-get update
-                sudo apt-get install -y dotnet8
+                sudo apt-get install -y dotnet-runtime-8.0
               elif [[ "$ID" == "rhel" ]] || [[ "$ID" == "centos" ]] || [[ "$ID" == "fedora" ]]; then
-                sudo dnf install -y dotnet8
+                sudo dnf install -y dotnet-runtime-8.0
               fi
             fi
             echo ".NET 8 Runtime installed"
           else
             echo ".NET 8 Runtime already installed"
           fi
+          
+          # Create environment file
           ENV_FILE="/etc/medizid-api/.env"
           if [ ! -f "$ENV_FILE" ]; then
+            echo "Creating environment file..."
             sudo mkdir -p /etc/medizid-api
-            cat > /tmp/medizid-api.env << 'ENVEOF'
+            sudo tee "$ENV_FILE" > /dev/null << 'ENVEOF'
           ASPNETCORE_ENVIRONMENT=Production
           ASPNETCORE_URLS=http://+:5000
           DB_HOST=localhost
           DB_PORT=5432
           DB_NAME=mediz_db
-          DB_USER=mediz_user
-          DB_PASSWORD=mediz_password
+          DB_USER=postgres
+          DB_PASSWORD=@2Miawmiaw
           JWT_SECRET_KEY=your-super-secret-key-at-least-32-characters-long-for-hmac256
           JWT_ISSUER=mediz.id
           JWT_AUDIENCE=mediz.id-api
           JWT_EXPIRATION_MINUTES=1440
           OPENAI_API_KEY=
           ENVEOF
-            sudo mv /tmp/medizid-api.env "$ENV_FILE"
             sudo chmod 644 "$ENV_FILE"
-            echo "Environment file created"
+            echo "Environment file created at $ENV_FILE"
           else
-            echo "Environment file already exists"
+            echo "Environment file already exists at $ENV_FILE"
+            echo "To update, edit: sudo nano $ENV_FILE && sudo systemctl restart medizid-api"
           fi
+          
+          # Create systemd service file
           SERVICE_FILE="/etc/systemd/system/medizid-api.service"
           if [ ! -f "$SERVICE_FILE" ]; then
-            cat > /tmp/medizid-api.service << 'SVCEOF'
+            echo "Creating systemd service..."
+            sudo tee "$SERVICE_FILE" > /dev/null << 'SVCEOF'
           [Unit]
           Description=MedizID API Service
           After=network.target
+          
           [Service]
           Type=simple
           User=root
           WorkingDirectory=/opt/medizid-api
-          ExecStart=/opt/medizid-api/MedizID.API
+          EnvironmentFile=-/etc/medizid-api/.env
+          ExecStart=/bin/bash -c 'source /etc/medizid-api/.env && exec /opt/medizid-api/MedizID.API'
           Restart=always
           RestartSec=10
           StandardOutput=journal
           StandardError=journal
           SyslogIdentifier=medizid-api
-          EnvironmentFile=/etc/medizid-api/.env
+          
           [Install]
           WantedBy=multi-user.target
           SVCEOF
-            sudo mv /tmp/medizid-api.service "$SERVICE_FILE"
             sudo chmod 644 "$SERVICE_FILE"
             sudo systemctl daemon-reload
             sudo systemctl enable medizid-api
@@ -140,6 +149,8 @@ jobs:
             echo "Systemd service already exists"
             sudo systemctl daemon-reload
           fi
+          
+          # Install and configure Nginx
           if ! command -v nginx &> /dev/null; then
             echo "Installing Nginx..."
             if [ -f /etc/os-release ]; then
@@ -156,10 +167,13 @@ jobs:
           else
             echo "Nginx already installed"
           fi
+          
+          # Configure Nginx virtual host
           NGINX_SITE="/etc/nginx/sites-available/medizid-api"
           NGINX_ENABLED="/etc/nginx/sites-enabled/medizid-api"
           if [ ! -f "$NGINX_SITE" ]; then
-            cat > /tmp/medizid-api-nginx << 'NGINXEOF'
+            echo "Creating Nginx virtual host..."
+            sudo tee "$NGINX_SITE" > /dev/null << 'NGINXEOF'
           upstream medizid_backend {
               server 127.0.0.1:5000;
               keepalive 32;
@@ -202,7 +216,6 @@ jobs:
               }
           }
           NGINXEOF
-            sudo mv /tmp/medizid-api-nginx "$NGINX_SITE"
             sudo chmod 644 "$NGINX_SITE"
             if [ ! -d /etc/nginx/sites-enabled ]; then
               sudo mkdir -p /etc/nginx/sites-enabled
@@ -212,6 +225,8 @@ jobs:
           else
             echo "Nginx virtual host already exists"
           fi
+          
+          # Validate and reload Nginx
           if sudo nginx -t; then
             echo "Nginx configuration is valid"
             sudo systemctl reload nginx
@@ -220,17 +235,23 @@ jobs:
             echo "Nginx configuration has errors!"
             exit 1
           fi
+          
+          # Deploy application
           echo "Preparing application directory..."
           sudo mkdir -p /opt/medizid-api
           sudo cp -r ~/medizid-api/* /opt/medizid-api/
           sudo chown -R root:root /opt/medizid-api
           sudo chmod +x /opt/medizid-api/MedizID.API
+          
+          # Restart service
           echo "Stopping existing application..."
           sudo systemctl stop medizid-api || true
           sleep 2
+          
           echo "Starting application..."
           sudo systemctl start medizid-api
           sleep 3
+          
           echo "Checking application status..."
           sudo systemctl status medizid-api
           echo "Deployment complete!"
