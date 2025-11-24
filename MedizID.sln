@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MedizID.API", "MedizID.API\MedizID.API.csproj", "{AB60031C-B7B0-4E62-8B98-32EEB5631B47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MedizID.Web", "MedizID.Web\MedizID.Web.csproj", "{70B82743-9324-4879-8491-E8258DCAA3AA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AB60031C-B7B0-4E62-8B98-32EEB5631B47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB60031C-B7B0-4E62-8B98-32EEB5631B47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB60031C-B7B0-4E62-8B98-32EEB5631B47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB60031C-B7B0-4E62-8B98-32EEB5631B47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70B82743-9324-4879-8491-E8258DCAA3AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70B82743-9324-4879-8491-E8258DCAA3AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70B82743-9324-4879-8491-E8258DCAA3AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70B82743-9324-4879-8491-E8258DCAA3AA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

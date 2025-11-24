@@ -1,0 +1,88 @@
+@* EmptyState.razor
+ * Displays an empty state message with optional icon and action button
+ * Used when there's no data to display
+ * Similar to Mantine's Empty component
+ *@
+
+<div class="mud-empty-state">
+    <div class="mud-empty-state-content">
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <MudIcon Icon="@Icon" Class="mud-empty-state-icon" />
+        }
+        else
+        {
+            <MudIcon Icon="@Icons.Material.Filled.FolderOpen" Class="mud-empty-state-icon" />
+        }
+
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <MudText Typo="Typo.h6" Class="mt-3">@Title</MudText>
+        }
+
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <MudText Typo="Typo.body2" Class="mt-1 mud-text-secondary">@Description</MudText>
+        }
+
+        @if (ActionButtonText != null && OnAction.HasDelegate)
+        {
+            <MudButton 
+                Variant="Variant.Filled" 
+                Color="Color.Primary" 
+                Class="mt-4"
+                OnClick="async () => await OnAction.InvokeAsync()">
+                @ActionButtonText
+            </MudButton>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>Icon to display (Material Design icon name)</summary>
+    [Parameter]
+    public string? Icon { get; set; }
+
+    /// <summary>Title text</summary>
+    [Parameter]
+    public string? Title { get; set; } = "No data found";
+
+    /// <summary>Description text</summary>
+    [Parameter]
+    public string? Description { get; set; }
+
+    /// <summary>Action button text (if null, button is not shown)</summary>
+    [Parameter]
+    public string? ActionButtonText { get; set; }
+
+    /// <summary>Callback when action button is clicked</summary>
+    [Parameter]
+    public EventCallback OnAction { get; set; }
+}
+
+<style>
+    .mud-empty-state {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 300px;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .mud-empty-state-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .mud-empty-state-icon {
+        font-size: 4rem;
+        opacity: 0.5;
+    }
+
+    .mud-text-secondary {
+        color: rgba(0, 0, 0, 0.6);
+    }
+</style>

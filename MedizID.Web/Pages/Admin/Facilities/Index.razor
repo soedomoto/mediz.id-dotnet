@@ -1,0 +1,172 @@
+@page "/admin/facilities"
+@using MedizID.Web.Components.Layout
+@using MedizID.Web.Components.Common
+@using MedizID.Web.Services
+@using MedizID.Web.Models
+@using MudBlazor
+
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject NotificationService NotificationService
+@inject IFacilityService FacilityService
+@inject IDialogService DialogService
+
+<PageTitle>Managed Facilities</PageTitle>
+
+<LayoutStack Gap="2rem">
+    <!-- Header with Title and Add Button -->
+    <LayoutGroup JustifyContent="space-between" AlignItems="center">
+        <div>
+            <MudText Typo="Typo.h5">Managed Facilities</MudText>
+            <MudText Typo="Typo.body2" Class="mt-2">
+                Total Facilities: <strong>@(facilitiesResponse?.Total ?? 0)</strong>
+            </MudText>
+        </div>
+        <MudButton 
+            Variant="Variant.Filled" 
+            Color="Color.Primary"
+            StartIcon="@Icons.Material.Filled.Add"
+            OnClick="@HandleCreateClick">
+            Add Facility
+        </MudButton>
+    </LayoutGroup>
+
+    <!-- Data Grid with Filtering, Sorting, Pagination -->
+    <MudPaper Class="pa-4">
+        @if (isLoading)
+        {
+            <LoadingOverlay IsVisible="true" Message="Loading facilities..." />
+        }
+        else if (error != null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.Error" Class="mr-2" />
+                Failed to load facilities. Please try again.
+            </MudAlert>
+        }
+        else if (facilitiesResponse?.Facilities?.Count == 0)
+        {
+            <EmptyState 
+                Icon="@Icons.Material.Filled.LocalHospital"
+                Title="No facilities found"
+                Description="Start by creating your first facility"
+                ActionButtonText="Create Facility"
+                OnAction="@HandleCreateClick" />
+        }
+        else
+        {
+            <MudDataGrid 
+                Items="@(facilitiesResponse?.Facilities ?? new())"
+                Hover="true"
+                Striped="true"
+                Filterable="true"
+                SortMode="SortMode.Multiple"
+                RowsPerPageStringFormat="Facilities per page"
+                Class="mud-table-dense">
+                <Columns>
+                    <PropertyColumn Property="x => x.Id" Title="ID" Sortable="true" />
+                    <PropertyColumn Property="x => x.Name" Title="Facility Name" Sortable="true" />
+                    <PropertyColumn Property="x => x.Address" Title="Address" />
+                    <PropertyColumn Property="x => x.City" Title="City" Sortable="true" />
+                    <PropertyColumn Property="x => x.PhoneNumber" Title="Phone" />
+                    <PropertyColumn Property="x => x.Email" Title="Email" />
+                    <TemplateColumn Title="Status" Sortable="false">
+                        <CellTemplate>
+                            <MudChip 
+                                Size="Size.Small" 
+                                Color="@(context.Item.IsActive ? Color.Success : Color.Default)">
+                                @(context.Item.IsActive ? "Active" : "Inactive")
+                            </MudChip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Actions" Sortable="false" Style="width: 200px;">
+                        <CellTemplate>
+                            <LayoutGroup Gap="0.5rem" Wrap="false">
+                                <MudButton 
+                                    Size="Size.Small" 
+                                    Variant="Variant.Text"
+                                    Color="Color.Primary"
+                                    OnClick="@(() => HandleEditClick(context.Item))">
+                                    Edit
+                                </MudButton>
+                                <MudButton 
+                                    Size="Size.Small" 
+                                    Variant="Variant.Text"
+                                    Color="Color.Error"
+                                    OnClick="@(() => HandleDeleteClick(context.Item))">
+                                    Delete
+                                </MudButton>
+                            </LayoutGroup>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+                <PagerContent>
+                    <MudDataGridPager T="FacilityResponse" />
+                </PagerContent>
+            </MudDataGrid>
+        }
+    </MudPaper>
+</LayoutStack>
+
+@code {
+    private FacilityListResponse? facilitiesResponse;
+    private bool isLoading = true;
+    private Exception? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFacilities();
+    }
+
+    private async Task LoadFacilities()
+    {
+        try
+        {
+            isLoading = true;
+            error = null;
+            facilitiesResponse = await FacilityService.GetFacilitiesAsync(0, 10);
+        }
+        catch (Exception ex)
+        {
+            error = ex;
+            NotificationService.Error("Error", "Failed to load facilities");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleCreateClick()
+    {
+        NavigationManager.NavigateTo("/admin/facilities/create");
+    }
+
+    private void HandleEditClick(FacilityResponse facility)
+    {
+        NavigationManager.NavigateTo($"/admin/facilities/{facility.Id}/edit");
+    }
+
+    private async Task HandleDeleteClick(FacilityResponse facility)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirm Delete",
+            $"Are you sure you want to delete '{facility.Name}'? This action cannot be undone.",
+            yesText: "Delete", 
+            cancelText: "Cancel");
+
+        if (result == true)
+        {
+            try
+            {
+                await FacilityService.DeleteFacilityAsync(facility.Id);
+                NotificationService.Success("Success", "Facility deleted successfully");
+                await LoadFacilities();
+            }
+            catch
+            {
+                NotificationService.Error("Error", "Failed to delete facility");
+            }
+        }
+    }
+}

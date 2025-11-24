@@ -1,0 +1,92 @@
+@* Base component for forms with validation and submission handling *@
+@typeparam TModel
+@inject ISnackbar Snackbar
+
+<MudForm @ref="form" Model="@Model" @bind-IsValid="@IsFormValid">
+    <MudCard Class="mb-4">
+        <MudCardHeader>
+            <MudText Typo="Typo.h6">@Title</MudText>
+        </MudCardHeader>
+        
+        <MudCardContent>
+            @ChildContent
+        </MudCardContent>
+        
+        <MudCardActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@OnSubmit" Disabled="@(!IsFormValid || IsLoading)">
+                @if (IsLoading)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">@SubmitButtonText...</MudText>
+                }
+                else
+                {
+                    @SubmitButtonText
+                }
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@OnResetClick" Class="ml-2">
+                Reset
+            </MudButton>
+            @if (ShowDelete && OnDelete.HasValue)
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="@(async () => await OnDelete!.Value.InvokeAsync())" Class="ml-auto">
+                    Delete
+                </MudButton>
+            }
+        </MudCardActions>
+    </MudCard>
+</MudForm>
+
+@code {
+    [Parameter]
+    public TModel Model { get; set; } = default!;
+    
+    [Parameter]
+    public string Title { get; set; } = "Form";
+    
+    [Parameter]
+    public string SubmitButtonText { get; set; } = "Save";
+    
+    [Parameter]
+    public bool ShowDelete { get; set; } = false;
+    
+    [Parameter]
+    public bool IsLoading { get; set; } = false;
+    
+    [Parameter]
+    public EventCallback<TModel> OnSubmitAsync { get; set; }
+    
+    [Parameter]
+    public EventCallback OnReset { get; set; }
+    
+    [Parameter]
+    public EventCallback? OnDelete { get; set; }
+    
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    private MudForm? form;
+    private bool IsFormValid { get; set; }
+    
+    private async Task OnSubmit()
+    {
+        if (form != null)
+        {
+            await form.Validate();
+            if (IsFormValid)
+            {
+                await OnSubmitAsync.InvokeAsync(Model);
+                Snackbar.Add("Saved successfully", Severity.Success);
+            }
+        }
+    }
+    
+    private async Task OnResetClick()
+    {
+        if (form != null)
+        {
+            await form.ResetAsync();
+            await OnReset.InvokeAsync();
+        }
+    }
+}
