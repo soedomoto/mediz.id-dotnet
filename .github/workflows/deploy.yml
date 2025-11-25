@@ -1,19 +1,17 @@
-# This workflow has been consolidated into deploy.yml
-# Please use deploy.yml for combined API and Web deployment
-
-name: Build and Deploy MedizID.API (Deprecated)
+name: Build and Deploy MedizID
 
 on:
   push:
     branches:
-      - mainx
+      - main
     paths:
       - 'MedizID.API/**'
+      - 'MedizID.Web/**'
       - 'MedizID.sln'
-      - '.github/workflows/deploy-api.yml'
+      - '.github/workflows/deploy.yml'
 
 jobs:
-  build:
+  build-api:
     runs-on: ubuntu-latest
     
     steps:
@@ -36,17 +34,49 @@ jobs:
         continue-on-error: true
 
       - name: Publish MedizID.API
-        run: dotnet publish MedizID.API/MedizID.API.csproj -c Release -o ./publish
+        run: dotnet publish MedizID.API/MedizID.API.csproj -c Release -o ./publish-api
 
-      - name: Upload publish artifact
+      - name: Upload API artifact
         uses: actions/upload-artifact@v4
         with:
           name: medizid-api-release
-          path: ./publish
+          path: ./publish-api
+          retention-days: 1
+
+  build-web:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore MedizID.sln
+
+      - name: Build MedizID.Web
+        run: dotnet build MedizID.Web/MedizID.Web.csproj -c Release --no-restore
+
+      - name: Run tests
+        run: dotnet test MedizID.sln -c Release --no-build --verbosity normal
+        continue-on-error: true
+
+      - name: Publish MedizID.Web
+        run: dotnet publish MedizID.Web/MedizID.Web.csproj -c Release -o ./publish-web
+
+      - name: Upload Web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: medizid-web-release
+          path: ./publish-web
           retention-days: 1
 
   deploy:
-    needs: build
+    needs: [build-api, build-web]
     runs-on: ubuntu-latest
     if: success()
     
@@ -54,11 +84,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download publish artifact
+      - name: Download API artifact
         uses: actions/download-artifact@v4
         with:
           name: medizid-api-release
-          path: ./publish
+          path: ./publish-api
+
+      - name: Download Web artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: medizid-web-release
+          path: ./publish-web
 
       - name: Create SSH key
         run: |
@@ -70,12 +106,14 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-            "mkdir -p ~/medizid-api && sudo systemctl stop medizid-api || true && sleep 2"
-          scp -r -i ~/.ssh/deploy_key ./publish/* \
+            "mkdir -p ~/medizid-api ~/medizid-web && sudo systemctl stop medizid-api medizid-web || true && sleep 2"
+          scp -r -i ~/.ssh/deploy_key ./publish-api/* \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/medizid-api/
+          scp -r -i ~/.ssh/deploy_key ./publish-web/* \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/medizid-web/
           ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'DEPLOYMENT_EOF'
           set -e
-          echo "Starting MedizID.API Deployment..."
+          echo "Starting MedizID Deployment..."
           
           # Install .NET 8 Runtime if not present
           if ! command -v dotnet &> /dev/null; then
@@ -94,10 +132,10 @@ jobs:
             echo ".NET 8 Runtime already installed"
           fi
           
-          # Create systemd service file
+          # Create systemd service file for API
           SERVICE_FILE="/etc/systemd/system/medizid-api.service"
           if [ ! -f "$SERVICE_FILE" ]; then
-            echo "Creating systemd service..."
+            echo "Creating systemd service for API..."
             sudo tee "$SERVICE_FILE" > /dev/null << 'SVCEOF'
           [Unit]
           Description=MedizID API Service
@@ -132,9 +170,43 @@ jobs:
             sudo chmod 644 "$SERVICE_FILE"
             sudo systemctl daemon-reload
             sudo systemctl enable medizid-api
-            echo "Systemd service created and enabled"
+            echo "Systemd service for API created and enabled"
           else
-            echo "Systemd service already exists"
+            echo "Systemd service for API already exists"
+            sudo systemctl daemon-reload
+          fi
+          
+          # Create systemd service file for Web
+          SERVICE_FILE="/etc/systemd/system/medizid-web.service"
+          if [ ! -f "$SERVICE_FILE" ]; then
+            echo "Creating systemd service for Web..."
+            sudo tee "$SERVICE_FILE" > /dev/null << 'SVCEOF'
+          [Unit]
+          Description=MedizID Web Service
+          After=network.target
+          
+          [Service]
+          Type=simple
+          User=root
+          WorkingDirectory=/opt/medizid-web
+          ExecStart=/opt/medizid-web/MedizID.Web
+          Restart=always
+          RestartSec=10
+          StandardOutput=journal
+          StandardError=journal
+          SyslogIdentifier=medizid-web
+          Environment="ASPNETCORE_ENVIRONMENT=Production"
+          Environment="ASPNETCORE_URLS=http://+:5001"
+          
+          [Install]
+          WantedBy=multi-user.target
+          SVCEOF
+            sudo chmod 644 "$SERVICE_FILE"
+            sudo systemctl daemon-reload
+            sudo systemctl enable medizid-web
+            echo "Systemd service for Web created and enabled"
+          else
+            echo "Systemd service for Web already exists"
             sudo systemctl daemon-reload
           fi
           
@@ -157,22 +229,31 @@ jobs:
           fi
           
           # Configure Nginx virtual host
-          NGINX_SITE="/etc/nginx/sites-available/medizid-api"
-          NGINX_ENABLED="/etc/nginx/sites-enabled/medizid-api"
-          if [ ! -f "$NGINX_SITE" ]; then
-            echo "Creating Nginx virtual host..."
-            sudo tee "$NGINX_SITE" > /dev/null << 'NGINXEOF'
-          upstream medizid_backend {
+          NGINX_SITE="/etc/nginx/sites-available/medizid"
+          NGINX_ENABLED="/etc/nginx/sites-enabled/medizid"
+          
+          echo "Creating/Updating Nginx virtual host..."
+          sudo tee "$NGINX_SITE" > /dev/null << 'NGINXEOF'
+          upstream medizid_api {
               server 127.0.0.1:5000;
               keepalive 32;
           }
+          
+          upstream medizid_web {
+              server 127.0.0.1:5001;
+              keepalive 32;
+          }
+          
           server {
               listen 80;
+              listen [::]:80;
               server_name ec2-51-21-249-249.eu-north-1.compute.amazonaws.com;
-              access_log /var/log/nginx/medizid-api.access.log;
-              error_log /var/log/nginx/medizid-api.error.log;
+              access_log /var/log/nginx/medizid.access.log;
+              error_log /var/log/nginx/medizid.error.log;
+              
+              # API endpoints
               location /api/ {
-                  proxy_pass http://medizid_backend/;
+                  proxy_pass http://medizid_api/;
                   proxy_http_version 1.1;
                   proxy_set_header Upgrade $http_upgrade;
                   proxy_set_header Connection 'upgrade';
@@ -185,32 +266,62 @@ jobs:
                   proxy_read_timeout 60s;
                   proxy_cache_bypass $http_upgrade;
               }
+              
+              # Health check endpoint
               location /health {
-                  proxy_pass http://medizid_backend/health;
+                  proxy_pass http://medizid_api/health;
                   proxy_http_version 1.1;
                   proxy_set_header Host $host;
                   access_log off;
               }
+              
+              # Swagger documentation
               location /swagger/ {
-                  proxy_pass http://medizid_backend/swagger/;
+                  proxy_pass http://medizid_api/swagger/;
                   proxy_http_version 1.1;
                   proxy_set_header Host $host;
                   proxy_set_header X-Real-IP $remote_addr;
                   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
               }
+              
+              # Web application - support Blazor WebAssembly routing
               location / {
-                  return 404;
+                  proxy_pass http://medizid_web;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+                  proxy_connect_timeout 60s;
+                  proxy_send_timeout 60s;
+                  proxy_read_timeout 60s;
+                  proxy_cache_bypass $http_upgrade;
+              }
+              
+              # Cache static files
+              location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                  proxy_pass http://medizid_web;
+                  proxy_http_version 1.1;
+                  proxy_set_header Host $host;
+                  expires 1y;
+                  add_header Cache-Control "public, immutable";
               }
           }
           NGINXEOF
-            sudo chmod 644 "$NGINX_SITE"
-            if [ ! -d /etc/nginx/sites-enabled ]; then
-              sudo mkdir -p /etc/nginx/sites-enabled
-            fi
+          
+          sudo chmod 644 "$NGINX_SITE"
+          if [ ! -d /etc/nginx/sites-enabled ]; then
+            sudo mkdir -p /etc/nginx/sites-enabled
+          fi
+          
+          # Create symbolic link if it doesn't exist, or update existing
+          if [ ! -L "$NGINX_ENABLED" ]; then
             sudo ln -sf "$NGINX_SITE" "$NGINX_ENABLED"
-            echo "Nginx virtual host created"
+            echo "Nginx site symlink created"
           else
-            echo "Nginx virtual host already exists"
+            echo "Nginx site symlink already exists"
           fi
           
           # Validate and reload Nginx
@@ -223,24 +334,40 @@ jobs:
             exit 1
           fi
           
-          # Deploy application
-          echo "Preparing application directory..."
+          # Deploy API application
+          echo "Preparing API application directory..."
           sudo mkdir -p /opt/medizid-api
           sudo cp -r ~/medizid-api/* /opt/medizid-api/
           sudo chown -R root:root /opt/medizid-api
           sudo chmod +x /opt/medizid-api/MedizID.API
           
-          # Restart service
-          echo "Stopping existing application..."
-          sudo systemctl stop medizid-api || true
+          # Deploy Web application
+          echo "Preparing Web application directory..."
+          sudo mkdir -p /opt/medizid-web
+          sudo cp -r ~/medizid-web/* /opt/medizid-web/
+          sudo chown -R root:root /opt/medizid-web
+          sudo chmod +x /opt/medizid-web/MedizID.Web
+          
+          # Restart services
+          echo "Stopping existing applications..."
+          sudo systemctl stop medizid-api medizid-web || true
           sleep 2
           
-          echo "Starting application..."
+          echo "Starting API application..."
           sudo systemctl start medizid-api
+          sleep 2
+          
+          echo "Starting Web application..."
+          sudo systemctl start medizid-web
           sleep 3
           
-          echo "Checking application status..."
+          echo "Checking application statuses..."
+          echo "=== API Status ==="
           sudo systemctl status medizid-api
+          echo ""
+          echo "=== Web Status ==="
+          sudo systemctl status medizid-web
+          echo ""
           echo "Deployment complete!"
           DEPLOYMENT_EOF
 
@@ -248,7 +375,10 @@ jobs:
         run: |
           sleep 5
           echo "Checking API health..."
-          curl -f http://${{ secrets.EC2_HOST }}:5000/health || echo "Health check endpoint not available yet"
+          curl -f http://${{ secrets.EC2_HOST }}/health || echo "API health check endpoint not available yet"
+          echo ""
+          echo "Checking Web application..."
+          curl -f http://${{ secrets.EC2_HOST }}/ || echo "Web application not available yet"
         continue-on-error: true
 
       - name: Deployment notification
@@ -256,7 +386,9 @@ jobs:
         run: |
           if [ "${{ job.status }}" == "success" ]; then
             echo "✅ Deployment successful!"
-            echo "API is running on http://${{ secrets.EC2_HOST }}:5000"
+            echo "API is running on http://${{ secrets.EC2_HOST }}/api"
+            echo "Web application is running on http://${{ secrets.EC2_HOST }}/"
+            echo "Swagger documentation at http://${{ secrets.EC2_HOST }}/swagger/"
           else
             echo "❌ Deployment failed!"
           fi

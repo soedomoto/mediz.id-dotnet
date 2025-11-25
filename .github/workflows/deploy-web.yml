@@ -1,16 +1,16 @@
 # This workflow has been consolidated into deploy.yml
 # Please use deploy.yml for combined API and Web deployment
 
-name: Build and Deploy MedizID.API (Deprecated)
+name: Build and Deploy MedizID.Web (Deprecated)
 
 on:
   push:
     branches:
       - mainx
     paths:
-      - 'MedizID.API/**'
+      - 'MedizID.Web/**'
       - 'MedizID.sln'
-      - '.github/workflows/deploy-api.yml'
+      - '.github/workflows/deploy-web.yml'
 
 jobs:
   build:
@@ -28,20 +28,20 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore MedizID.sln
 
-      - name: Build MedizID.API
-        run: dotnet build MedizID.API/MedizID.API.csproj -c Release --no-restore
+      - name: Build MedizID.Web
+        run: dotnet build MedizID.Web/MedizID.Web.csproj -c Release --no-restore
 
       - name: Run tests
         run: dotnet test MedizID.sln -c Release --no-build --verbosity normal
         continue-on-error: true
 
-      - name: Publish MedizID.API
-        run: dotnet publish MedizID.API/MedizID.API.csproj -c Release -o ./publish
+      - name: Publish MedizID.Web
+        run: dotnet publish MedizID.Web/MedizID.Web.csproj -c Release -o ./publish
 
       - name: Upload publish artifact
         uses: actions/upload-artifact@v4
         with:
-          name: medizid-api-release
+          name: medizid-web-release
           path: ./publish
           retention-days: 1
 
@@ -57,7 +57,7 @@ jobs:
       - name: Download publish artifact
         uses: actions/download-artifact@v4
         with:
-          name: medizid-api-release
+          name: medizid-web-release
           path: ./publish
 
       - name: Create SSH key
@@ -70,12 +70,12 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-            "mkdir -p ~/medizid-api && sudo systemctl stop medizid-api || true && sleep 2"
+            "mkdir -p ~/medizid-web && sudo systemctl stop medizid-web || true && sleep 2"
           scp -r -i ~/.ssh/deploy_key ./publish/* \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/medizid-api/
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/medizid-web/
           ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'DEPLOYMENT_EOF'
           set -e
-          echo "Starting MedizID.API Deployment..."
+          echo "Starting MedizID.Web Deployment..."
           
           # Install .NET 8 Runtime if not present
           if ! command -v dotnet &> /dev/null; then
@@ -95,43 +95,33 @@ jobs:
           fi
           
           # Create systemd service file
-          SERVICE_FILE="/etc/systemd/system/medizid-api.service"
+          SERVICE_FILE="/etc/systemd/system/medizid-web.service"
           if [ ! -f "$SERVICE_FILE" ]; then
             echo "Creating systemd service..."
             sudo tee "$SERVICE_FILE" > /dev/null << 'SVCEOF'
           [Unit]
-          Description=MedizID API Service
+          Description=MedizID Web Service
           After=network.target
           
           [Service]
           Type=simple
           User=root
-          WorkingDirectory=/opt/medizid-api
-          ExecStart=/opt/medizid-api/MedizID.API
+          WorkingDirectory=/opt/medizid-web
+          ExecStart=/opt/medizid-web/MedizID.Web
           Restart=always
           RestartSec=10
           StandardOutput=journal
           StandardError=journal
-          SyslogIdentifier=medizid-api
-          Environment="DB_HOST=localhost"
-          Environment="DB_PORT=5432"
-          Environment="DB_NAME=mediz_db"
-          Environment="DB_USER=postgres"
-          Environment="DB_PASSWORD=@2Miawmiaw"
+          SyslogIdentifier=medizid-web
           Environment="ASPNETCORE_ENVIRONMENT=Production"
-          Environment="ASPNETCORE_URLS=http://+:5000"
-          Environment="JWT_SECRET_KEY=your-super-secret-key-at-least-32-characters-long-for-hmac256"
-          Environment="JWT_ISSUER=mediz.id"
-          Environment="JWT_AUDIENCE=mediz.id-api"
-          Environment="JWT_EXPIRATION_MINUTES=1440"
-          Environment="OPENAI_API_KEY=add-your-openai-api-key-here"
+          Environment="ASPNETCORE_URLS=http://+:5001"
           
           [Install]
           WantedBy=multi-user.target
           SVCEOF
             sudo chmod 644 "$SERVICE_FILE"
             sudo systemctl daemon-reload
-            sudo systemctl enable medizid-api
+            sudo systemctl enable medizid-web
             echo "Systemd service created and enabled"
           else
             echo "Systemd service already exists"
@@ -157,22 +147,24 @@ jobs:
           fi
           
           # Configure Nginx virtual host
-          NGINX_SITE="/etc/nginx/sites-available/medizid-api"
-          NGINX_ENABLED="/etc/nginx/sites-enabled/medizid-api"
+          NGINX_SITE="/etc/nginx/sites-available/medizid-web"
+          NGINX_ENABLED="/etc/nginx/sites-enabled/medizid-web"
           if [ ! -f "$NGINX_SITE" ]; then
             echo "Creating Nginx virtual host..."
             sudo tee "$NGINX_SITE" > /dev/null << 'NGINXEOF'
-          upstream medizid_backend {
-              server 127.0.0.1:5000;
+          upstream medizid_web {
+              server 127.0.0.1:5001;
               keepalive 32;
           }
           server {
               listen 80;
               server_name ec2-51-21-249-249.eu-north-1.compute.amazonaws.com;
-              access_log /var/log/nginx/medizid-api.access.log;
-              error_log /var/log/nginx/medizid-api.error.log;
-              location /api/ {
-                  proxy_pass http://medizid_backend/;
+              access_log /var/log/nginx/medizid-web.access.log;
+              error_log /var/log/nginx/medizid-web.error.log;
+              
+              # Support Blazor WebAssembly routing
+              location / {
+                  proxy_pass http://medizid_web;
                   proxy_http_version 1.1;
                   proxy_set_header Upgrade $http_upgrade;
                   proxy_set_header Connection 'upgrade';
@@ -184,22 +176,20 @@ jobs:
                   proxy_send_timeout 60s;
                   proxy_read_timeout 60s;
                   proxy_cache_bypass $http_upgrade;
+                  
+                  # Handle WebSocket for Blazor Server if used
+                  if ($http_upgrade = "websocket") {
+                      proxy_pass http://medizid_web;
+                  }
               }
-              location /health {
-                  proxy_pass http://medizid_backend/health;
+              
+              # Cache static files
+              location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                  proxy_pass http://medizid_web;
                   proxy_http_version 1.1;
                   proxy_set_header Host $host;
-                  access_log off;
-              }
-              location /swagger/ {
-                  proxy_pass http://medizid_backend/swagger/;
-                  proxy_http_version 1.1;
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-              }
-              location / {
-                  return 404;
+                  expires 1y;
+                  add_header Cache-Control "public, immutable";
               }
           }
           NGINXEOF
@@ -225,30 +215,30 @@ jobs:
           
           # Deploy application
           echo "Preparing application directory..."
-          sudo mkdir -p /opt/medizid-api
-          sudo cp -r ~/medizid-api/* /opt/medizid-api/
-          sudo chown -R root:root /opt/medizid-api
-          sudo chmod +x /opt/medizid-api/MedizID.API
+          sudo mkdir -p /opt/medizid-web
+          sudo cp -r ~/medizid-web/* /opt/medizid-web/
+          sudo chown -R root:root /opt/medizid-web
+          sudo chmod +x /opt/medizid-web/MedizID.Web
           
           # Restart service
           echo "Stopping existing application..."
-          sudo systemctl stop medizid-api || true
+          sudo systemctl stop medizid-web || true
           sleep 2
           
           echo "Starting application..."
-          sudo systemctl start medizid-api
+          sudo systemctl start medizid-web
           sleep 3
           
           echo "Checking application status..."
-          sudo systemctl status medizid-api
+          sudo systemctl status medizid-web
           echo "Deployment complete!"
           DEPLOYMENT_EOF
 
       - name: Verify deployment
         run: |
           sleep 5
-          echo "Checking API health..."
-          curl -f http://${{ secrets.EC2_HOST }}:5000/health || echo "Health check endpoint not available yet"
+          echo "Checking Web health..."
+          curl -f http://${{ secrets.EC2_HOST }}:5001 || echo "Health check endpoint not available yet"
         continue-on-error: true
 
       - name: Deployment notification
@@ -256,7 +246,7 @@ jobs:
         run: |
           if [ "${{ job.status }}" == "success" ]; then
             echo "✅ Deployment successful!"
-            echo "API is running on http://${{ secrets.EC2_HOST }}:5000"
+            echo "Web application is running on http://${{ secrets.EC2_HOST }}:5001"
           else
             echo "❌ Deployment failed!"
           fi
