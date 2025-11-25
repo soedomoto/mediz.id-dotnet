@@ -5,6 +5,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <PublishTrimmed>true</PublishTrimmed>
+    <!-- Enable content hash versioning for WASM files -->
+    <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+    <BlazorWebAssemblyPreloadAssemblyExtensionsAllowList>
+      <Item>wasm</Item>
+    </BlazorWebAssemblyPreloadAssemblyExtensionsAllowList>
+    <!-- This enables cache busting with content hash -->
+    <BlazorPublishModifiedFilesOnly>true</BlazorPublishModifiedFilesOnly>
   </PropertyGroup>
 
   <ItemGroup>
