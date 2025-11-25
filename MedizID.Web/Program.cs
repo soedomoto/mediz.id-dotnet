@@ -24,9 +24,11 @@ builder.Services.AddScoped(sp =>
     var httpClient = sp.GetRequiredService<HttpClient>();
     
     // Determine API URL based on environment
+    // In development: use localhost:5053
+    // In production: use relative path /api (will use current host from browser)
     string apiUrl = builder.HostEnvironment.IsDevelopment()
         ? "http://localhost:5053"
-        : "/api";
+        : $"{builder.HostEnvironment.BaseAddress}api";
     
     httpClient.BaseAddress = new Uri(apiUrl);
     
