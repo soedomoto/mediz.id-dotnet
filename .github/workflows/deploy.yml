@@ -36,11 +36,14 @@ jobs:
       - name: Publish MedizID.API
         run: dotnet publish MedizID.API/MedizID.API.csproj -c Release -o ./publish-api
 
+      - name: Compress API artifact
+        run: tar -czf medizid-api-release.tar.gz -C ./publish-api . && ls -lh medizid-api-release.tar.gz
+
       - name: Upload API artifact
         uses: actions/upload-artifact@v4
         with:
           name: medizid-api-release
-          path: ./publish-api
+          path: medizid-api-release.tar.gz
           retention-days: 1
 
   build-web:
@@ -68,11 +71,14 @@ jobs:
       - name: Publish MedizID.Web
         run: dotnet publish MedizID.Web/MedizID.Web.csproj -c Release -o ./publish-web
 
+      - name: Compress Web artifact
+        run: tar -czf medizid-web-release.tar.gz -C ./publish-web . && ls -lh medizid-web-release.tar.gz
+
       - name: Upload Web artifact
         uses: actions/upload-artifact@v4
         with:
           name: medizid-web-release
-          path: ./publish-web
+          path: medizid-web-release.tar.gz
           retention-days: 1
 
   deploy:
@@ -88,13 +94,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: medizid-api-release
-          path: ./publish-api
+          path: ./artifacts
 
       - name: Download Web artifact
         uses: actions/download-artifact@v4
         with:
           name: medizid-web-release
-          path: ./publish-web
+          path: ./artifacts
 
       - name: Create SSH key
         run: |
@@ -103,14 +109,16 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to EC2
+      - name: Upload artifacts and deploy
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-            "mkdir -p ~/medizid-api ~/medizid-web && sudo systemctl stop medizid-api medizid-web || true && sleep 2"
-          scp -r -i ~/.ssh/deploy_key ./publish-api/* \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/medizid-api/
-          scp -r -i ~/.ssh/deploy_key ./publish-web/* \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/medizid-web/
+            "mkdir -p ~/medizid-api ~/medizid-web"
+          echo "Uploading API artifact..."
+          scp -i ~/.ssh/deploy_key ./artifacts/medizid-api-release.tar.gz \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/medizid-api-release.tar.gz
+          echo "Uploading Web artifact..."
+          scp -i ~/.ssh/deploy_key ./artifacts/medizid-web-release.tar.gz \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/medizid-web-release.tar.gz
           ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'DEPLOYMENT_EOF'
           set -e
           echo "Starting MedizID Deployment..."
@@ -176,39 +184,9 @@ jobs:
             sudo systemctl daemon-reload
           fi
           
-          # Create systemd service file for Web
-          SERVICE_FILE="/etc/systemd/system/medizid-web.service"
-          if [ ! -f "$SERVICE_FILE" ]; then
-            echo "Creating systemd service for Web..."
-            sudo tee "$SERVICE_FILE" > /dev/null << 'SVCEOF'
-          [Unit]
-          Description=MedizID Web Service
-          After=network.target
-          
-          [Service]
-          Type=simple
-          User=root
-          WorkingDirectory=/opt/medizid-web
-          ExecStart=/opt/medizid-web/MedizID.Web
-          Restart=always
-          RestartSec=10
-          StandardOutput=journal
-          StandardError=journal
-          SyslogIdentifier=medizid-web
-          Environment="ASPNETCORE_ENVIRONMENT=Production"
-          Environment="ASPNETCORE_URLS=http://+:5001"
-          
-          [Install]
-          WantedBy=multi-user.target
-          SVCEOF
-            sudo chmod 644 "$SERVICE_FILE"
-            sudo systemctl daemon-reload
-            sudo systemctl enable medizid-web
-            echo "Systemd service for Web created and enabled"
-          else
-            echo "Systemd service for Web already exists"
-            sudo systemctl daemon-reload
-          fi
+          # Note: MedizID.Web is a Blazor WebAssembly client-side app
+          # It will be served as static files from wwwroot through Nginx
+          # No systemd service needed for Web
           
           # Install and configure Nginx
           if ! command -v nginx &> /dev/null; then
@@ -236,11 +214,6 @@ jobs:
           sudo tee "$NGINX_SITE" > /dev/null << 'NGINXEOF'
           upstream medizid_api {
               server 127.0.0.1:5000;
-              keepalive 32;
-          }
-          
-          upstream medizid_web {
-              server 127.0.0.1:5001;
               keepalive 32;
           }
           
@@ -284,27 +257,17 @@ jobs:
                   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
               }
               
-              # Web application - support Blazor WebAssembly routing
+              # Blazor WebAssembly static files - SPA routing
               location / {
-                  proxy_pass http://medizid_web;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade $http_upgrade;
-                  proxy_set_header Connection 'upgrade';
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto $scheme;
-                  proxy_connect_timeout 60s;
-                  proxy_send_timeout 60s;
-                  proxy_read_timeout 60s;
-                  proxy_cache_bypass $http_upgrade;
+                  root /var/www/medizid-web/wwwroot;
+                  try_files $uri $uri/ /index.html;
+                  expires 1y;
+                  add_header Cache-Control "public, immutable";
               }
               
               # Cache static files
               location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-                  proxy_pass http://medizid_web;
-                  proxy_http_version 1.1;
-                  proxy_set_header Host $host;
+                  root /var/www/medizid-web/wwwroot;
                   expires 1y;
                   add_header Cache-Control "public, immutable";
               }
@@ -334,40 +297,37 @@ jobs:
             exit 1
           fi
           
-          # Deploy API application
-          echo "Preparing API application directory..."
+          # Stop existing services
+          echo "Stopping existing applications..."
+          sudo systemctl stop medizid-api || true
+          sleep 2
+          
+          # Extract and deploy artifacts
+          echo "Extracting API artifact..."
           sudo mkdir -p /opt/medizid-api
-          sudo cp -r ~/medizid-api/* /opt/medizid-api/
+          sudo tar -xzf ~/medizid-api-release.tar.gz -C /opt/medizid-api
           sudo chown -R root:root /opt/medizid-api
           sudo chmod +x /opt/medizid-api/MedizID.API
           
-          # Deploy Web application
-          echo "Preparing Web application directory..."
-          sudo mkdir -p /opt/medizid-web
-          sudo cp -r ~/medizid-web/* /opt/medizid-web/
-          sudo chown -R root:root /opt/medizid-web
-          sudo chmod +x /opt/medizid-web/MedizID.Web
+          echo "Extracting Web artifact (static files)..."
+          sudo mkdir -p /var/www/medizid-web
+          sudo tar -xzf ~/medizid-web-release.tar.gz -C /var/www/medizid-web
+          sudo chown -R www-data:www-data /var/www/medizid-web
+          sudo chmod -R 755 /var/www/medizid-web
           
-          # Restart services
-          echo "Stopping existing applications..."
-          sudo systemctl stop medizid-api medizid-web || true
-          sleep 2
+          # Clean up compressed files
+          rm -f ~/medizid-api-release.tar.gz ~/medizid-web-release.tar.gz
           
+          # Start services
           echo "Starting API application..."
           sudo systemctl start medizid-api
           sleep 2
           
-          echo "Starting Web application..."
-          sudo systemctl start medizid-web
-          sleep 3
-          
-          echo "Checking application statuses..."
+          echo "Checking application status..."
           echo "=== API Status ==="
           sudo systemctl status medizid-api
           echo ""
-          echo "=== Web Status ==="
-          sudo systemctl status medizid-web
-          echo ""
+          echo "Web application (Blazor WebAssembly) served as static files by Nginx"
           echo "Deployment complete!"
           DEPLOYMENT_EOF
 
