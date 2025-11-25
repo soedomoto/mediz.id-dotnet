@@ -35,8 +35,8 @@ bld/
 /publish/
 /artifacts/
 
-# Entity Framework
-Migration*
+# # Entity Framework
+# Migration*
 
 # Logs
 logs/
