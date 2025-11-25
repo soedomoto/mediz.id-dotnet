@@ -257,19 +257,21 @@ jobs:
                   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
               }
               
-              # Blazor WebAssembly static files - SPA routing
-              location / {
-                  root /var/www/medizid-web/wwwroot;
-                  try_files $uri $uri/ /index.html;
-                  expires 1y;
-                  add_header Cache-Control "public, immutable";
-              }
-              
-              # Cache static files
+              # Cache versioned static files
               location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
                   root /var/www/medizid-web/wwwroot;
                   expires 1y;
                   add_header Cache-Control "public, immutable";
+                  access_log off;
+              }
+              
+              # Blazor WebAssembly SPA - rewrite all requests to index.html
+              location / {
+                  root /var/www/medizid-web/wwwroot;
+                  if (!-e $request_filename) {
+                      rewrite ^(.*)$ /index.html break;
+                  }
+                  add_header Cache-Control "no-cache, no-store, must-revalidate";
               }
           }
           NGINXEOF
