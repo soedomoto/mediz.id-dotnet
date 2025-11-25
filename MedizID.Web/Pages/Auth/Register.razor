@@ -1,0 +1,166 @@
+@page "/register"
+@layout UnauthenticatedLayout
+@inject MedizIdApiClient ApiClient
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+<div class="register-container">
+    <Card Title="Create Account" Style="width: 100%; max-width: 400px;">
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <Alert Message="Error" Description="@errorMessage" Type="AlertType.Error" ShowIcon="true" Style="margin-bottom: 16px;" />
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <Alert Message="Success" Description="@successMessage" Type="AlertType.Success" ShowIcon="true" Style="margin-bottom: 16px;" />
+        }
+
+        <Form Model="registerRequest" Layout="FormLayout.Vertical" OnFinish="HandleRegister">
+            <FormItem Label="First Name">
+                <Input @bind-Value="registerRequest.FirstName" Placeholder="Enter your first name" />
+            </FormItem>
+
+            <FormItem Label="Last Name">
+                <Input @bind-Value="registerRequest.LastName" Placeholder="Enter your last name" />
+            </FormItem>
+
+            <FormItem Label="Email Address">
+                <Input @bind-Value="registerRequest.Email" Type="InputType.Email" Placeholder="Enter your email" />
+            </FormItem>
+
+            <FormItem Label="Password">
+                <InputPassword @bind-Value="registerRequest.Password" Placeholder="Enter a password" />
+            </FormItem>
+
+            <FormItem Label="Confirm Password">
+                <InputPassword @bind-Value="confirmPassword" Placeholder="Confirm your password" />
+            </FormItem>
+
+            <FormItem>
+                <Button Type="ButtonType.Primary" HtmlType="submit" Loading="isLoading" Block>
+                    @if (isLoading)
+                    {
+                        <span>Creating Account...</span>
+                    }
+                    else
+                    {
+                        <span>Register</span>
+                    }
+                </Button>
+            </FormItem>
+        </Form>
+
+        <div style="text-align: center; margin-top: 16px;">
+            <p>Already have an account? <a href="/login">Login here</a></p>
+        </div>
+    </Card>
+</div>
+
+<style>
+    .register-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 64px - 69px);
+        padding: 24px;
+    }
+</style>
+
+@code {
+    private RegisterRequest registerRequest = new RegisterRequest();
+    private string? confirmPassword;
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isLoading = false;
+    private bool showError = true;
+    private bool showSuccess = true;
+
+    private async void HandleRegister()
+    {
+        // Validation
+        if (string.IsNullOrWhiteSpace(registerRequest.FirstName))
+        {
+            errorMessage = "Please enter your first name.";
+            showError = true;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(registerRequest.LastName))
+        {
+            errorMessage = "Please enter your last name.";
+            showError = true;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(registerRequest.Email))
+        {
+            errorMessage = "Please enter your email address.";
+            showError = true;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(registerRequest.Password))
+        {
+            errorMessage = "Please enter a password.";
+            showError = true;
+            return;
+        }
+
+        if (registerRequest.Password != confirmPassword)
+        {
+            errorMessage = "Passwords do not match.";
+            showError = true;
+            return;
+        }
+
+        if (registerRequest.Password.Length < 6)
+        {
+            errorMessage = "Password must be at least 6 characters long.";
+            showError = true;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(registerRequest.Role))
+        {
+            registerRequest.Role = "SuperAdmin";
+        }
+
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            successMessage = null;
+            showError = false;
+            showSuccess = false;
+
+            var response = await ApiClient.Api.V1.Auth.Register.PostAsync(registerRequest);
+
+            if (response != null)
+            {
+                successMessage = "Account created successfully! Redirecting to login...";
+                showSuccess = true;
+                
+                // Wait a moment before redirecting
+                await Task.Delay(2000);
+                
+                // Redirect to login page
+                NavigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                errorMessage = "Registration failed. Please try again.";
+                showError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error during registration: {ex.Message}";
+            showError = true;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

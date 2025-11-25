@@ -1,0 +1,117 @@
+@page "/dashboard"
+@layout AuthenticatedLayout
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<PageTitle>MedizID - Dashboard</PageTitle>
+
+@if (!isAuthenticated)
+{
+    <div style="text-align: center; padding: 48px 24px;">
+        <Alert Message="Access Denied" Description="You need to be logged in to view this page." Type="AlertType.Warning" ShowIcon="true" />
+        <Button Type="ButtonType.Primary" Style="margin-top: 16px;" @onclick="@(() => NavigationManager.NavigateTo("/login"))">Go to Login</Button>
+    </div>
+}
+else
+{
+    <Row Gutter="16" Style="margin-bottom: 24px;">
+        <AntDesign.Col Span="6">
+            <Card>
+                <Statistic Title="Total Patients" Value="24" />
+            </Card>
+        </AntDesign.Col>
+        <AntDesign.Col Span="6">
+            <Card>
+                <Statistic Title="Today's Appointments" Value="5" />
+            </Card>
+        </AntDesign.Col>
+        <AntDesign.Col Span="6">
+            <Card>
+                <Statistic Title="Pending Records" Value="3" />
+            </Card>
+        </AntDesign.Col>
+        <AntDesign.Col Span="6">
+            <Card>
+                <Statistic Title="Messages" Value="7" />
+            </Card>
+        </AntDesign.Col>
+    </Row>
+
+    <Card Title="Recent Activity" Style="margin-bottom: 24px;">
+        <Timeline>
+            <TimelineItem>
+                <p>Patient John Doe checked in at 10:30 AM</p>
+            </TimelineItem>
+            <TimelineItem>
+                <p>Medical record for Jane Smith completed</p>
+            </TimelineItem>
+            <TimelineItem>
+                <p>New appointment scheduled for tomorrow</p>
+            </TimelineItem>
+        </Timeline>
+    </Card>
+
+    <Row Gutter="16">
+        <AntDesign.Col Span="12">
+            <Card Title="Quick Actions">
+                <Space Style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+                    <SpaceItem>
+                        <Button Type="ButtonType.Primary" Block>
+                            <NavLink href="/patients">View Patients</NavLink>
+                        </Button>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <Button Block>
+                            <NavLink href="/appointments">Schedule Appointment</NavLink>
+                        </Button>
+                    </SpaceItem>
+                </Space>
+            </Card>
+        </AntDesign.Col>
+        <AntDesign.Col Span="12">
+            <Card Title="System Status">
+                <Descriptions Bordered>
+                    <DescriptionsItem Title="Status">
+                        <Tag Color="@("green")">Online</Tag>
+                    </DescriptionsItem>
+                    <DescriptionsItem Title="Last Sync">
+                        <span>2 minutes ago</span>
+                    </DescriptionsItem>
+                    <DescriptionsItem Title="Database">
+                        <Tag Color="@("green")">Connected</Tag>
+                    </DescriptionsItem>
+                </Descriptions>
+            </Card>
+        </AntDesign.Col>
+    </Row>
+}
+
+@code {
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            string? userJson = await LocalStorage.GetItemAsync<string>("user");
+            LoginResponse? user = userJson is not null ? System.Text.Json.JsonSerializer.Deserialize<LoginResponse>(userJson) : null;
+            isAuthenticated = !string.IsNullOrEmpty(user?.Token);
+
+            if (!isAuthenticated)
+            {
+                // Optionally redirect to login
+                // NavigationManager.NavigateTo("/login");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking authentication: {ex.Message}");
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await Task.CompletedTask;
+    }
+}

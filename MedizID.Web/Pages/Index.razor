@@ -1,0 +1,36 @@
+@page "/"
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<PageTitle>MedizID - Home</PageTitle>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            string? userJson = await LocalStorage.GetItemAsync<string>("user");
+            LoginResponse? user = userJson is not null ? System.Text.Json.JsonSerializer.Deserialize<LoginResponse>(userJson) : null;
+            bool isAuthenticated = !string.IsNullOrEmpty(user?.Token);
+            
+            if (isAuthenticated)
+            {
+                NavigationManager.NavigateTo("/dashboard", replace: true);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/home", replace: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking authentication: {ex.Message}");
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await Task.CompletedTask;
+    }
+}

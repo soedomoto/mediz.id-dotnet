@@ -1,12 +1,48 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
+﻿@using Blazored.LocalStorage
+@inject ILocalStorageService LocalStorage
+
+<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        @if (isAuthenticated)
+        {
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(AuthenticatedLayout)" />
+        }
+        else
+        {
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(UnauthenticatedLayout)" />
+        }
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>
         <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
+        @if (isAuthenticated)
+        {
+            <LayoutView Layout="@typeof(AuthenticatedLayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        }
+        else
+        {
+            <LayoutView Layout="@typeof(UnauthenticatedLayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        }
     </NotFound>
 </Router>
+
+@code {
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var token = await LocalStorage.GetItemAsync<string>("authToken");
+            isAuthenticated = !string.IsNullOrEmpty(token);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking authentication: {ex.Message}");
+        }
+    }
+}

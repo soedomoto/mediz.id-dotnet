@@ -6,6 +6,7 @@ using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 using Microsoft.Kiota.Serialization.Json;
 using Blazored.LocalStorage;
+using AntDesign;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -16,6 +17,9 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 // Register local storage
 builder.Services.AddBlazoredLocalStorage();
+
+// Register AntDesign
+builder.Services.AddAntDesign();
 
 // Register Kiota API client
 builder.Services.AddScoped<IAuthenticationProvider, AnonymousAuthenticationProvider>();

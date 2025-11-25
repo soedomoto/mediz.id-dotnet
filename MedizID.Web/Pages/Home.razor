@@ -1,122 +1,102 @@
-﻿@page "/"
-@using Blazored.LocalStorage
+@page "/home"
+@layout UnauthenticatedLayout
 @inject ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
 
-<PageTitle>MedizID - Home</PageTitle>
+<PageTitle>MedizID - Welcome</PageTitle>
 
 <div class="home-container">
-    @if (isAuthenticated)
-    {
-        <div class="authenticated-view">
-            <h1>Welcome, @userName!</h1>
-            <p>You are logged in to MedizID.</p>
-            <button class="btn btn-danger" @onclick="Logout">Logout</button>
+    <Card Title="Welcome to MedizID">
+        <GridRow>
+            <GridCol Xs="24" Md="12">
+                <h3 style="color: #1890ff; margin-bottom: 16px;">What is MedizID?</h3>
+                <p>MedizID is an Indonesian Clinic Management and Electronic Medical Record System designed to
+                    streamline healthcare operations and patient care.</p>
+            </GridCol>
+            <GridCol Xs="24" Md="12">
+                <h3 style="color: #1890ff; margin-bottom: 16px;">Key Features</h3>
+                <ul>
+                    <li>Patient Management</li>
+                    <li>Electronic Medical Records</li>
+                    <li>Appointment Scheduling</li>
+                    <li>Prescription Management</li>
+                    <li>Department Management</li>
+                </ul>
+            </GridCol>
+        </GridRow>
+
+        <Divider />
+
+        <div style="text-align: center;">
+            <h3 style="margin-bottom: 24px;">Get Started</h3>
+            <Space>
+                <SpaceItem>
+                    <Button Type="ButtonType.Primary" Size="ButtonSize.Large">
+                        <NavLink href="/login" style="color: white; text-decoration: none;">Login</NavLink>
+                    </Button>
+                </SpaceItem>
+                <SpaceItem>
+                    <Button Size="ButtonSize.Large">
+                        <NavLink href="/register" style="text-decoration: none;">Create Account</NavLink>
+                    </Button>
+                </SpaceItem>
+            </Space>
         </div>
-    }
-    else
-    {
-        <div class="welcome-view">
-            <h1>Welcome to MedizID</h1>
-            <p>Indonesian Clinic Management and Electronic Medical Record System</p>
-            <div class="button-group">
-                <a href="/login" class="btn btn-primary">Login</a>
-                <a href="/register" class="btn btn-secondary">Register</a>
-            </div>
-        </div>
-    }
+    </Card>
+
+    <GridRow Gutter="(16,24)" Style="margin-top: 48px;">
+        <GridCol Xs="24" Md="8">
+            <Card Hoverable>
+                <div style="text-align: center;">
+                    <TablerSvgIcon Icon="TablerSvgIcon.BuildingHospital" Width="48" Height="48" Fill="#1890ff" />
+                </div>
+                <h4 style="text-align: center;">Clinic Management</h4>
+                <p style="text-align: center;">Manage your clinic efficiently with our comprehensive system.</p>
+            </Card>
+        </GridCol>
+        <GridCol Xs="24" Md="8">
+            <Card Hoverable>
+                <div style="text-align: center;">
+                    <TablerSvgIcon Icon="TablerSvgIcon.FileText" Width="48" Height="48" Fill="#1890ff" />
+                </div>
+                <h4 style="text-align: center;">Electronic Records</h4>
+                <p style="text-align: center;">Keep patient medical records safe and organized digitally.</p>
+            </Card>
+        </GridCol>
+        <GridCol Xs="24" Md="8">
+            <Card Hoverable>
+                <div style="text-align: center;">
+                    <TablerSvgIcon Icon="TablerSvgIcon.Calendar" Width="48" Height="48" Fill="#1890ff" />
+                </div>
+                <h4 style="text-align: center;">Appointments</h4>
+                <p style="text-align: center;">Schedule and manage appointments with ease.</p>
+            </Card>
+        </GridCol>
+    </GridRow>
 </div>
 
 <style>
     .home-container {
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
-        min-height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .authenticated-view,
-    .welcome-view {
-        background: white;
-        padding: 60px 40px;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        text-align: center;
-        max-width: 600px;
-    }
-
-    h1 {
-        color: #333;
-        margin-bottom: 20px;
-        font-size: 32px;
-    }
-
-    p {
-        color: #666;
-        font-size: 16px;
-        margin-bottom: 30px;
-    }
-
-    .button-group {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-    }
-
-    .btn {
-        padding: 12px 30px;
-        border-radius: 4px;
-        text-decoration: none;
-        font-size: 16px;
-        font-weight: 500;
-        cursor: pointer;
-        border: none;
-        transition: background-color 0.3s;
-    }
-
-    .btn-primary {
-        background-color: #667eea;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background-color: #5568d3;
-    }
-
-    .btn-secondary {
-        background-color: #e0e0e0;
-        color: #333;
-    }
-
-    .btn-secondary:hover {
-        background-color: #d0d0d0;
-    }
-
-    .btn-danger {
-        background-color: #dc3545;
-        color: white;
-    }
-
-    .btn-danger:hover {
-        background-color: #c82333;
+        min-height: calc(100vh - 64px - 69px);
+        padding: 24px;
     }
 </style>
 
 @code {
-    private bool isAuthenticated = false;
-    private string? userName;
-
     protected override async Task OnInitializedAsync()
     {
         try
         {
             var token = await LocalStorage.GetItemAsync<string>("authToken");
-            var userId = await LocalStorage.GetItemAsync<string>("userId");
-            
-            isAuthenticated = !string.IsNullOrEmpty(token);
-            userName = userId ?? "User";
+            if (!string.IsNullOrEmpty(token))
+            {
+                NavigationManager.NavigateTo("/dashboard");
+            }
         }
         catch (Exception ex)
         {
@@ -124,27 +104,8 @@
         }
     }
 
-    private async Task Logout()
-    {
-        try
-        {
-            await LocalStorage.RemoveItemAsync("authToken");
-            await LocalStorage.RemoveItemAsync("userId");
-            
-            isAuthenticated = false;
-            userName = null;
-            
-            NavigationManager.NavigateTo("/login");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error during logout: {ex.Message}");
-        }
-    }
-
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        // Cleanup if needed
         await Task.CompletedTask;
     }
 }

@@ -1,0 +1,31 @@
+@inherits LayoutComponentBase
+
+<Layout Style="min-height: 100vh;">
+    <Layout>
+        <Header Style="background: white; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="color: #1890ff; font-size: 18px; font-weight: bold;">MedizID</div>
+            <Space>
+                <SpaceItem>
+                    <NavLink href="/login" class="ant-btn ant-btn-primary" style="margin-right: 8px;">Login</NavLink>
+                </SpaceItem>
+                <SpaceItem>
+                    <NavLink href="/register" class="ant-btn">Register</NavLink>
+                </SpaceItem>
+            </Space>
+        </Header>
+        <Content Style="padding: 24px; background: #f5f5f5;">
+            @Body
+        </Content>
+        <Footer Style="text-align: center;">
+            MedizID ©2025 Indonesian Clinic Management and Electronic Medical Record System
+        </Footer>
+    </Layout>
+</Layout>
+
+<style>
+    .ant-btn {
+        display: inline-block;
+        padding: 4px 15px;
+        text-decoration: none;
+    }
+</style>
