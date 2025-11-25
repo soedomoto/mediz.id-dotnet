@@ -22,7 +22,13 @@ builder.Services.AddScoped<IAuthenticationProvider, AnonymousAuthenticationProvi
 builder.Services.AddScoped(sp =>
 {
     var httpClient = sp.GetRequiredService<HttpClient>();
-    httpClient.BaseAddress = new Uri("http://localhost:5053");
+    
+    // Determine API URL based on environment
+    string apiUrl = builder.HostEnvironment.IsDevelopment()
+        ? "http://localhost:5053"
+        : "/api";
+    
+    httpClient.BaseAddress = new Uri(apiUrl);
     
     var adapter = new HttpClientRequestAdapter(
         sp.GetRequiredService<IAuthenticationProvider>(),
