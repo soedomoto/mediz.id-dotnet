@@ -1,7 +1,150 @@
 ﻿@page "/"
+@using Blazored.LocalStorage
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
 
-<PageTitle>Home</PageTitle>
+<PageTitle>MedizID - Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="home-container">
+    @if (isAuthenticated)
+    {
+        <div class="authenticated-view">
+            <h1>Welcome, @userName!</h1>
+            <p>You are logged in to MedizID.</p>
+            <button class="btn btn-danger" @onclick="Logout">Logout</button>
+        </div>
+    }
+    else
+    {
+        <div class="welcome-view">
+            <h1>Welcome to MedizID</h1>
+            <p>Indonesian Clinic Management and Electronic Medical Record System</p>
+            <div class="button-group">
+                <a href="/login" class="btn btn-primary">Login</a>
+                <a href="/register" class="btn btn-secondary">Register</a>
+            </div>
+        </div>
+    }
+</div>
 
-Welcome to your new app.
+<style>
+    .home-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .authenticated-view,
+    .welcome-view {
+        background: white;
+        padding: 60px 40px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        max-width: 600px;
+    }
+
+    h1 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 32px;
+    }
+
+    p {
+        color: #666;
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .btn {
+        padding: 12px 30px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        transition: background-color 0.3s;
+    }
+
+    .btn-primary {
+        background-color: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #5568d3;
+    }
+
+    .btn-secondary {
+        background-color: #e0e0e0;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background-color: #d0d0d0;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+</style>
+
+@code {
+    private bool isAuthenticated = false;
+    private string? userName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var token = await LocalStorage.GetItemAsync<string>("authToken");
+            var userId = await LocalStorage.GetItemAsync<string>("userId");
+            
+            isAuthenticated = !string.IsNullOrEmpty(token);
+            userName = userId ?? "User";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking authentication: {ex.Message}");
+        }
+    }
+
+    private async Task Logout()
+    {
+        try
+        {
+            await LocalStorage.RemoveItemAsync("authToken");
+            await LocalStorage.RemoveItemAsync("userId");
+            
+            isAuthenticated = false;
+            userName = null;
+            
+            NavigationManager.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during logout: {ex.Message}");
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        // Cleanup if needed
+        await Task.CompletedTask;
+    }
+}

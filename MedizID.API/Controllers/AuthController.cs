@@ -40,7 +40,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Register a new user
     /// </summary>
-    [HttpPost("register")]
+    [HttpPost("register", Name = "RegisterUser")]
     [ProducesResponseType(typeof(RegisterResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
@@ -92,7 +92,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Google OAuth login/register
     /// </summary>
-    [HttpPost("google")]
+    [HttpPost("google", Name = "GoogleLogin")]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -207,7 +207,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Login user
     /// </summary>
-    [HttpPost("login")]
+    [HttpPost("login", Name = "LoginUser")]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)

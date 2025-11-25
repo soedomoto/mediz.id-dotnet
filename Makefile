@@ -1,4 +1,4 @@
-.PHONY: help build clean restore test run run-api run-web docker-up docker-down docker-logs db-migrate db-reset db-create db-drop db-spawn db-setup install watch lint format setup dev teardown
+.PHONY: help build clean restore test run run-api run-web docker-up docker-down docker-logs db-migrate db-reset db-create db-drop db-spawn db-setup install watch lint format setup dev teardown generate-api
 
 # Load .env file
 -include .env
@@ -68,6 +68,9 @@ help:
 	@echo "  make setup              - Complete setup (restore, docker, db-migrate)"
 	@echo "  make dev                - Start development mode (docker, watch)"
 	@echo "  make teardown           - Cleanup (docker-down, clean)"
+	@echo ""
+	@echo "API Code Generation:"
+	@echo "  make generate-api       - Generate C# API client from OpenAPI schema"
 	@echo ""
 
 # ==================== Build Commands ====================
@@ -194,6 +197,12 @@ lint:
 format:
 	@echo "Formatting code..."
 	dotnet format $(SOLUTION)
+
+# ==================== API Code Generation ====================
+
+generate-api:
+	@echo "Generating C# API client from OpenAPI schema..."
+	@cd MedizID.Web && bash generate-api-client.sh
 
 # ==================== Utility Commands ====================
 
