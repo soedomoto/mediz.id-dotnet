@@ -66,12 +66,8 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          echo "Stopping existing application..."
-          sudo systemctl stop medizid-api || true
-          sleep 2
-          
           ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-            "mkdir -p ~/medizid-api"
+            "mkdir -p ~/medizid-api && sudo systemctl stop medizid-api || true && sleep 2"
           scp -r -i ~/.ssh/deploy_key ./publish/* \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/medizid-api/
           ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'DEPLOYMENT_EOF'
@@ -232,7 +228,11 @@ jobs:
           sudo chown -R root:root /opt/medizid-api
           sudo chmod +x /opt/medizid-api/MedizID.API
           
-          # Start service
+          # Restart service
+          echo "Stopping existing application..."
+          sudo systemctl stop medizid-api || true
+          sleep 2
+          
           echo "Starting application..."
           sudo systemctl start medizid-api
           sleep 3
