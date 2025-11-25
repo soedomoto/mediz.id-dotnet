@@ -238,6 +238,11 @@
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(registerRequest.Role))
+        {
+            registerRequest.Role = "SuperAdmin";
+        }
+
         try
         {
             isLoading = true;
