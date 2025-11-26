@@ -226,6 +226,9 @@ jobs:
               server_name ec2-51-21-249-249.eu-north-1.compute.amazonaws.com;
               access_log /var/log/nginx/medizid.access.log;
               error_log /var/log/nginx/medizid.error.log;
+
+              root /var/www/medizid-web/wwwroot;
+              index index.html;
               
               # API endpoints
               location /api/ {
@@ -261,7 +264,6 @@ jobs:
               }
 
               location / {
-                  root /var/www/medizid-web/wwwroot;
                   try_files $uri $uri/ /index.html;
               }
 
