@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MedizID.Web;
+using MedizID.Web.Services;
 using MedizID.Web.Services.Generated;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
@@ -22,7 +23,12 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAntDesign();
 
 // Register Kiota API client
-builder.Services.AddScoped<IAuthenticationProvider, AnonymousAuthenticationProvider>();
+builder.Services.AddScoped<IAuthenticationProvider>(sp =>
+{
+    var localStorage = sp.GetRequiredService<ILocalStorageService>();
+    return new BearerTokenAuthenticationProvider(localStorage);
+});
+
 builder.Services.AddScoped(sp =>
 {
     var httpClient = sp.GetRequiredService<HttpClient>();

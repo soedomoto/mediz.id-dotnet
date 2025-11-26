@@ -1,0 +1,73 @@
+@page "/facilities"
+@layout AuthenticatedLayout
+@inject ILocalStorageService LocalStorage
+@inject MedizIdApiClient ApiClient
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<PageTitle>MedizID - Facilities</PageTitle>
+
+@if (isAuthenticating)
+{
+    <div style="text-align: center; padding: 48px 24px;">
+        <Spin Tip="Checking authentication..." />
+    </div>
+}
+else if (!isAuthenticated)
+{
+    <div style="text-align: center; padding: 48px 24px;">
+        <Alert Message="Access Denied" Description="You need to be logged in to view this page." Type="AlertType.Warning" ShowIcon="true" />
+        <Button Type="ButtonType.Primary" Style="margin-top: 16px;" @onclick="@(() => NavigationManager.NavigateTo("/login"))">Go to Login</Button>
+    </div>
+}
+else
+{
+    <Table @ref="_table" DataSource="_dataSource" Total="_total">
+        <Column Title="ID" DataIndex="@nameof(FacilityResponse.Id)" TData="Guid?" />
+        <Column Title="Name" DataIndex="@nameof(FacilityResponse.Name)" TData="string" />
+        <Column Title="Email" DataIndex="@nameof(FacilityResponse.Email)" TData="string" />
+        <Column Title="Phone" DataIndex="@nameof(FacilityResponse.PhoneNumber)" TData="string" />
+        <Column Title="City" DataIndex="@nameof(FacilityResponse.City)" TData="string" />
+        <Column Title="Address" DataIndex="@nameof(FacilityResponse.Address)" TData="string" />
+        <Column Title="Active" DataIndex="@nameof(FacilityResponse.IsActive)" TData="bool?" />
+    </Table>
+}
+
+@code {
+    bool isAuthenticating = false;
+    bool isAuthenticated = false;
+    ITable? _table;
+    List<FacilityResponse> _dataSource = [];
+    int _total = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isAuthenticating = true;
+            string? userJson = await LocalStorage.GetItemAsync<string>("user");
+            LoginResponse? user = userJson is not null ? System.Text.Json.JsonSerializer.Deserialize<LoginResponse>(userJson) : null;
+            isAuthenticated = !string.IsNullOrEmpty(user?.Token);
+
+            if (isAuthenticated)
+            {
+                var response = await ApiClient.Api.V1.Facilities.GetAsync();
+                _total = response?.Total ?? 0;
+                _dataSource = response?.Items ?? [];
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking authentication: {ex.Message}");
+        }
+        finally
+        {
+            isAuthenticating = false;
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await Task.CompletedTask;
+    }
+}
