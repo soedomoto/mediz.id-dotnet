@@ -16,20 +16,24 @@
 else if (!isAuthenticated)
 {
     <div style="text-align: center; padding: 48px 24px;">
-        <Alert Message="Access Denied" Description="You need to be logged in to view this page." Type="AlertType.Warning" ShowIcon="true" />
-        <Button Type="ButtonType.Primary" Style="margin-top: 16px;" @onclick="@(() => NavigationManager.NavigateTo("/login"))">Go to Login</Button>
+        <Alert Message="Access Denied" Description="You need to be logged in to view this page." Type="AlertType.Warning"
+            ShowIcon="true" />
+        <Button Type="ButtonType.Primary" Style="margin-top: 16px;"
+            @onclick="@(() => NavigationManager.NavigateTo("/login"))">Go to Login</Button>
     </div>
 }
 else
 {
-    <Table @ref="_table" DataSource="_dataSource" Total="_total">
-        <Column Title="ID" DataIndex="@nameof(FacilityResponse.Id)" TData="Guid?" />
-        <Column Title="Name" DataIndex="@nameof(FacilityResponse.Name)" TData="string" />
-        <Column Title="Email" DataIndex="@nameof(FacilityResponse.Email)" TData="string" />
-        <Column Title="Phone" DataIndex="@nameof(FacilityResponse.PhoneNumber)" TData="string" />
-        <Column Title="City" DataIndex="@nameof(FacilityResponse.City)" TData="string" />
-        <Column Title="Address" DataIndex="@nameof(FacilityResponse.Address)" TData="string" />
-        <Column Title="Active" DataIndex="@nameof(FacilityResponse.IsActive)" TData="bool?" />
+    <Table @ref="_table" TItem="FacilityResponse" DataSource="_dataSource" Total="_total">
+        <ColumnDefinitions Context="row">
+            <Column Title="ID" DataIndex="@nameof(FacilityResponse.Id)" TData="Guid ?" />
+            <Column Title="Name" DataIndex="@nameof(FacilityResponse.Name)" TData="string" />
+            <Column Title="Email" DataIndex="@nameof(FacilityResponse.Email)" TData="string" />
+            <Column Title="Phone" DataIndex="@nameof(FacilityResponse.PhoneNumber)" TData="string" />
+            <Column Title="City" DataIndex="@nameof(FacilityResponse.City)" TData="string" />
+            <Column Title="Address" DataIndex="@nameof(FacilityResponse.Address)" TData="string" />
+            <Column Title="Active" DataIndex="@nameof(FacilityResponse.IsActive)" TData="bool?" />
+        </ColumnDefinitions>
     </Table>
 }
 
@@ -46,7 +50,8 @@ else
         {
             isAuthenticating = true;
             string? userJson = await LocalStorage.GetItemAsync<string>("user");
-            LoginResponse? user = userJson is not null ? System.Text.Json.JsonSerializer.Deserialize<LoginResponse>(userJson) : null;
+            LoginResponse? user = userJson is not null ? System.Text.Json.JsonSerializer.Deserialize<LoginResponse>(userJson) :
+            null;
             isAuthenticated = !string.IsNullOrEmpty(user?.Token);
 
             if (isAuthenticated)
