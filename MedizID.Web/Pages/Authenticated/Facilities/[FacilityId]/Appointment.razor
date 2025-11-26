@@ -1,0 +1,80 @@
+@page "/facilities/{FacilityId:guid}/appointment"
+@using System.Threading.Tasks
+@layout FacilityLayout
+@inject ILocalStorageService LocalStorage
+@inject MedizIdApiClient ApiClient
+@inject FacilityLayoutState LayoutState
+@implements IAsyncDisposable
+
+<PageTitle>@(LayoutState.Facility != null ? LayoutState.Facility.Name + " - Appointment" : "MedizID")</PageTitle>
+
+<Table @ref="facilityTable" TItem="FacilityResponse" DataSource="facilityTableDS" PageSize="10"
+    Total="facilityTableTotal" OnChange="OnFacilityTableChange" ScrollX="1500">
+    <ColumnDefinitions Context="row">
+        <Column Title="Name" TData="FacilityResponse">
+            <NavLink href="@($"/facilities/{row?.Id}")">@row?.Name</NavLink>
+        </Column>
+        <Column Title="Email" DataIndex="@nameof(FacilityResponse.Email)" TData="string" />
+        <Column Title="Phone" DataIndex="@nameof(FacilityResponse.PhoneNumber)" TData="string" />
+        <Column Title="City" DataIndex="@nameof(FacilityResponse.City)" TData="string" />
+        <Column Title="Address" DataIndex="@nameof(FacilityResponse.Address)" TData="string" />
+        <Column Title="Active" DataIndex="@nameof(FacilityResponse.IsActive)" TData="bool?" />
+        @* <Column Title="Actions" TData="FacilityResponse">
+                <Space>
+                    <SpaceItem>
+                        <Button Type="ButtonType.Primary" Size="ButtonSize.Small"
+                            @onclick="@((MouseEventArgs e) => OpenUpdateFacilityModal(row))">
+                            Edit
+                        </Button>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <Button Danger Size="ButtonSize.Small"
+                            @onclick="@((MouseEventArgs e) => OpenDeleteFacilityModal(row))">
+                            Delete
+                        </Button>
+                    </SpaceItem>
+                </Space>
+            </Column> *@
+    </ColumnDefinitions>
+</Table>
+
+@code {
+    [Parameter]
+    public Guid FacilityId { get; set; }
+    // Table-related fields
+    ITable? facilityTable;
+    List<FacilityResponse> facilityTableDS = [];
+    int facilityTableTotal = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
+        LayoutState.ActiveTabKey = "appointment";
+    }
+
+    private async void OnAuthenticationChanged(bool isAuthenticated)
+    {
+        if (isAuthenticated && FacilityId != Guid.Empty)
+        {
+            await LayoutState.FetchFacilityAsync(ApiClient, FacilityId);
+            StateHasChanged();
+        }
+    }
+
+    async Task OnFacilityTableChange(QueryModel<FacilityResponse> query)
+    {
+        var response = await ApiClient.Api.V1.Facilities.GetAsync(config =>
+        {
+            config.QueryParameters.Page = query.PageIndex;
+            config.QueryParameters.PageSize = query.PageSize;
+        });
+        facilityTableTotal = response?.Total ?? 0;
+        facilityTableDS = response?.Items ?? [];
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        LayoutState.OnAuthenticationChanged -= OnAuthenticationChanged;
+        await Task.CompletedTask;
+    }
+}

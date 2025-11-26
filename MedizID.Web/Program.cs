@@ -52,4 +52,6 @@ builder.Services.AddScoped(sp =>
     return new MedizIdApiClient(adapter);
 });
 
+builder.Services.AddScoped<FacilityLayoutState>();
+
 await builder.Build().RunAsync();

@@ -1,0 +1,95 @@
+@inherits LayoutComponentBase
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+@inject FacilityLayoutState LayoutState
+@inject MedizIdApiClient ApiClient
+
+<Layout Style="min-height: 100vh;">
+    <Layout>
+        <Header
+            Style="background: white; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="color: #1890ff; font-size: 18px; font-weight: bold;">MedizID</div>
+            <Space>
+                <SpaceItem>
+                    <span>Welcome, @(userName ?? "User")</span>
+                </SpaceItem>
+                <SpaceItem>
+                    <Button Type="ButtonType.Primary" Danger Size="ButtonSize.Small" @onclick="Logout">Logout</Button>
+                </SpaceItem>
+            </Space>
+        </Header>
+        <Content Style="padding: 24px; background: #f5f5f5;">
+            @* <Card Title="@LayoutState.Facility?.Name">
+                <Extra>
+                    <a>More</a>
+                </Extra>
+                <ChildContent>
+                </ChildContent>
+            </Card> *@
+
+            <Tabs DefaultActiveKey="@LayoutState.ActiveTabKey">
+                @foreach (var tab in LayoutState.Tabs.Keys)
+                {
+                    <TabPane Key="@tab">
+                        <TabTemplate>
+                            <NavLink href="@($"/facilities/{LayoutState?.Facility?.Id}/{tab}")"
+                                Style="display: flex; align-items: center; gap: 4px;">
+                                @if (LayoutState?.Tabs[tab].Icon != null)
+                                {
+                                    <TablerSvgIcon Icon="LayoutState?.Tabs[tab].Icon ?? default" Width="16" Height="16" />
+                                }
+                                @(LayoutState?.Tabs[tab].Title)
+                            </NavLink>
+                        </TabTemplate>
+                    </TabPane>
+                }
+            </Tabs>
+
+            @Body
+        </Content>
+        <Footer Style="text-align: center;">
+            MedizID ©2025 Indonesian Clinic Management and Electronic Medical Record System
+        </Footer>
+    </Layout>
+</Layout>
+
+@code {
+    private string? userName;
+    protected override async Task OnInitializedAsync()
+    {
+        LayoutState.OnAuthenticationChanged += async (isAuthenticated) => StateHasChanged();
+        LayoutState.OnFacilityChanged += async (isAuthenticated) => StateHasChanged();
+        LayoutState.OnActiveTabKeyChanged += async (activeTabKey) => StateHasChanged();
+
+        try
+        {
+            LayoutState.IsAuthenticating = true;
+            string? userJson = await LocalStorage.GetItemAsync<string>("user");
+            LoginResponse? user = userJson is not null ? System.Text.Json.JsonSerializer.Deserialize<LoginResponse>(userJson) :
+            null;
+            LayoutState.IsAuthenticated = !string.IsNullOrEmpty(user?.Token);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking authentication: {ex.Message}");
+        }
+        finally
+        {
+            LayoutState.IsAuthenticating = false;
+        }
+    }
+
+    private async Task Logout()
+    {
+        try
+        {
+            await LocalStorage.RemoveItemAsync("authToken");
+            await LocalStorage.RemoveItemAsync("userId");
+            NavigationManager.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during logout: {ex.Message}");
+        }
+    }
+}

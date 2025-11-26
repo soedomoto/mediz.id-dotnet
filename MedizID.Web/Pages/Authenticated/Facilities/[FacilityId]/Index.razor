@@ -1,0 +1,35 @@
+@page "/facilities/{FacilityId:guid}"
+@using System.Threading.Tasks
+@layout FacilityLayout
+@inject ILocalStorageService LocalStorage
+@inject MedizIdApiClient ApiClient
+@inject FacilityLayoutState LayoutState
+@implements IAsyncDisposable
+
+<PageTitle>@(LayoutState.Facility != null ? LayoutState.Facility.Name + " - MedizID" : "MedizID")</PageTitle>
+
+@code {
+    [Parameter]
+    public Guid FacilityId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
+        LayoutState.ActiveTabKey = "";
+    }
+
+    private async void OnAuthenticationChanged(bool isAuthenticated)
+    {
+        if (isAuthenticated && FacilityId != Guid.Empty)
+        {
+            await LayoutState.FetchFacilityAsync(ApiClient, FacilityId);
+            StateHasChanged();
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        LayoutState.OnAuthenticationChanged -= OnAuthenticationChanged;
+        await Task.CompletedTask;
+    }
+}

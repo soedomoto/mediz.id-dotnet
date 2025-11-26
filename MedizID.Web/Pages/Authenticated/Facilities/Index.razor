@@ -1,5 +1,4 @@
 @page "/facilities"
-@using Azure
 @layout AuthenticatedLayout
 @inject ILocalStorageService LocalStorage
 @inject MedizIdApiClient ApiClient
@@ -37,8 +36,10 @@ else
     <Table @ref="facilityTable" TItem="FacilityResponse" DataSource="facilityTableDS" PageSize="10"
         Total="facilityTableTotal" OnChange="OnFacilityTableChange" ScrollX="1500">
         <ColumnDefinitions Context="row">
-            <Column Title="ID" DataIndex="@nameof(FacilityResponse.Id)" TData="Guid ?" />
-            <Column Title="Name" DataIndex="@nameof(FacilityResponse.Name)" TData="string" />
+            @* <Column Title="ID" DataIndex="@nameof(FacilityResponse.Id)" TData="Guid ?" /> *@
+            <Column Title="Name" TData="FacilityResponse">
+                <NavLink href="@($"/facilities/{row?.Id}")">@row?.Name</NavLink>
+            </Column>
             <Column Title="Email" DataIndex="@nameof(FacilityResponse.Email)" TData="string" />
             <Column Title="Phone" DataIndex="@nameof(FacilityResponse.PhoneNumber)" TData="string" />
             <Column Title="City" DataIndex="@nameof(FacilityResponse.City)" TData="string" />
