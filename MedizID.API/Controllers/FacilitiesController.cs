@@ -36,6 +36,16 @@ public class FacilitiesController : ControllerBase
     {
         try
         {
+            // Parse the Type to FacilityTypeEnum
+            if (!Enum.TryParse<FacilityTypeEnum>(request.Type.ToString(), out var facilityType))
+            {
+                return BadRequest(new ErrorResponse
+                {
+                    ErrorCode = "INVALID_TYPE",
+                    Message = "Invalid facility type. Valid types are: " + string.Join(", ", Enum.GetNames(typeof(FacilityTypeEnum)))
+                });
+            }
+
             var facility = new Facility
             {
                 Id = Guid.NewGuid(),
@@ -46,7 +56,7 @@ public class FacilitiesController : ControllerBase
                 PostalCode = request.PostalCode,
                 PhoneNumber = request.PhoneNumber,
                 Email = request.Email,
-                Type = (FacilityTypeEnum)request.Type,
+                Type = facilityType,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -66,7 +76,7 @@ public class FacilitiesController : ControllerBase
                 PostalCode = facility.PostalCode,
                 PhoneNumber = facility.PhoneNumber,
                 Email = facility.Email,
-                Type = (int)facility.Type,
+                Type = facility.Type.ToString(),
                 IsActive = facility.IsActive,
                 CreatedAt = facility.CreatedAt
             };
@@ -114,7 +124,7 @@ public class FacilitiesController : ControllerBase
                     PostalCode = f.PostalCode,
                     PhoneNumber = f.PhoneNumber,
                     Email = f.Email,
-                    Type = (int)f.Type,
+                    Type = f.Type.ToString(),
                     IsActive = f.IsActive,
                     CreatedAt = f.CreatedAt
                 })
@@ -163,7 +173,7 @@ public class FacilitiesController : ControllerBase
                 PostalCode = facility.PostalCode,
                 PhoneNumber = facility.PhoneNumber,
                 Email = facility.Email,
-                Type = (int)facility.Type,
+                Type = facility.Type.ToString(),
                 IsActive = facility.IsActive,
                 CreatedAt = facility.CreatedAt
             };
@@ -244,7 +254,7 @@ public class FacilitiesController : ControllerBase
                 PostalCode = facility.PostalCode,
                 PhoneNumber = facility.PhoneNumber,
                 Email = facility.Email,
-                Type = (int)facility.Type,
+                Type = facility.Type.ToString(),
                 IsActive = facility.IsActive,
                 CreatedAt = facility.CreatedAt
             };

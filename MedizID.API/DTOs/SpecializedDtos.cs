@@ -35,7 +35,7 @@ public class FacilityResponse
     public string PostalCode { get; set; } = null!;
     public string? PhoneNumber { get; set; }
     public string? Email { get; set; }
-    public int Type { get; set; }
+    public string Type { get; set; } = null!;
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
 }

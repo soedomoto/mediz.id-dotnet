@@ -1,8 +1,11 @@
 @page "/facilities"
+@using Azure
 @layout AuthenticatedLayout
 @inject ILocalStorageService LocalStorage
 @inject MedizIdApiClient ApiClient
 @inject NavigationManager NavigationManager
+@inject ModalService _modalService
+@inject INotificationService _notice
 @implements IAsyncDisposable
 
 <PageTitle>MedizID - Facilities</PageTitle>
@@ -24,7 +27,15 @@ else if (!isAuthenticated)
 }
 else
 {
-    <Table @ref="_table" TItem="FacilityResponse" DataSource="_dataSource" Total="_total">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2>Facilities</h2>
+        <Button Type="ButtonType.Primary" @onclick="OpenAddFacilityModal">
+            + Add Facility
+        </Button>
+    </div>
+
+    <Table @ref="facilityTable" TItem="FacilityResponse" DataSource="facilityTableDS" PageSize="10"
+        Total="facilityTableTotal" OnChange="OnFacilityTableChange" ScrollX="1500">
         <ColumnDefinitions Context="row">
             <Column Title="ID" DataIndex="@nameof(FacilityResponse.Id)" TData="Guid ?" />
             <Column Title="Name" DataIndex="@nameof(FacilityResponse.Name)" TData="string" />
@@ -33,16 +44,162 @@ else
             <Column Title="City" DataIndex="@nameof(FacilityResponse.City)" TData="string" />
             <Column Title="Address" DataIndex="@nameof(FacilityResponse.Address)" TData="string" />
             <Column Title="Active" DataIndex="@nameof(FacilityResponse.IsActive)" TData="bool?" />
+            <Column Title="Actions" TData="FacilityResponse">
+                <Space>
+                    <SpaceItem>
+                        <Button Type="ButtonType.Primary" Size="ButtonSize.Small"
+                            @onclick="@((MouseEventArgs e) => OpenUpdateFacilityModal(row))">
+                            Edit
+                        </Button>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <Button Danger Size="ButtonSize.Small"
+                            @onclick="@((MouseEventArgs e) => OpenDeleteFacilityModal(row))">
+                            Delete
+                        </Button>
+                    </SpaceItem>
+                </Space>
+            </Column>
         </ColumnDefinitions>
     </Table>
+
+    <Modal Title="Add New Facility" Visible="isAddFacilityModalVisible" OnOk="OnAddFacilitySaveClick"
+        OnCancel="CloseAddFacilityModal" BodyStyle="max-height: 60vh; overflow-y: auto;">
+        @if (!string.IsNullOrEmpty(addFacilityErrorMessage))
+        {
+            <Alert Message="Error" Description="@addFacilityErrorMessage" Type="AlertType.Error" ShowIcon="true"
+                Style="margin-bottom: 16px;" />
+        }
+
+        <Form Model="newFacility" Layout="FormLayout.Vertical">
+            <FormItem Label="Facility Name" Required>
+                <Input Value="newFacility.Name" ValueChanged="@((string value) => newFacility.Name = value)"
+                    Placeholder="Enter facility name" />
+            </FormItem>
+
+            <FormItem Label="Type" Required>
+                <AntDesign.InputNumber @bind-Value="newFacility.Type" Placeholder="Enter facility type" Min="0" />
+            </FormItem>
+
+            <FormItem Label="Address" Required>
+                <Input Value="newFacility.Address" ValueChanged="@((string value) => newFacility.Address = value)"
+                    Placeholder="Enter facility address" />
+            </FormItem>
+
+            <FormItem Label="City" Required>
+                <Input Value="newFacility.City" ValueChanged="@((string value) => newFacility.City = value)"
+                    Placeholder="Enter city" />
+            </FormItem>
+
+            <FormItem Label="Province" Required>
+                <Input Value="newFacility.Province" ValueChanged="@((string value) => newFacility.Province = value)"
+                    Placeholder="Enter province" />
+            </FormItem>
+
+            <FormItem Label="Postal Code" Required>
+                <Input Value="newFacility.PostalCode" ValueChanged="@((string value) => newFacility.PostalCode = value)"
+                    Placeholder="Enter postal code" />
+            </FormItem>
+
+            <FormItem Label="Phone Number">
+                <Input Value="newFacility.PhoneNumber" ValueChanged="@((string value) => newFacility.PhoneNumber = value)"
+                    Placeholder="Enter phone number" Type="InputType.Tel" />
+            </FormItem>
+
+            <FormItem Label="Email">
+                <Input Value="newFacility.Email" ValueChanged="@((string value) => newFacility.Email = value)"
+                    Placeholder="Enter email address" Type="InputType.Email" />
+            </FormItem>
+        </Form>
+    </Modal>
+
+    <Modal Title="Update Facility" Visible="isUpdateFacilityModalVisible" OnOk="OnUpdateFacilitySaveClick"
+        OnCancel="CloseUpdateFacilityModal" BodyStyle="max-height: 60vh; overflow-y: auto;">
+        @if (!string.IsNullOrEmpty(updateFacilityErrorMessage))
+        {
+            <Alert Message="Error" Description="@updateFacilityErrorMessage" Type="AlertType.Error" ShowIcon="true"
+                Style="margin-bottom: 16px;" />
+        }
+
+        <Form Model="updateFacility" Layout="FormLayout.Vertical">
+            <FormItem Label="Facility Name">
+                <Input Value="@(updateFacility.Name ?? "")" ValueChanged="@((string value) => updateFacility.Name = value)"
+                    Placeholder="Enter facility name" />
+            </FormItem>
+
+            <FormItem Label="Address">
+                <Input Value="@(updateFacility.Address ?? "")"
+                    ValueChanged="@((string value) => updateFacility.Address = value)"
+                    Placeholder="Enter facility address" />
+            </FormItem>
+
+            <FormItem Label="City">
+                <Input Value="@(updateFacility.City ?? "")" ValueChanged="@((string value) => updateFacility.City = value)"
+                    Placeholder="Enter city" />
+            </FormItem>
+
+            <FormItem Label="Province">
+                <Input Value="@(updateFacility.Province ?? "")"
+                    ValueChanged="@((string value) => updateFacility.Province = value)" Placeholder="Enter province" />
+            </FormItem>
+
+            <FormItem Label="Postal Code">
+                <Input Value="@(updateFacility.PostalCode ?? "")"
+                    ValueChanged="@((string value) => updateFacility.PostalCode = value)" Placeholder="Enter postal code" />
+            </FormItem>
+
+            <FormItem Label="Phone Number">
+                <Input Value="@(updateFacility.PhoneNumber ?? "")"
+                    ValueChanged="@((string value) => updateFacility.PhoneNumber = value)" Placeholder="Enter phone number"
+                    Type="InputType.Tel" />
+            </FormItem>
+
+            <FormItem Label="Email">
+                <Input Value="@(updateFacility.Email ?? "")"
+                    ValueChanged="@((string value) => updateFacility.Email = value)" Placeholder="Enter email address"
+                    Type="InputType.Email" />
+            </FormItem>
+
+            <FormItem Label="Active">
+                <Checkbox Checked="@(updateFacility.IsActive ?? false)"
+                    CheckedChanged="@((bool value) => updateFacility.IsActive = value)" />
+            </FormItem>
+        </Form>
+    </Modal>
+
+    <Modal Title="Delete Facility" Visible="isDeleteFacilityModalVisible" OnOk="OnDeleteFacilityConfirm"
+        OnCancel="CloseDeleteFacilityModal" OkButtonProps="new ButtonProps { Danger = true }" OkText="@("Delete")"
+        CancelText="@("Cancel")" BodyStyle="max-height: 60vh; overflow-y: auto;">
+        <div>
+            <p>Are you sure you want to delete the facility <strong>@deleteFacilityName</strong>?</p>
+            <p style="color: #ff4d4f; font-weight: bold;">This action cannot be undone.</p>
+        </div>
+    </Modal>
 }
 
 @code {
     bool isAuthenticating = false;
     bool isAuthenticated = false;
-    ITable? _table;
-    List<FacilityResponse> _dataSource = [];
-    int _total = 0;
+    // Table-related fields
+    ITable? facilityTable;
+    List<FacilityResponse> facilityTableDS = [];
+    int facilityTableTotal = 0;
+    // Add new facility modal and form-related fields
+    bool isAddFacilityModalVisible = false;
+    bool isAddFacilitySaving = false;
+    CreateFacilityRequest newFacility = new CreateFacilityRequest();
+    string? addFacilityErrorMessage;
+    // Update facility modal and form-related fields
+    bool isUpdateFacilityModalVisible = false;
+    bool isUpdateFacilitySaving = false;
+    Guid? selectedFacilityId;
+    UpdateFacilityRequest updateFacility = new UpdateFacilityRequest();
+    string? updateFacilityErrorMessage;
+    // Delete facility modal and form-related fields
+    bool isDeleteFacilitySaving = false;
+    bool isDeleteFacilityModalVisible = false;
+    Guid? facilityIdToDelete;
+    string? deleteFacilityName;
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,13 +210,6 @@ else
             LoginResponse? user = userJson is not null ? System.Text.Json.JsonSerializer.Deserialize<LoginResponse>(userJson) :
             null;
             isAuthenticated = !string.IsNullOrEmpty(user?.Token);
-
-            if (isAuthenticated)
-            {
-                var response = await ApiClient.Api.V1.Facilities.GetAsync();
-                _total = response?.Total ?? 0;
-                _dataSource = response?.Items ?? [];
-            }
         }
         catch (Exception ex)
         {
@@ -68,6 +218,277 @@ else
         finally
         {
             isAuthenticating = false;
+        }
+    }
+
+    async Task OnFacilityTableChange(QueryModel<FacilityResponse> query)
+    {
+        var response = await ApiClient.Api.V1.Facilities.GetAsync(config =>
+        {
+            config.QueryParameters.Page = query.PageIndex;
+            config.QueryParameters.PageSize = query.PageSize;
+        });
+        facilityTableTotal = response?.Total ?? 0;
+        facilityTableDS = response?.Items ?? [];
+    }
+
+    void OpenAddFacilityModal()
+    {
+        newFacility = new CreateFacilityRequest();
+        addFacilityErrorMessage = null;
+        isAddFacilityModalVisible = true;
+    }
+
+    void CloseAddFacilityModal()
+    {
+        isAddFacilityModalVisible = false;
+        newFacility = new CreateFacilityRequest();
+        addFacilityErrorMessage = null;
+    }
+
+    async Task OnAddFacilitySaveClick()
+    {
+        // Validation
+        if (string.IsNullOrWhiteSpace(newFacility.Name))
+        {
+            addFacilityErrorMessage = "Facility name is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newFacility.Address))
+        {
+            addFacilityErrorMessage = "Address is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newFacility.City))
+        {
+            addFacilityErrorMessage = "City is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newFacility.Province))
+        {
+            addFacilityErrorMessage = "Province is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newFacility.PostalCode))
+        {
+            addFacilityErrorMessage = "Postal code is required.";
+            return;
+        }
+
+        try
+        {
+            isAddFacilitySaving = true;
+            addFacilityErrorMessage = null;
+
+            var response = await ApiClient.Api.V1.Facilities.PostAsync(newFacility);
+
+            if (response != null)
+            {
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Facility created successfully!",
+                    NotificationType = NotificationType.Success
+                });
+
+                isAddFacilityModalVisible = false;
+                newFacility = new CreateFacilityRequest();
+
+                // Refresh the table by reloading initial data
+                var queryResponse = await ApiClient.Api.V1.Facilities.GetAsync(config =>
+                {
+                    config.QueryParameters.Page = 1;
+                    config.QueryParameters.PageSize = 10;
+                });
+                facilityTableTotal = queryResponse?.Total ?? 0;
+                facilityTableDS = queryResponse?.Items ?? [];
+            }
+            else
+            {
+                addFacilityErrorMessage = "Failed to create facility. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            addFacilityErrorMessage = $"Error creating facility: {ex.Message}";
+        }
+        finally
+        {
+            isAddFacilitySaving = false;
+        }
+    }
+
+    async Task OpenUpdateFacilityModal(FacilityResponse facility)
+    {
+        selectedFacilityId = facility.Id;
+        updateFacility = new UpdateFacilityRequest
+        {
+            Name = facility.Name,
+            Address = facility.Address,
+            City = facility.City,
+            Province = facility.Province,
+            PostalCode = facility.PostalCode,
+            PhoneNumber = facility.PhoneNumber,
+            Email = facility.Email,
+            IsActive = facility.IsActive
+        };
+        updateFacilityErrorMessage = null;
+        isUpdateFacilityModalVisible = true;
+    }
+
+    void CloseUpdateFacilityModal()
+    {
+        isUpdateFacilityModalVisible = false;
+        updateFacility = new UpdateFacilityRequest();
+        updateFacilityErrorMessage = null;
+        selectedFacilityId = null;
+    }
+
+    async Task OnUpdateFacilitySaveClick()
+    {
+        // Validation
+        if (string.IsNullOrWhiteSpace(updateFacility.Name))
+        {
+            updateFacilityErrorMessage = "Facility name is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(updateFacility.Address))
+        {
+            updateFacilityErrorMessage = "Address is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(updateFacility.City))
+        {
+            updateFacilityErrorMessage = "City is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(updateFacility.Province))
+        {
+            updateFacilityErrorMessage = "Province is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(updateFacility.PostalCode))
+        {
+            updateFacilityErrorMessage = "Postal code is required.";
+            return;
+        }
+
+        try
+        {
+            isUpdateFacilitySaving = true;
+            updateFacilityErrorMessage = null;
+
+            if (selectedFacilityId == null || selectedFacilityId == Guid.Empty)
+            {
+                updateFacilityErrorMessage = "No facility selected.";
+                return;
+            }
+
+            var response = await ApiClient.Api.V1.Facilities[selectedFacilityId.Value].PutAsync(updateFacility);
+
+            if (response != null)
+            {
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Facility updated successfully!",
+                    NotificationType = NotificationType.Success
+                });
+
+                isUpdateFacilityModalVisible = false;
+                updateFacility = new UpdateFacilityRequest();
+
+                // Refresh the table by reloading initial data
+                var queryResponse = await ApiClient.Api.V1.Facilities.GetAsync(config =>
+                {
+                    config.QueryParameters.Page = 1;
+                    config.QueryParameters.PageSize = 10;
+                });
+                facilityTableTotal = queryResponse?.Total ?? 0;
+                facilityTableDS = queryResponse?.Items ?? [];
+            }
+            else
+            {
+                updateFacilityErrorMessage = "Failed to update facility. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            updateFacilityErrorMessage = $"Error updating facility: {ex.Message}";
+        }
+        finally
+        {
+            isUpdateFacilitySaving = false;
+        }
+    }
+
+    void OpenDeleteFacilityModal(FacilityResponse facility)
+    {
+        facilityIdToDelete = facility.Id;
+        deleteFacilityName = facility.Name;
+        isDeleteFacilityModalVisible = true;
+    }
+
+    void CloseDeleteFacilityModal()
+    {
+        isDeleteFacilityModalVisible = false;
+        facilityIdToDelete = null;
+        deleteFacilityName = null;
+    }
+
+    async Task OnDeleteFacilityConfirm()
+    {
+        try
+        {
+            isDeleteFacilitySaving = true;
+
+            if (facilityIdToDelete == null || facilityIdToDelete == Guid.Empty)
+            {
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Error: No facility selected for deletion.",
+                    NotificationType = NotificationType.Error
+                });
+                return;
+            }
+
+            await ApiClient.Api.V1.Facilities[facilityIdToDelete.Value].DeleteAsync();
+
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Facility deleted successfully!",
+                NotificationType = NotificationType.Success
+            });
+
+            facilityIdToDelete = null;
+            isDeleteFacilityModalVisible = false;
+
+            // Refresh the table by reloading initial data
+            var queryResponse = await ApiClient.Api.V1.Facilities.GetAsync(config =>
+            {
+                config.QueryParameters.Page = 1;
+                config.QueryParameters.PageSize = 10;
+            });
+            facilityTableTotal = queryResponse?.Total ?? 0;
+            facilityTableDS = queryResponse?.Items ?? [];
+        }
+        catch (Exception ex)
+        {
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error deleting facility: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            isDeleteFacilitySaving = false;
         }
     }
 

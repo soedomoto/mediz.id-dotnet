@@ -534,7 +534,7 @@ public class UsersController : ControllerBase
                     PostalCode = f.PostalCode,
                     PhoneNumber = f.PhoneNumber,
                     Email = f.Email,
-                    Type = (int)f.Type,
+                    Type = f.Type.ToString(),
                     IsActive = f.IsActive,
                     CreatedAt = f.CreatedAt
                 })
