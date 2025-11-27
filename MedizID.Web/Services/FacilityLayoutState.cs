@@ -33,9 +33,9 @@ public class FacilityLayoutState
     public Dictionary<string, (string Title, IconData? Icon)> Tabs = new()
     {
         [""] = ("Home", TablerSvgIcon.BuildingHospital),
-        ["installation"] = ("Installation", TablerSvgIcon.MedicalCross),
-        ["polyclinic"] = ("Policlinic", TablerSvgIcon.MedicalCross),
-        ["staff"] = ("Staff", TablerSvgIcon.MedicalCross),
+        ["installation"] = ("Installation", TablerSvgIcon.BuildingFactory),
+        ["polyclinic"] = ("Polyclinic", TablerSvgIcon.BuildingHospital),
+        ["staff"] = ("Staff", TablerSvgIcon.Users),
         ["patient"] = ("Patient", TablerSvgIcon.User),
         ["appointment"] = ("Appointment", TablerSvgIcon.Calendar),
     };

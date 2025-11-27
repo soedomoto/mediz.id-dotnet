@@ -161,6 +161,8 @@ public class CreateInstallationRequest
     public string? Type { get; set; }
     public string? Location { get; set; }
     public string? Condition { get; set; }
+    public DateTime? LastMaintenanceDate { get; set; }
+    public bool? IsActive { get; set; }
 }
 
 public class UpdateInstallationRequest

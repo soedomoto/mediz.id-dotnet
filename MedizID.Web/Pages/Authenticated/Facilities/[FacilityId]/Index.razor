@@ -4,13 +4,162 @@
 @inject ILocalStorageService LocalStorage
 @inject MedizIdApiClient ApiClient
 @inject FacilityLayoutState LayoutState
+@inject INotificationService _notice
 @implements IAsyncDisposable
 
+
 <PageTitle>@(LayoutState.Facility != null ? LayoutState.Facility.Name + " - MedizID" : "MedizID")</PageTitle>
+
+@if (LayoutState.Facility != null)
+{
+    <div style="margin: 0 auto;">
+        <Card Title="Facility Information">
+            @if (!isEditMode)
+            {
+                <Button Type="ButtonType.Primary" @onclick="EnableEditMode" Style="margin-bottom: 16px;">
+                    Edit
+                </Button>
+            }
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <Alert Message="Error" Description="@errorMessage" Type="AlertType.Error" ShowIcon="true"
+                    Style="margin-bottom: 16px;" Closable="true" OnClose="@(() => errorMessage = null)" />
+            }
+
+            @if (isEditMode)
+            {
+                <Form Model="LayoutState.Facility" Layout="FormLayout.Vertical">
+                    <FormItem Label="Facility Name" Required>
+                        <Input Value="@(LayoutState.Facility.Name ?? "")"
+                            ValueChanged="@((string value) => LayoutState.Facility.Name = value)"
+                            Placeholder="Enter facility name" />
+                    </FormItem>
+
+                    <FormItem Label="Type" Required>
+                        <Input Value="@(LayoutState.Facility.Type ?? "")"
+                            ValueChanged="@((string value) => LayoutState.Facility.Type = value)"
+                            Placeholder="Enter facility type" />
+                    </FormItem>
+
+                    <FormItem Label="Address" Required>
+                        <Input Value="@(LayoutState.Facility.Address ?? "")"
+                            ValueChanged="@((string value) => LayoutState.Facility.Address = value)"
+                            Placeholder="Enter facility address" />
+                    </FormItem>
+
+                    <FormItem Label="City" Required>
+                        <Input Value="@(LayoutState.Facility.City ?? "")"
+                            ValueChanged="@((string value) => LayoutState.Facility.City = value)" Placeholder="Enter city" />
+                    </FormItem>
+
+                    <FormItem Label="Province" Required>
+                        <Input Value="@(LayoutState.Facility.Province ?? "")"
+                            ValueChanged="@((string value) => LayoutState.Facility.Province = value)"
+                            Placeholder="Enter province" />
+                    </FormItem>
+
+                    <FormItem Label="Postal Code" Required>
+                        <Input Value="@(LayoutState.Facility.PostalCode ?? "")"
+                            ValueChanged="@((string value) => LayoutState.Facility.PostalCode = value)"
+                            Placeholder="Enter postal code" />
+                    </FormItem>
+
+                    <FormItem Label="Phone Number">
+                        <Input Value="@(LayoutState.Facility.PhoneNumber ?? "")"
+                            ValueChanged="@((string value) => LayoutState.Facility.PhoneNumber = value)"
+                            Placeholder="Enter phone number" Type="InputType.Tel" />
+                    </FormItem>
+
+                    <FormItem Label="Email">
+                        <Input Value="@(LayoutState.Facility.Email ?? "")"
+                            ValueChanged="@((string value) => LayoutState.Facility.Email = value)"
+                            Placeholder="Enter email address" Type="InputType.Email" />
+                    </FormItem>
+
+                    <FormItem Label="Active">
+                        <Checkbox Checked="@(LayoutState.Facility.IsActive ?? false)"
+                            CheckedChanged="@((bool value) => LayoutState.Facility.IsActive = value)" />
+                    </FormItem>
+
+                    <FormItem>
+                        <Space>
+                            <SpaceItem>
+                                <Button Type="ButtonType.Primary" Loading="isUpdateFacilitySaving"
+                                    @onclick="OnUpdateFacilitySaveClick">
+                                    Save Changes
+                                </Button>
+                            </SpaceItem>
+                            <SpaceItem>
+                                <Button @onclick="DisableEditMode">
+                                    Cancel
+                                </Button>
+                            </SpaceItem>
+                        </Space>
+                    </FormItem>
+                </Form>
+            }
+            else
+            {
+                <Descriptions Column="@column" Size="DescriptionsSize.Default">
+                    <DescriptionsItem Title="Facility Name">
+                        @LayoutState.Facility.Name
+                    </DescriptionsItem>
+                    <DescriptionsItem Title="Type">
+                        @LayoutState.Facility.Type
+                    </DescriptionsItem>
+                    <DescriptionsItem Title="Address">
+                        @LayoutState.Facility.Address
+                    </DescriptionsItem>
+                    <DescriptionsItem Title="City">
+                        @LayoutState.Facility.City
+                    </DescriptionsItem>
+                    <DescriptionsItem Title="Province">
+                        @LayoutState.Facility.Province
+                    </DescriptionsItem>
+                    <DescriptionsItem Title="Postal Code">
+                        @LayoutState.Facility.PostalCode
+                    </DescriptionsItem>
+                    <DescriptionsItem Title="Phone Number">
+                        @(LayoutState.Facility.PhoneNumber ?? "N/A")
+                    </DescriptionsItem>
+                    <DescriptionsItem Title="Email">
+                        @(LayoutState.Facility.Email ?? "N/A")
+                    </DescriptionsItem>
+                    <DescriptionsItem Title="Active">
+                        <Tag Color="@(LayoutState.Facility.IsActive == true ? "green" : "red")">
+                            @(LayoutState.Facility.IsActive == true ? "Active" : "Inactive")
+                        </Tag>
+                    </DescriptionsItem>
+                    <DescriptionsItem Title="Created At">
+                        @LayoutState.Facility.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
+                    </DescriptionsItem>
+                </Descriptions>
+            }
+        </Card>
+    </div>
+}
+else
+{
+    <div style="text-align: center; padding: 48px 24px;">
+        <Spin Tip="Loading facility information..." />
+    </div>
+}
 
 @code {
     [Parameter]
     public Guid FacilityId { get; set; }
+    private Dictionary<string, int> column = new Dictionary<string, int> {
+{ "xxl", 3 },
+{ "xl", 3},
+{ "lg", 2},
+{ "md", 2},
+{ "sm", 1},
+{ "xs", 1}
+};
+    bool isUpdateFacilitySaving = false;
+    bool isEditMode = false;
+    string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -24,6 +173,96 @@
         {
             await LayoutState.FetchFacilityAsync(ApiClient, FacilityId);
             StateHasChanged();
+        }
+    }
+
+    void EnableEditMode()
+    {
+        isEditMode = true;
+        errorMessage = null;
+    }
+
+    void DisableEditMode()
+    {
+        isEditMode = false;
+        errorMessage = null;
+    }
+
+    async Task OnUpdateFacilitySaveClick()
+    {
+        // Validation
+        if (string.IsNullOrWhiteSpace(LayoutState.Facility?.Name))
+        {
+            errorMessage = "Facility name is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(LayoutState.Facility?.Address))
+        {
+            errorMessage = "Address is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(LayoutState.Facility?.City))
+        {
+            errorMessage = "City is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(LayoutState.Facility?.Province))
+        {
+            errorMessage = "Province is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(LayoutState.Facility?.PostalCode))
+        {
+            errorMessage = "Postal code is required.";
+            return;
+        }
+
+        try
+        {
+            isUpdateFacilitySaving = true;
+            errorMessage = null;
+
+            var updateRequest = new UpdateFacilityRequest
+            {
+                Name = LayoutState.Facility.Name,
+                Address = LayoutState.Facility.Address,
+                City = LayoutState.Facility.City,
+                Province = LayoutState.Facility.Province,
+                PostalCode = LayoutState.Facility.PostalCode,
+                PhoneNumber = LayoutState.Facility.PhoneNumber,
+                Email = LayoutState.Facility.Email,
+                IsActive = LayoutState.Facility.IsActive
+            };
+
+            var response = await ApiClient.Api.V1.Facilities[FacilityId].PutAsync(updateRequest);
+
+            if (response != null)
+            {
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Facility updated successfully!",
+                    NotificationType = NotificationType.Success
+                });
+
+                await LayoutState.FetchFacilityAsync(ApiClient, FacilityId);
+                isEditMode = false;
+            }
+            else
+            {
+                errorMessage = "Failed to update facility. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating facility: {ex.Message}";
+        }
+        finally
+        {
+            isUpdateFacilitySaving = false;
         }
     }
 
