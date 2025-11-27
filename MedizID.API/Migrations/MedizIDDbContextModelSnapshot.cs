@@ -778,8 +778,8 @@ namespace MedizID.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Type")
-                        .HasColumnType("text");
+                    b.Property<int?>("Type")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1116,13 +1116,13 @@ namespace MedizID.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("DepartmentId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
                     b.Property<Guid>("FacilityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("InstallationId")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsActive")
@@ -1137,9 +1137,9 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DepartmentId");
-
                     b.HasIndex("FacilityId");
+
+                    b.HasIndex("InstallationId");
 
                     b.ToTable("Polis");
                 });
@@ -1686,21 +1686,21 @@ namespace MedizID.API.Migrations
 
             modelBuilder.Entity("MedizID.API.Models.Poli", b =>
                 {
-                    b.HasOne("MedizID.API.Models.Department", "Department")
-                        .WithMany()
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("MedizID.API.Models.Facility", "Facility")
                         .WithMany()
                         .HasForeignKey("FacilityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Department");
+                    b.HasOne("MedizID.API.Models.Installation", "Installation")
+                        .WithMany()
+                        .HasForeignKey("InstallationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Facility");
+
+                    b.Navigation("Installation");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.PoliTimeSlot", b =>

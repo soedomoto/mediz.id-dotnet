@@ -4,6 +4,7 @@ using MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Appointments;
 using MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Departments;
 using MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Installations;
 using MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients;
+using MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Polis;
 using MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Staff;
 using MedizID.Web.Services.Generated.Api.V1.Facilities.Item.TimeSlots;
 using MedizID.Web.Services.Generated.Models;
@@ -42,6 +43,11 @@ namespace MedizID.Web.Services.Generated.Api.V1.Facilities.Item
         public global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.PatientsRequestBuilder Patients
         {
             get => new global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.PatientsRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The polis property</summary>
+        public global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Polis.PolisRequestBuilder Polis
+        {
+            get => new global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Polis.PolisRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The staff property</summary>
         public global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Staff.StaffRequestBuilder Staff

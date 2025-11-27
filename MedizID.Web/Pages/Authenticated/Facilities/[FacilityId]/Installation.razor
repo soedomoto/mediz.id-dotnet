@@ -22,7 +22,9 @@
     Total="installationTableTotal" OnChange="OnInstallationTableChange" ScrollX="1500">
     <ColumnDefinitions Context="row">
         <Column Title="Name" DataIndex="@nameof(InstallationResponse.Name)" TData="string" />
-        <Column Title="Type" DataIndex="@nameof(InstallationResponse.Type)" TData="string" />
+        <Column Title="Type" TData="InstallationResponse">
+            @(GetInstallationTypeName(row?.Type ?? 0))
+        </Column>
         <Column Title="Location" DataIndex="@nameof(InstallationResponse.Location)" TData="string" />
         <Column Title="Condition" DataIndex="@nameof(InstallationResponse.Condition)" TData="string" />
         <Column Title="Last Maintenance" TData="InstallationResponse">
@@ -63,8 +65,25 @@
         </FormItem>
 
         <FormItem Label="Type" Required>
-            <Input Value="newInstallation.Type" ValueChanged="@((string value) => newInstallation.Type = value)"
-                Placeholder="Enter installation type" />
+            <Select TItemValue="int" TItem="int" 
+                Placeholder="Select installation type"
+                Value="@(newInstallation.Type ?? 0)"
+                ValueChanged="@((int value) => newInstallation.Type = value)">
+                <SelectOptions>
+                    <SelectOption TItemValue="int" TItem="int" Value="0"
+                        Label="Emergency" />
+                    <SelectOption TItemValue="int" TItem="int" Value="1"
+                        Label="Outpatient" />
+                    <SelectOption TItemValue="int" TItem="int" Value="2"
+                        Label="Inpatient" />
+                    <SelectOption TItemValue="int" TItem="int" Value="3"
+                        Label="Pharmacy" />
+                    <SelectOption TItemValue="int" TItem="int" Value="4"
+                        Label="Laboratory" />
+                    <SelectOption TItemValue="int" TItem="int" Value="5"
+                        Label="Radiology" />
+                </SelectOptions>
+            </Select>
         </FormItem>
 
         <FormItem Label="Location" Required>
@@ -105,8 +124,25 @@
         </FormItem>
 
         <FormItem Label="Type" Required>
-            <Input Value="@(updateInstallation.Type ?? "")" ValueChanged="@((string value) => updateInstallation.Type = value)"
-                Placeholder="Enter installation type" />
+            <Select TItemValue="int" TItem="int" 
+                Placeholder="Select installation type"
+                Value="@(updateInstallation.Type ?? 0)"
+                ValueChanged="@((int value) => updateInstallation.Type = value)">
+                <SelectOptions>
+                    <SelectOption TItemValue="int" TItem="int" Value="0"
+                        Label="Emergency" />
+                    <SelectOption TItemValue="int" TItem="int" Value="1"
+                        Label="Outpatient" />
+                    <SelectOption TItemValue="int" TItem="int" Value="2"
+                        Label="Inpatient" />
+                    <SelectOption TItemValue="int" TItem="int" Value="3"
+                        Label="Pharmacy" />
+                    <SelectOption TItemValue="int" TItem="int" Value="4"
+                        Label="Laboratory" />
+                    <SelectOption TItemValue="int" TItem="int" Value="5"
+                        Label="Radiology" />
+                </SelectOptions>
+            </Select>
         </FormItem>
 
         <FormItem Label="Location" Required>
@@ -230,7 +266,7 @@
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(newInstallation.Type))
+        if (!newInstallation.Type.HasValue || newInstallation.Type <= 0)
         {
             addInstallationErrorMessage = "Type is required.";
             return;
@@ -331,7 +367,7 @@
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(updateInstallation.Type))
+        if (!updateInstallation.Type.HasValue || updateInstallation.Type < 0)
         {
             updateInstallationErrorMessage = "Type is required.";
             return;
@@ -465,6 +501,20 @@
         {
             isDeleteInstallationSaving = false;
         }
+    }
+
+    private string GetInstallationTypeName(int type)
+    {
+        return type switch
+        {
+            0 => "Emergency",
+            1 => "Outpatient",
+            2 => "Inpatient",
+            3 => "Pharmacy",
+            4 => "Laboratory",
+            5 => "Radiology",
+            _ => "Unknown"
+        };
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()

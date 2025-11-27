@@ -70,6 +70,8 @@ namespace MedizID.Web.Services.Generated.Models
 #else
         public string Province { get; set; }
 #endif
+        /// <summary>The type property</summary>
+        public int? Type { get; set; }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
@@ -96,6 +98,7 @@ namespace MedizID.Web.Services.Generated.Models
                 { "phoneNumber", n => { PhoneNumber = n.GetStringValue(); } },
                 { "postalCode", n => { PostalCode = n.GetStringValue(); } },
                 { "province", n => { Province = n.GetStringValue(); } },
+                { "type", n => { Type = n.GetIntValue(); } },
             };
         }
         /// <summary>
@@ -113,6 +116,7 @@ namespace MedizID.Web.Services.Generated.Models
             writer.WriteStringValue("phoneNumber", PhoneNumber);
             writer.WriteStringValue("postalCode", PostalCode);
             writer.WriteStringValue("province", Province);
+            writer.WriteIntValue("type", Type);
         }
     }
 }

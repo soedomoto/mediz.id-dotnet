@@ -40,6 +40,9 @@ else
             <Column Title="Name" TData="FacilityResponse">
                 <NavLink href="@($"/facilities/{row?.Id}")">@row?.Name</NavLink>
             </Column>
+            <Column Title="Type" TData="FacilityResponse">
+                @(GetFacilityTypeName(row?.Type ?? 0))
+            </Column>
             <Column Title="Email" DataIndex="@nameof(FacilityResponse.Email)" TData="string" />
             <Column Title="Phone" DataIndex="@nameof(FacilityResponse.PhoneNumber)" TData="string" />
             <Column Title="City" DataIndex="@nameof(FacilityResponse.City)" TData="string" />
@@ -79,7 +82,29 @@ else
             </FormItem>
 
             <FormItem Label="Type" Required>
-                <AntDesign.InputNumber @bind-Value="newFacility.Type" Placeholder="Enter facility type" Min="0" />
+                <Select TItemValue="int" TItem="int" 
+                    Placeholder="Select facility type"
+                    Value="@(newFacility.Type ?? 0)"
+                    ValueChanged="@((int value) => newFacility.Type = value)">
+                    <SelectOptions>
+                        <SelectOption TItemValue="int" TItem="int" Value="0"
+                            Label="Midwife Practice" />
+                        <SelectOption TItemValue="int" TItem="int" Value="1"
+                            Label="Clinic" />
+                        <SelectOption TItemValue="int" TItem="int" Value="2"
+                            Label="General Hospital" />
+                        <SelectOption TItemValue="int" TItem="int" Value="3"
+                            Label="Specialized Hospital" />
+                        <SelectOption TItemValue="int" TItem="int" Value="4"
+                            Label="Laboratory" />
+                        <SelectOption TItemValue="int" TItem="int" Value="5"
+                            Label="Radiology Center" />
+                        <SelectOption TItemValue="int" TItem="int" Value="6"
+                            Label="Pharmacy" />
+                        <SelectOption TItemValue="int" TItem="int" Value="7"
+                            Label="Rehabilitation Center" />
+                    </SelectOptions>
+                </Select>
             </FormItem>
 
             <FormItem Label="Address" Required>
@@ -126,6 +151,32 @@ else
             <FormItem Label="Facility Name">
                 <Input Value="@(updateFacility.Name ?? "")" ValueChanged="@((string value) => updateFacility.Name = value)"
                     Placeholder="Enter facility name" />
+            </FormItem>
+
+            <FormItem Label="Type">
+                <Select TItemValue="int" TItem="int" 
+                    Placeholder="Select facility type"
+                    Value="@(updateFacility.Type ?? 0)"
+                    ValueChanged="@((int value) => updateFacility.Type = value)">
+                    <SelectOptions>
+                        <SelectOption TItemValue="int" TItem="int" Value="0"
+                            Label="Midwife Practice" />
+                        <SelectOption TItemValue="int" TItem="int" Value="1"
+                            Label="Clinic" />
+                        <SelectOption TItemValue="int" TItem="int" Value="2"
+                            Label="General Hospital" />
+                        <SelectOption TItemValue="int" TItem="int" Value="3"
+                            Label="Specialized Hospital" />
+                        <SelectOption TItemValue="int" TItem="int" Value="4"
+                            Label="Laboratory" />
+                        <SelectOption TItemValue="int" TItem="int" Value="5"
+                            Label="Radiology Center" />
+                        <SelectOption TItemValue="int" TItem="int" Value="6"
+                            Label="Pharmacy" />
+                        <SelectOption TItemValue="int" TItem="int" Value="7"
+                            Label="Rehabilitation Center" />
+                    </SelectOptions>
+                </Select>
             </FormItem>
 
             <FormItem Label="Address">
@@ -491,6 +542,22 @@ else
         {
             isDeleteFacilitySaving = false;
         }
+    }
+
+    private string GetFacilityTypeName(int type)
+    {
+        return type switch
+        {
+            0 => "Midwife Practice",
+            1 => "Clinic",
+            2 => "General Hospital",
+            3 => "Specialized Hospital",
+            4 => "Laboratory",
+            5 => "Radiology Center",
+            6 => "Pharmacy",
+            7 => "Rehabilitation Center",
+            _ => "Unknown"
+        };
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()

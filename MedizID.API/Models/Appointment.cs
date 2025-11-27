@@ -1,0 +1,24 @@
+using MedizID.API.Common.Enums;
+
+namespace MedizID.API.Models;
+
+public class Appointment
+{
+    public Guid Id { get; set; }
+    public Guid FacilityId { get; set; }
+    public Guid PatientId { get; set; }
+    public Guid? DoctorId { get; set; }
+    public DateTime AppointmentDate { get; set; }
+    public TimeSpan AppointmentTime { get; set; }
+    public AppointmentStatusEnum Status { get; set; } = AppointmentStatusEnum.Scheduled;
+    public string? Reason { get; set; }
+    public string? Notes { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+
+    // Relationships
+    public Facility Facility { get; set; } = null!;
+    public Patient Patient { get; set; } = null!;
+    public ApplicationUser? Doctor { get; set; }
+    public ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
+}

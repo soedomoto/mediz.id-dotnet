@@ -101,9 +101,9 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Poli>()
-            .HasOne(p => p.Department)
+            .HasOne(p => p.Installation)
             .WithMany()
-            .HasForeignKey(p => p.DepartmentId)
+            .HasForeignKey(p => p.InstallationId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Poli>()

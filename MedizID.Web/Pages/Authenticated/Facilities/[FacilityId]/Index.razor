@@ -37,9 +37,29 @@
                     </FormItem>
 
                     <FormItem Label="Type" Required>
-                        <Input Value="@(LayoutState.Facility.Type ?? "")"
-                            ValueChanged="@((string value) => LayoutState.Facility.Type = value)"
-                            Placeholder="Enter facility type" />
+                        <Select TItemValue="int?" TItem="int?" 
+                            Placeholder="Select facility type"
+                            Value="@(LayoutState.Facility.Type)"
+                            ValueChanged="@((int? value) => LayoutState.Facility.Type = value)">
+                            <SelectOptions>
+                                <SelectOption TItemValue="int?" TItem="int?" Value="0"
+                                    Label="Midwife Practice" />
+                                <SelectOption TItemValue="int?" TItem="int?" Value="1"
+                                    Label="Clinic" />
+                                <SelectOption TItemValue="int?" TItem="int?" Value="2"
+                                    Label="General Hospital" />
+                                <SelectOption TItemValue="int?" TItem="int?" Value="3"
+                                    Label="Specialized Hospital" />
+                                <SelectOption TItemValue="int?" TItem="int?" Value="4"
+                                    Label="Laboratory" />
+                                <SelectOption TItemValue="int?" TItem="int?" Value="5"
+                                    Label="Radiology Center" />
+                                <SelectOption TItemValue="int?" TItem="int?" Value="6"
+                                    Label="Pharmacy" />
+                                <SelectOption TItemValue="int?" TItem="int?" Value="7"
+                                    Label="Rehabilitation Center" />
+                            </SelectOptions>
+                        </Select>
                     </FormItem>
 
                     <FormItem Label="Address" Required>
@@ -106,7 +126,7 @@
                         @LayoutState.Facility.Name
                     </DescriptionsItem>
                     <DescriptionsItem Title="Type">
-                        @LayoutState.Facility.Type
+                        @GetFacilityTypeName(LayoutState.Facility.Type)
                     </DescriptionsItem>
                     <DescriptionsItem Title="Address">
                         @LayoutState.Facility.Address
@@ -235,6 +255,7 @@ else
                 PostalCode = LayoutState.Facility.PostalCode,
                 PhoneNumber = LayoutState.Facility.PhoneNumber,
                 Email = LayoutState.Facility.Email,
+                Type = LayoutState.Facility.Type,
                 IsActive = LayoutState.Facility.IsActive
             };
 
@@ -270,5 +291,21 @@ else
     {
         LayoutState.OnAuthenticationChanged -= OnAuthenticationChanged;
         await Task.CompletedTask;
+    }
+
+    private string GetFacilityTypeName(int? typeValue)
+    {
+        return typeValue switch
+        {
+            0 => "Midwife Practice",
+            1 => "Clinic",
+            2 => "General Hospital",
+            3 => "Specialized Hospital",
+            4 => "Laboratory",
+            5 => "Radiology Center",
+            6 => "Pharmacy",
+            7 => "Rehabilitation Center",
+            _ => "Unknown"
+        };
     }
 }

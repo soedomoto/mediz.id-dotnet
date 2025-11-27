@@ -41,13 +41,7 @@ namespace MedizID.Web.Services.Generated.Models
         public string Name { get; set; }
 #endif
         /// <summary>The type property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? Type { get; set; }
-#nullable restore
-#else
-        public string Type { get; set; }
-#endif
+        public int? Type { get; set; }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
@@ -71,7 +65,7 @@ namespace MedizID.Web.Services.Generated.Models
                 { "lastMaintenanceDate", n => { LastMaintenanceDate = n.GetDateTimeOffsetValue(); } },
                 { "location", n => { Location = n.GetStringValue(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
-                { "type", n => { Type = n.GetStringValue(); } },
+                { "type", n => { Type = n.GetIntValue(); } },
             };
         }
         /// <summary>
@@ -86,7 +80,7 @@ namespace MedizID.Web.Services.Generated.Models
             writer.WriteDateTimeOffsetValue("lastMaintenanceDate", LastMaintenanceDate);
             writer.WriteStringValue("location", Location);
             writer.WriteStringValue("name", Name);
-            writer.WriteStringValue("type", Type);
+            writer.WriteIntValue("type", Type);
         }
     }
 }

@@ -116,11 +116,11 @@ run: run-api
 
 run-api:
 	@echo "Starting API (MedizID.API)..."
-	dotnet run --project $(API_PROJECT) --no-build
+	dotnet watch run --project $(API_PROJECT) --no-build
 
 run-web:
 	@echo "Starting Web (MedizID.Web)..."
-	dotnet run --project $(WEB_PROJECT) --no-build
+	dotnet watch run --project $(WEB_PROJECT) --no-build
 
 watch:
 	@echo "Running API with file watcher..."
