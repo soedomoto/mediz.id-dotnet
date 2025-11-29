@@ -55,40 +55,17 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
     }
 }
 
-public class CreatePatientRequestValidator : AbstractValidator<CreatePatientRequest>
-{
-    public CreatePatientRequestValidator()
-    {
-        RuleFor(x => x.FirstName)
-            .NotEmpty()
-            .WithMessage("First name is required")
-            .MaximumLength(100);
-
-        RuleFor(x => x.LastName)
-            .NotEmpty()
-            .WithMessage("Last name is required")
-            .MaximumLength(100);
-
-        RuleFor(x => x.DateOfBirth)
-            .NotEmpty()
-            .WithMessage("Date of birth is required")
-            .LessThan(DateTime.Today)
-            .WithMessage("Date of birth must be in the past");
-
-        RuleFor(x => x.Email)
-            .EmailAddress()
-            .When(x => !string.IsNullOrEmpty(x.Email))
-            .WithMessage("Email must be a valid email address");
-    }
-}
-
 public class CreateAppointmentRequestValidator : AbstractValidator<CreateAppointmentRequest>
 {
     public CreateAppointmentRequestValidator()
     {
-        RuleFor(x => x.PatientId)
+        RuleFor(x => x.FacilityPatientId)
             .NotEmpty()
-            .WithMessage("Patient ID is required");
+            .WithMessage("Facility Patient ID is required");
+
+        RuleFor(x => x.FacilityDoctorId)
+            .NotEmpty()
+            .WithMessage("Facility Staff ID is required");
 
         RuleFor(x => x.AppointmentDate)
             .NotEmpty()

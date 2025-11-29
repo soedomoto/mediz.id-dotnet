@@ -105,7 +105,6 @@ builder.Services.AddScoped<IAIService, AIService>();
 builder.Services.AddHttpClient();
 
 // Repositories
-builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 builder.Services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
 builder.Services.AddScoped<IDrugRepository, DrugRepository>();
@@ -115,7 +114,6 @@ builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
 builder.Services.AddScoped<IAnamnesisRepository, AnamnesisRepository>();
 
 // Business Services
-builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 builder.Services.AddScoped<IDiagnosisService, DiagnosisService>();

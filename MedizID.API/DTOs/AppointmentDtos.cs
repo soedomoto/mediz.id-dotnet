@@ -2,8 +2,8 @@ namespace MedizID.API.DTOs;
 
 public class CreateAppointmentRequest
 {
-    public Guid PatientId { get; set; }
-    public Guid? DoctorId { get; set; }
+    public Guid FacilityPatientId { get; set; }
+    public Guid? FacilityDoctorId { get; set; }
     public DateTime AppointmentDate { get; set; }
     public TimeSpan AppointmentTime { get; set; }
     public string? Reason { get; set; }
@@ -22,9 +22,9 @@ public class UpdateAppointmentRequest
 public class AppointmentResponse
 {
     public Guid Id { get; set; }
-    public Guid PatientId { get; set; }
+    public Guid FacilityPatientId { get; set; }
     public string PatientName { get; set; } = null!;
-    public Guid? DoctorId { get; set; }
+    public Guid? FacilityDoctorId { get; set; }
     public string? DoctorName { get; set; }
     public DateTime AppointmentDate { get; set; }
     public TimeSpan AppointmentTime { get; set; }
@@ -36,10 +36,10 @@ public class AppointmentResponse
 public class AppointmentDetailResponse
 {
     public Guid Id { get; set; }
-    public Guid PatientId { get; set; }
+    public Guid FacilityPatientId { get; set; }
     public string PatientName { get; set; } = null!;
     public string? PatientIdNumber { get; set; }
-    public Guid? DoctorId { get; set; }
+    public Guid? FacilityDoctorId { get; set; }
     public string? DoctorName { get; set; }
     public DateTime AppointmentDate { get; set; }
     public TimeSpan AppointmentTime { get; set; }

@@ -24,8 +24,6 @@ namespace MedizID.Web.Services.Generated.Models
 #endif
         /// <summary>The createdAt property</summary>
         public DateTimeOffset? CreatedAt { get; set; }
-        /// <summary>The doctorId property</summary>
-        public Guid? DoctorId { get; set; }
         /// <summary>The doctorName property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -34,10 +32,12 @@ namespace MedizID.Web.Services.Generated.Models
 #else
         public string DoctorName { get; set; }
 #endif
+        /// <summary>The facilityDoctorId property</summary>
+        public Guid? FacilityDoctorId { get; set; }
+        /// <summary>The facilityPatientId property</summary>
+        public Guid? FacilityPatientId { get; set; }
         /// <summary>The id property</summary>
         public Guid? Id { get; set; }
-        /// <summary>The patientId property</summary>
-        public Guid? PatientId { get; set; }
         /// <summary>The patientName property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -83,10 +83,10 @@ namespace MedizID.Web.Services.Generated.Models
                 { "appointmentDate", n => { AppointmentDate = n.GetDateTimeOffsetValue(); } },
                 { "appointmentTime", n => { AppointmentTime = n.GetStringValue(); } },
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
-                { "doctorId", n => { DoctorId = n.GetGuidValue(); } },
                 { "doctorName", n => { DoctorName = n.GetStringValue(); } },
+                { "facilityDoctorId", n => { FacilityDoctorId = n.GetGuidValue(); } },
+                { "facilityPatientId", n => { FacilityPatientId = n.GetGuidValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
-                { "patientId", n => { PatientId = n.GetGuidValue(); } },
                 { "patientName", n => { PatientName = n.GetStringValue(); } },
                 { "reason", n => { Reason = n.GetStringValue(); } },
                 { "status", n => { Status = n.GetStringValue(); } },
@@ -102,10 +102,10 @@ namespace MedizID.Web.Services.Generated.Models
             writer.WriteDateTimeOffsetValue("appointmentDate", AppointmentDate);
             writer.WriteStringValue("appointmentTime", AppointmentTime);
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
-            writer.WriteGuidValue("doctorId", DoctorId);
             writer.WriteStringValue("doctorName", DoctorName);
+            writer.WriteGuidValue("facilityDoctorId", FacilityDoctorId);
+            writer.WriteGuidValue("facilityPatientId", FacilityPatientId);
             writer.WriteGuidValue("id", Id);
-            writer.WriteGuidValue("patientId", PatientId);
             writer.WriteStringValue("patientName", PatientName);
             writer.WriteStringValue("reason", Reason);
             writer.WriteStringValue("status", Status);

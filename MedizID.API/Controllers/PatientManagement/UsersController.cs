@@ -399,21 +399,32 @@ public class UsersController : ControllerBase
             if (page < 1) page = 1;
             if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
-            var query = _context.Appointments.Where(a => a.DoctorId == id).AsQueryable();
+            // Get all FacilityStaff records for this user
+            var facilityStaffIds = await _context.FacilityStaffs
+                .Where(fs => fs.StaffId == id)
+                .Select(fs => fs.Id)
+                .ToListAsync();
+
+            var query = _context.Appointments
+                .Where(a => facilityStaffIds.Contains(a.FacilityDoctorId.Value))
+                .AsQueryable();
             var total = await query.CountAsync();
 
             var appointments = await query
-                .Include(a => a.Patient)
+                .Include(a => a.FacilityPatient)
+                .ThenInclude(fp => fp.Patient)
+                .Include(a => a.FacilityDoctor)
+                .ThenInclude(fs => fs.Staff)
                 .OrderByDescending(a => a.AppointmentDate)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(a => new AppointmentResponse
                 {
                     Id = a.Id,
-                    PatientId = a.PatientId,
-                    PatientName = $"{a.Patient.FirstName} {a.Patient.LastName}",
-                    DoctorId = a.DoctorId,
-                    DoctorName = a.Doctor != null ? $"{a.Doctor.FirstName} {a.Doctor.LastName}" : null,
+                    FacilityPatientId = a.FacilityPatientId,
+                    PatientName = $"{a.FacilityPatient.Patient.FirstName} {a.FacilityPatient.Patient.LastName}",
+                    FacilityDoctorId = a.FacilityDoctorId,
+                    DoctorName = a.FacilityDoctor != null ? $"{a.FacilityDoctor.Staff.FirstName} {a.FacilityDoctor.Staff.LastName}" : null,
                     AppointmentDate = a.AppointmentDate,
                     AppointmentTime = a.AppointmentTime,
                     Status = a.Status.ToString(),
@@ -647,9 +658,11 @@ public class UsersController : ControllerBase
 
     /// <summary>
     /// Get user patients
+    /// <summary>
+    /// Get user as patient (returns FacilityPatient records where user is a patient)
     /// </summary>
     [HttpGet("{id}/patients")]
-    [ProducesResponseType(typeof(PagedResult<PatientResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResult<FacilityPatientResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUserPatients(Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
@@ -662,34 +675,31 @@ public class UsersController : ControllerBase
             if (page < 1) page = 1;
             if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
-            // TODO: Update with FacilityPatient relationships
-            var query = _context.Patients
+            // Get all FacilityPatient records where this user is the patient
+            var query = _context.FacilityPatients
+                .Where(fp => fp.PatientId == id)
                 .AsQueryable();
 
             var total = await query.CountAsync();
 
             var patients = await query
+                .Include(fp => fp.Facility)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(p => new PatientResponse
+                .Select(fp => new FacilityPatientResponse
                 {
-                    Id = p.Id,
-                    MedicalRecordNumber = p.MedicalRecordNumber,
-                    FirstName = p.FirstName,
-                    LastName = p.LastName,
-                    PhoneNumber = p.PhoneNumber,
-                    Email = p.Email,
-                    DateOfBirth = p.DateOfBirth,
-                    Gender = p.Gender,
-                    BloodType = p.BloodType,
-                    Address = p.Address,
-                    City = p.City,
-                    CreatedAt = p.CreatedAt,
-                    UpdatedAt = p.UpdatedAt
+                    Id = fp.Id,
+                    FacilityId = fp.FacilityId,
+                    PatientId = fp.PatientId,
+                    PatientName = $"{user.FirstName} {user.LastName}",
+                    MedicalRecordNumber = fp.MedicalRecordNumber,
+                    IsActive = fp.IsActive,
+                    CreatedAt = fp.CreatedAt,
+                    UpdatedAt = fp.UpdatedAt
                 })
                 .ToListAsync();
 
-            return Ok(new PagedResult<PatientResponse>
+            return Ok(new PagedResult<FacilityPatientResponse>
             {
                 Items = patients,
                 Total = total,

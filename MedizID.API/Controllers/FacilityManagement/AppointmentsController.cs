@@ -1,4 +1,5 @@
 using MedizID.API.Common.Exceptions;
+using MedizID.API.Common.Enums;
 using MedizID.API.Data;
 using MedizID.API.DTOs;
 using MedizID.API.Models;
@@ -47,18 +48,20 @@ public class AppointmentsController : ControllerBase
             var total = await query.CountAsync();
 
             var appointments = await query
-                .Include(a => a.Patient)
-                .Include(a => a.Doctor)
+                .Include(a => a.FacilityPatient)
+                .ThenInclude(fp => fp.Patient)
+                .Include(a => a.FacilityDoctor)
+                .ThenInclude(fs => fs.Staff)
                 .OrderByDescending(a => a.AppointmentDate)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(a => new AppointmentResponse
                 {
                     Id = a.Id,
-                    PatientId = a.PatientId,
-                    PatientName = $"{a.Patient.FirstName} {a.Patient.LastName}",
-                    DoctorId = a.DoctorId,
-                    DoctorName = a.Doctor != null ? $"{a.Doctor.FirstName} {a.Doctor.LastName}" : null,
+                    FacilityPatientId = a.FacilityPatientId,
+                    PatientName = $"{a.FacilityPatient.Patient.FirstName} {a.FacilityPatient.Patient.LastName}",
+                    FacilityDoctorId = a.FacilityDoctorId,
+                    DoctorName = a.FacilityDoctor != null ? $"{a.FacilityDoctor.Staff.FirstName} {a.FacilityDoctor.Staff.LastName}" : null,
                     AppointmentDate = a.AppointmentDate,
                     AppointmentTime = a.AppointmentTime,
                     Status = a.Status.ToString(),
@@ -108,17 +111,31 @@ public class AppointmentsController : ControllerBase
             if (facility == null)
                 throw new NotFoundException($"Facility with ID {facilityId} not found");
 
-            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == request.PatientId);
-            if (patient == null)
-                throw new NotFoundException($"Patient with ID {request.PatientId} not found");
+            var facilityPatient = await _context.FacilityPatients
+                .Include(fp => fp.Patient)
+                .FirstOrDefaultAsync(fp => fp.Id == request.FacilityPatientId && fp.FacilityId == facilityId);
+            if (facilityPatient == null)
+                throw new NotFoundException($"Facility patient with ID {request.FacilityPatientId} not found in this facility");
+
+            FacilityStaff? facilityDoctor = null;
+            if (request.FacilityDoctorId.HasValue)
+            {
+                facilityDoctor = await _context.FacilityStaffs
+                    .Include(fs => fs.Staff)
+                    .FirstOrDefaultAsync(fs => fs.Id == request.FacilityDoctorId && fs.FacilityId == facilityId && fs.Role == UserRoleEnum.Doctor);
+                if (facilityDoctor == null)
+                    throw new NotFoundException($"Doctor staff with ID {request.FacilityDoctorId} not found in this facility");
+            }
 
             var appointment = new Appointment
             {
                 Id = Guid.NewGuid(),
                 FacilityId = facilityId,
-                PatientId = request.PatientId,
-                DoctorId = request.DoctorId,
-                AppointmentDate = request.AppointmentDate,
+                FacilityPatientId = request.FacilityPatientId,
+                FacilityDoctorId = request.FacilityDoctorId,
+                AppointmentDate = request.AppointmentDate.Kind == DateTimeKind.Local 
+                    ? request.AppointmentDate.ToUniversalTime() 
+                    : request.AppointmentDate,
                 AppointmentTime = request.AppointmentTime,
                 Reason = request.Reason,
                 Notes = request.Notes,
@@ -133,9 +150,10 @@ public class AppointmentsController : ControllerBase
             var response = new AppointmentResponse
             {
                 Id = appointment.Id,
-                PatientId = appointment.PatientId,
-                PatientName = $"{patient.FirstName} {patient.LastName}",
-                DoctorId = appointment.DoctorId,
+                FacilityPatientId = appointment.FacilityPatientId,
+                PatientName = $"{facilityPatient.Patient.FirstName} {facilityPatient.Patient.LastName}",
+                FacilityDoctorId = appointment.FacilityDoctorId,
+                DoctorName = facilityDoctor != null ? $"{facilityDoctor.Staff.FirstName} {facilityDoctor.Staff.LastName}" : null,
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime,
                 Status = appointment.Status.ToString(),

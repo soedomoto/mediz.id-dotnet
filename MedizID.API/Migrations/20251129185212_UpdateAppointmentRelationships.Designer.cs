@@ -3,6 +3,7 @@ using System;
 using MedizID.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedizID.API.Migrations
 {
     [DbContext(typeof(MedizIDDbContext))]
-    partial class MedizIDDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251129185212_UpdateAppointmentRelationships")]
+    partial class UpdateAppointmentRelationships
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -321,13 +324,13 @@ namespace MedizID.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("FacilityDoctorId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("FacilityId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("FacilityPatientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("FacilityStaffId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Notes")
@@ -345,11 +348,11 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FacilityDoctorId");
-
                     b.HasIndex("FacilityId");
 
                     b.HasIndex("FacilityPatientId");
+
+                    b.HasIndex("FacilityStaffId");
 
                     b.ToTable("Appointments");
                 });
@@ -1453,11 +1456,6 @@ namespace MedizID.API.Migrations
 
             modelBuilder.Entity("MedizID.API.Models.Appointment", b =>
                 {
-                    b.HasOne("MedizID.API.Models.FacilityStaff", "FacilityDoctor")
-                        .WithMany()
-                        .HasForeignKey("FacilityDoctorId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("MedizID.API.Models.Facility", "Facility")
                         .WithMany("Appointments")
                         .HasForeignKey("FacilityId")
@@ -1470,11 +1468,16 @@ namespace MedizID.API.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("MedizID.API.Models.FacilityStaff", "FacilityStaff")
+                        .WithMany()
+                        .HasForeignKey("FacilityStaffId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Facility");
 
-                    b.Navigation("FacilityDoctor");
-
                     b.Navigation("FacilityPatient");
+
+                    b.Navigation("FacilityStaff");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Department", b =>

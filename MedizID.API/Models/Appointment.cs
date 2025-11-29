@@ -6,8 +6,8 @@ public class Appointment
 {
     public Guid Id { get; set; }
     public Guid FacilityId { get; set; }
-    public Guid PatientId { get; set; }
-    public Guid? DoctorId { get; set; }
+    public Guid FacilityPatientId { get; set; }
+    public Guid? FacilityDoctorId { get; set; }
     public DateTime AppointmentDate { get; set; }
     public TimeSpan AppointmentTime { get; set; }
     public AppointmentStatusEnum Status { get; set; } = AppointmentStatusEnum.Scheduled;
@@ -18,7 +18,7 @@ public class Appointment
 
     // Relationships
     public Facility Facility { get; set; } = null!;
-    public Patient Patient { get; set; } = null!;
-    public ApplicationUser? Doctor { get; set; }
+    public FacilityPatient FacilityPatient { get; set; } = null!;
+    public FacilityStaff? FacilityDoctor { get; set; }
     public ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
 }

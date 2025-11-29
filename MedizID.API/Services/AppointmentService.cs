@@ -45,8 +45,8 @@ public class AppointmentService : IAppointmentService
         {
             Id = Guid.NewGuid(),
             FacilityId = Guid.Empty,
-            PatientId = request.PatientId,
-            DoctorId = request.DoctorId,
+            FacilityPatientId = request.FacilityPatientId,
+            FacilityDoctorId = request.FacilityDoctorId,
             AppointmentDate = request.AppointmentDate,
             AppointmentTime = request.AppointmentTime,
             Status = Common.Enums.AppointmentStatusEnum.Scheduled,
@@ -104,10 +104,10 @@ public class AppointmentService : IAppointmentService
         return new AppointmentResponse
         {
             Id = appointment.Id,
-            PatientId = appointment.PatientId,
-            PatientName = appointment.Patient != null ? $"{appointment.Patient.FirstName} {appointment.Patient.LastName}" : "",
-            DoctorId = appointment.DoctorId,
-            DoctorName = appointment.Doctor != null ? $"{appointment.Doctor.FirstName} {appointment.Doctor.LastName}" : null,
+            FacilityPatientId = appointment.FacilityPatientId,
+            PatientName = appointment.FacilityPatient != null ? $"{appointment.FacilityPatient.Patient.FirstName} {appointment.FacilityPatient.Patient.LastName}" : "",
+            FacilityDoctorId = appointment.FacilityDoctorId,
+            DoctorName = appointment.FacilityDoctor != null ? $"{appointment.FacilityDoctor.Staff.FirstName} {appointment.FacilityDoctor.Staff.LastName}" : null,
             AppointmentDate = appointment.AppointmentDate,
             AppointmentTime = appointment.AppointmentTime,
             Status = appointment.Status.ToString(),

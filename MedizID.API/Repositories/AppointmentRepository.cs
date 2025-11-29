@@ -17,7 +17,7 @@ public class AppointmentRepository : BaseRepository<Appointment>, IAppointmentRe
     public async Task<IEnumerable<Appointment>> GetByPatientAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Where(a => a.PatientId == patientId)
+            .Where(a => a.FacilityPatientId == patientId)
             .OrderByDescending(a => a.AppointmentDate)
             .ToListAsync(cancellationToken);
     }
@@ -63,7 +63,10 @@ public class AppointmentRepository : BaseRepository<Appointment>, IAppointmentRe
     public async Task<Appointment?> GetDetailedAsync(Guid appointmentId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(a => a.Patient)
+            .Include(a => a.FacilityPatient)
+            .ThenInclude(fp => fp.Patient)
+            .Include(a => a.FacilityDoctor)
+            .ThenInclude(fs => fs.Staff)
             .Include(a => a.Facility)
             .Include(a => a.MedicalRecords)
             .FirstOrDefaultAsync(a => a.Id == appointmentId, cancellationToken);

@@ -1,3 +1,4 @@
+using MedizID.API.Common.Enums;
 using MedizID.API.Common.Exceptions;
 using MedizID.API.Data;
 using MedizID.API.DTOs;
@@ -271,6 +272,172 @@ public class StaffsController : ControllerBase
             {
                 ErrorCode = "INTERNAL_SERVER_ERROR",
                 Message = "An error occurred while removing staff"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Search staff by keyword (matches email, ID, first name, last name)
+    /// </summary>
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(PagedResult<FacilityStaffResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SearchStaffs(
+        Guid facilityId,
+        [FromQuery] string keyword,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] UserRoleEnum? role = null
+    )
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+                throw new ArgumentException("Keyword parameter is required");
+
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+            var facility = await _context.Facilities.FirstOrDefaultAsync(f => f.Id == facilityId);
+            if (facility == null)
+                throw new NotFoundException($"Facility with ID {facilityId} not found");
+
+            // Normalize keyword for case-insensitive search
+            var normalizedKeyword = keyword.ToLower().Trim();
+
+            var query = _context.FacilityStaffs
+                .Where(fs => fs.FacilityId == facilityId && fs.IsActive &&
+                    (fs.Id.ToString().ToLower().Contains(normalizedKeyword) ||
+                     (fs.Staff.Email != null && fs.Staff.Email.ToLower().Contains(normalizedKeyword)) ||
+                     fs.Staff.FirstName.ToLower().Contains(normalizedKeyword) ||
+                     fs.Staff.LastName.ToLower().Contains(normalizedKeyword)))
+                .AsQueryable();
+
+            if (role.HasValue)
+                query = query.Where(fs => fs.Role == role.Value);
+
+            var total = await query.CountAsync();
+
+            var staff = await query
+                .Include(fs => fs.Staff)
+                .OrderBy(fs => fs.Staff.FirstName)
+                .ThenBy(fs => fs.Staff.LastName)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(fs => new FacilityStaffResponse
+                {
+                    Id = fs.Id,
+                    FacilityId = fs.FacilityId,
+                    StaffId = fs.StaffId,
+                    StaffName = $"{fs.Staff.FirstName} {fs.Staff.LastName}",
+                    Role = fs.Role,
+                    Specialization = fs.Specialization,
+                    StartDate = fs.StartDate,
+                    EndDate = fs.EndDate,
+                    IsActive = fs.IsActive,
+                    CreatedAt = fs.CreatedAt,
+                    UpdatedAt = fs.UpdatedAt
+                })
+                .ToListAsync();
+
+            return Ok(new PagedResult<FacilityStaffResponse>
+            {
+                Items = staff,
+                Total = total,
+                Page = page,
+                PageSize = pageSize
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid search request");
+            return BadRequest(new ErrorResponse
+            {
+                ErrorCode = "INVALID_REQUEST",
+                Message = ex.Message
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new ErrorResponse
+            {
+                ErrorCode = ex.ErrorCode,
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching staff");
+            return StatusCode(500, new ErrorResponse
+            {
+                ErrorCode = "INTERNAL_SERVER_ERROR",
+                Message = "An error occurred while searching for staff"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Search staff by role and email in facility
+    /// </summary>
+    [HttpGet("search/email")]
+    [ProducesResponseType(typeof(FacilityStaffResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SearchStaffByRoleAndEmail(Guid facilityId, [FromQuery] string email, [FromQuery] UserRoleEnum? role = null)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(email))
+                throw new NotFoundException("Email parameter is required");
+
+            var facility = await _context.Facilities.FirstOrDefaultAsync(f => f.Id == facilityId);
+            if (facility == null)
+                throw new NotFoundException($"Facility with ID {facilityId} not found");
+
+            var query = _context.FacilityStaffs
+                .Where(fs => fs.FacilityId == facilityId && fs.Staff.Email == email);
+
+            if (role.HasValue)
+                query = query.Where(fs => fs.Role == role.Value);
+
+            var facilityStaff = await query
+                .Include(fs => fs.Staff)
+                .FirstOrDefaultAsync();
+
+            if (facilityStaff == null)
+                throw new NotFoundException($"Staff with email {email}{(role.HasValue ? $" and role {role}" : "")} not found in this facility");
+
+            var response = new FacilityStaffResponse
+            {
+                Id = facilityStaff.Id,
+                FacilityId = facilityStaff.FacilityId,
+                StaffId = facilityStaff.StaffId,
+                StaffName = $"{facilityStaff.Staff.FirstName} {facilityStaff.Staff.LastName}",
+                Role = facilityStaff.Role,
+                Specialization = facilityStaff.Specialization,
+                StartDate = facilityStaff.StartDate,
+                EndDate = facilityStaff.EndDate,
+                IsActive = facilityStaff.IsActive,
+                CreatedAt = facilityStaff.CreatedAt,
+                UpdatedAt = facilityStaff.UpdatedAt
+            };
+
+            return Ok(response);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new ErrorResponse
+            {
+                ErrorCode = ex.ErrorCode,
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching staff by email");
+            return StatusCode(500, new ErrorResponse
+            {
+                ErrorCode = "INTERNAL_SERVER_ERROR",
+                Message = "An error occurred while searching for staff"
             });
         }
     }

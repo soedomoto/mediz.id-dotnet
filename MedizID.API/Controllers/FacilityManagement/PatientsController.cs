@@ -176,7 +176,7 @@ public class PatientsController : ControllerBase
             var facilityPatient = await _context.FacilityPatients
                 .Include(fp => fp.Patient)
                 .FirstOrDefaultAsync(fp => fp.Id == patientId && fp.FacilityId == facilityId);
-            
+
             if (facilityPatient == null)
                 throw new NotFoundException($"Patient with ID {patientId} not found");
 
@@ -239,7 +239,7 @@ public class PatientsController : ControllerBase
 
             var facilityPatient = await _context.FacilityPatients
                 .FirstOrDefaultAsync(fp => fp.Id == patientId && fp.FacilityId == facilityId);
-            
+
             if (facilityPatient == null)
                 throw new NotFoundException($"Patient with ID {patientId} not found");
 
@@ -273,6 +273,99 @@ public class PatientsController : ControllerBase
     }
 
     /// <summary>
+    /// Search patients by keyword (matches email, ID, first name, last name)
+    /// </summary>
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(PagedResult<FacilityPatientResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SearchPatients(
+        Guid facilityId,
+        [FromQuery] string keyword,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10
+    )
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+                throw new ArgumentException("Keyword parameter is required");
+
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+            var facility = await _context.Facilities.FirstOrDefaultAsync(f => f.Id == facilityId);
+            if (facility == null)
+                throw new NotFoundException($"Facility with ID {facilityId} not found");
+
+            // Normalize keyword for case-insensitive search
+            var normalizedKeyword = keyword.ToLower().Trim();
+
+            var query = _context.FacilityPatients
+                .Where(fp => fp.FacilityId == facilityId && fp.IsActive &&
+                    (fp.Id.ToString().ToLower().Contains(normalizedKeyword) ||
+                     (fp.Patient.Email != null && fp.Patient.Email.ToLower().Contains(normalizedKeyword)) ||
+                     fp.Patient.FirstName.ToLower().Contains(normalizedKeyword) ||
+                     fp.Patient.LastName.ToLower().Contains(normalizedKeyword)))
+                .AsQueryable();
+
+            var total = await query.CountAsync();
+
+            var patients = await query
+                .Include(fp => fp.Patient)
+                .OrderBy(fp => fp.Patient.FirstName)
+                .ThenBy(fp => fp.Patient.LastName)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(fp => new FacilityPatientResponse
+                {
+                    Id = fp.Id,
+                    FacilityId = fp.FacilityId,
+                    PatientId = fp.PatientId,
+                    PatientName = $"{fp.Patient.FirstName} {fp.Patient.LastName}",
+                    MedicalRecordNumber = fp.MedicalRecordNumber,
+                    IsActive = fp.IsActive,
+                    CreatedAt = fp.CreatedAt,
+                    UpdatedAt = fp.UpdatedAt
+                })
+                .ToListAsync();
+
+            return Ok(new PagedResult<FacilityPatientResponse>
+            {
+                Items = patients,
+                Total = total,
+                Page = page,
+                PageSize = pageSize
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid search request");
+            return BadRequest(new ErrorResponse
+            {
+                ErrorCode = "INVALID_REQUEST",
+                Message = ex.Message
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new ErrorResponse
+            {
+                ErrorCode = ex.ErrorCode,
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching patients");
+            return StatusCode(500, new ErrorResponse
+            {
+                ErrorCode = "INTERNAL_SERVER_ERROR",
+                Message = "An error occurred while searching for patients"
+            });
+        }
+    }
+
+    /// <summary>
     /// Search for available patients to add to facility
     /// </summary>
     [HttpGet("available")]
@@ -291,9 +384,9 @@ public class PatientsController : ControllerBase
 
             if (!string.IsNullOrEmpty(keyword))
             {
-                query = query.Where(u => 
-                    u.FirstName.Contains(keyword) || 
-                    u.LastName.Contains(keyword) || 
+                query = query.Where(u =>
+                    u.FirstName.Contains(keyword) ||
+                    u.LastName.Contains(keyword) ||
                     u.Email.Contains(keyword));
             }
 

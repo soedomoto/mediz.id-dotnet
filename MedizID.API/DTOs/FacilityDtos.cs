@@ -44,8 +44,8 @@ public class FacilityResponse
 
 public class CreateFacilityAppointmentRequest
 {
-    public Guid PatientId { get; set; }
-    public Guid? DoctorId { get; set; }
+    public Guid FacilityPatientId { get; set; }
+    public Guid? FacilityDoctorId { get; set; }
     public DateTime AppointmentDate { get; set; }
     public TimeSpan AppointmentTime { get; set; }
     public string? Reason { get; set; }
@@ -56,8 +56,8 @@ public class FacilityAppointmentResponse
 {
     public Guid Id { get; set; }
     public Guid FacilityId { get; set; }
-    public Guid PatientId { get; set; }
-    public Guid? DoctorId { get; set; }
+    public Guid FacilityPatientId { get; set; }
+    public Guid? FacilityDoctorId { get; set; }
     public DateTime AppointmentDate { get; set; }
     public TimeSpan AppointmentTime { get; set; }
     public string Status { get; set; } = null!;

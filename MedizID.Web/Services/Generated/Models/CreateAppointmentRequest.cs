@@ -22,8 +22,10 @@ namespace MedizID.Web.Services.Generated.Models
 #else
         public string AppointmentTime { get; set; }
 #endif
-        /// <summary>The doctorId property</summary>
-        public Guid? DoctorId { get; set; }
+        /// <summary>The facilityDoctorId property</summary>
+        public Guid? FacilityDoctorId { get; set; }
+        /// <summary>The facilityPatientId property</summary>
+        public Guid? FacilityPatientId { get; set; }
         /// <summary>The notes property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -32,8 +34,6 @@ namespace MedizID.Web.Services.Generated.Models
 #else
         public string Notes { get; set; }
 #endif
-        /// <summary>The patientId property</summary>
-        public Guid? PatientId { get; set; }
         /// <summary>The reason property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -62,9 +62,9 @@ namespace MedizID.Web.Services.Generated.Models
             {
                 { "appointmentDate", n => { AppointmentDate = n.GetDateTimeOffsetValue(); } },
                 { "appointmentTime", n => { AppointmentTime = n.GetStringValue(); } },
-                { "doctorId", n => { DoctorId = n.GetGuidValue(); } },
+                { "facilityDoctorId", n => { FacilityDoctorId = n.GetGuidValue(); } },
+                { "facilityPatientId", n => { FacilityPatientId = n.GetGuidValue(); } },
                 { "notes", n => { Notes = n.GetStringValue(); } },
-                { "patientId", n => { PatientId = n.GetGuidValue(); } },
                 { "reason", n => { Reason = n.GetStringValue(); } },
             };
         }
@@ -77,9 +77,9 @@ namespace MedizID.Web.Services.Generated.Models
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteDateTimeOffsetValue("appointmentDate", AppointmentDate);
             writer.WriteStringValue("appointmentTime", AppointmentTime);
-            writer.WriteGuidValue("doctorId", DoctorId);
+            writer.WriteGuidValue("facilityDoctorId", FacilityDoctorId);
+            writer.WriteGuidValue("facilityPatientId", FacilityPatientId);
             writer.WriteStringValue("notes", Notes);
-            writer.WriteGuidValue("patientId", PatientId);
             writer.WriteStringValue("reason", Reason);
         }
     }

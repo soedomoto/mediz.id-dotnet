@@ -150,7 +150,7 @@ public class MedicalRecordsController : ControllerBase
         try
         {
             // Validate patient exists
-            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == request.PatientId);
+            var patient = await _context.Users.FirstOrDefaultAsync(p => p.Id == request.PatientId);
             if (patient == null)
             {
                 return BadRequest(new ErrorResponse

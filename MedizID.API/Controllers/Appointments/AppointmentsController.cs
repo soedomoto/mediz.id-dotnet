@@ -41,23 +41,22 @@ public class AppointmentsController : ControllerBase
 
             var query = _context.Appointments.AsQueryable();
 
-            if (patientId.HasValue)
-                query = query.Where(a => a.PatientId == patientId.Value);
-
             var total = await query.CountAsync();
 
             var appointments = await query
-                .Include(a => a.Patient)
-                .Include(a => a.Doctor)
+                .Include(a => a.FacilityPatient)
+                .ThenInclude(fp => fp.Patient)
+                .Include(a => a.FacilityDoctor)
+                .ThenInclude(fs => fs.Staff)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(a => new AppointmentResponse
                 {
                     Id = a.Id,
-                    PatientId = a.PatientId,
-                    PatientName = a.Patient != null ? $"{a.Patient.FirstName} {a.Patient.LastName}" : "",
-                    DoctorId = a.DoctorId,
-                    DoctorName = a.Doctor != null ? $"{a.Doctor.FirstName} {a.Doctor.LastName}" : null,
+                    FacilityPatientId = a.FacilityPatientId,
+                    PatientName = a.FacilityPatient != null ? $"{a.FacilityPatient.Patient.FirstName} {a.FacilityPatient.Patient.LastName}" : "",
+                    FacilityDoctorId = a.FacilityDoctorId,
+                    DoctorName = a.FacilityDoctor != null ? $"{a.FacilityDoctor.Staff.FirstName} {a.FacilityDoctor.Staff.LastName}" : null,
                     AppointmentDate = a.AppointmentDate,
                     AppointmentTime = a.AppointmentTime,
                     Status = a.Status.ToString(),
@@ -96,8 +95,10 @@ public class AppointmentsController : ControllerBase
         try
         {
             var appointment = await _context.Appointments
-                .Include(a => a.Patient)
-                .Include(a => a.Doctor)
+                .Include(a => a.FacilityPatient)
+                .ThenInclude(fp => fp.Patient)
+                .Include(a => a.FacilityDoctor)
+                .ThenInclude(fs => fs.Staff)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             if (appointment == null)
@@ -109,11 +110,11 @@ public class AppointmentsController : ControllerBase
             var response = new AppointmentDetailResponse
             {
                 Id = appointment.Id,
-                PatientId = appointment.PatientId,
-                PatientName = appointment.Patient != null ? $"{appointment.Patient.FirstName} {appointment.Patient.LastName}" : "",
-                PatientIdNumber = appointment.Patient?.MedicalRecordNumber,
-                DoctorId = appointment.DoctorId,
-                DoctorName = appointment.Doctor != null ? $"{appointment.Doctor.FirstName} {appointment.Doctor.LastName}" : null,
+                FacilityPatientId = appointment.FacilityPatientId,
+                PatientName = appointment.FacilityPatient != null ? $"{appointment.FacilityPatient.Patient.FirstName} {appointment.FacilityPatient.Patient.LastName}" : "",
+                PatientIdNumber = appointment.FacilityPatient?.MedicalRecordNumber,
+                FacilityDoctorId = appointment.FacilityDoctorId,
+                DoctorName = appointment.FacilityDoctor != null ? $"{appointment.FacilityDoctor.Staff.FirstName} {appointment.FacilityDoctor.Staff.LastName}" : null,
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime,
                 Status = appointment.Status.ToString(),
@@ -154,21 +155,36 @@ public class AppointmentsController : ControllerBase
     {
         try
         {
-            // Validate patient exists
-            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == request.PatientId);
-            if (patient == null)
+            // Validate FacilityPatient exists
+            var facilityPatient = await _context.FacilityPatients
+                .Include(fp => fp.Patient)
+                .FirstOrDefaultAsync(fp => fp.Id == request.FacilityPatientId);
+            if (facilityPatient == null)
             {
                 return BadRequest(new ErrorResponse
                 {
-                    ErrorCode = "PATIENT_NOT_FOUND",
-                    Message = "Patient not found"
+                    ErrorCode = "FACILITY_PATIENT_NOT_FOUND",
+                    Message = "Facility patient not found"
+                });
+            }
+
+            // Validate FacilityStaff exists and has Doctor role
+            var facilityStaff = await _context.FacilityStaffs
+                .Include(fs => fs.Staff)
+                .FirstOrDefaultAsync(fs => fs.Id == request.FacilityDoctorId && fs.Role == UserRoleEnum.Doctor);
+            if (facilityStaff == null)
+            {
+                return BadRequest(new ErrorResponse
+                {
+                    ErrorCode = "FACILITY_STAFF_NOT_FOUND",
+                    Message = "Doctor not found or does not have doctor role"
                 });
             }
 
             // Check for appointment conflicts
             var existingAppointment = await _context.Appointments
                 .FirstOrDefaultAsync(a =>
-                    a.DoctorId == request.DoctorId &&
+                    a.FacilityDoctorId == request.FacilityDoctorId &&
                     a.AppointmentDate == request.AppointmentDate &&
                     a.AppointmentTime == request.AppointmentTime &&
                     a.Status != AppointmentStatusEnum.Cancelled &&
@@ -186,10 +202,12 @@ public class AppointmentsController : ControllerBase
             var appointment = new Appointment
             {
                 Id = Guid.NewGuid(),
-                PatientId = request.PatientId,
-                DoctorId = request.DoctorId,
-                FacilityId = patient.FacilityId,
-                AppointmentDate = request.AppointmentDate,
+                FacilityPatientId = request.FacilityPatientId,
+                FacilityDoctorId = request.FacilityDoctorId,
+                FacilityId = facilityPatient.FacilityId,
+                AppointmentDate = request.AppointmentDate.Kind == DateTimeKind.Local 
+                    ? request.AppointmentDate.ToUniversalTime() 
+                    : request.AppointmentDate,
                 AppointmentTime = request.AppointmentTime,
                 Reason = request.Reason,
                 Notes = request.Notes,
@@ -205,9 +223,10 @@ public class AppointmentsController : ControllerBase
             var response = new AppointmentResponse
             {
                 Id = appointment.Id,
-                PatientId = appointment.PatientId,
-                PatientName = $"{patient.FirstName} {patient.LastName}",
-                DoctorId = appointment.DoctorId,
+                FacilityPatientId = appointment.FacilityPatientId,
+                PatientName = $"{facilityPatient.Patient.FirstName} {facilityPatient.Patient.LastName}",
+                FacilityDoctorId = appointment.FacilityDoctorId,
+                DoctorName = $"{facilityStaff.Staff.FirstName} {facilityStaff.Staff.LastName}",
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime,
                 Status = appointment.Status.ToString(),
@@ -239,8 +258,10 @@ public class AppointmentsController : ControllerBase
         try
         {
             var appointment = await _context.Appointments
-                .Include(a => a.Patient)
-                .Include(a => a.Doctor)
+                .Include(a => a.FacilityPatient)
+                .ThenInclude(fp => fp.Patient)
+                .Include(a => a.FacilityDoctor)
+                .ThenInclude(fs => fs.Staff)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             if (appointment == null)
@@ -249,7 +270,9 @@ public class AppointmentsController : ControllerBase
             }
 
             if (request.AppointmentDate.HasValue)
-                appointment.AppointmentDate = request.AppointmentDate.Value;
+                appointment.AppointmentDate = request.AppointmentDate.Value.Kind == DateTimeKind.Local 
+                    ? request.AppointmentDate.Value.ToUniversalTime() 
+                    : request.AppointmentDate.Value;
 
             if (request.AppointmentTime.HasValue)
                 appointment.AppointmentTime = request.AppointmentTime.Value;
@@ -274,10 +297,10 @@ public class AppointmentsController : ControllerBase
             var response = new AppointmentResponse
             {
                 Id = appointment.Id,
-                PatientId = appointment.PatientId,
-                PatientName = appointment.Patient != null ? $"{appointment.Patient.FirstName} {appointment.Patient.LastName}" : "",
-                DoctorId = appointment.DoctorId,
-                DoctorName = appointment.Doctor != null ? $"{appointment.Doctor.FirstName} {appointment.Doctor.LastName}" : null,
+                FacilityPatientId = appointment.FacilityPatientId,
+                PatientName = appointment.FacilityPatient != null ? $"{appointment.FacilityPatient.Patient.FirstName} {appointment.FacilityPatient.Patient.LastName}" : "",
+                FacilityDoctorId = appointment.FacilityDoctorId,
+                DoctorName = appointment.FacilityDoctor != null ? $"{appointment.FacilityDoctor.Staff.FirstName} {appointment.FacilityDoctor.Staff.LastName}" : null,
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime,
                 Status = appointment.Status.ToString(),
@@ -359,6 +382,7 @@ public class AppointmentsController : ControllerBase
         try
         {
             var appointment = await _context.Appointments
+                .Include(a => a.FacilityPatient)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
 
             if (appointment == null)
@@ -370,9 +394,20 @@ public class AppointmentsController : ControllerBase
                 });
             }
 
+            // Get the patient ID from FacilityPatient
+            var patientId = appointment.FacilityPatient?.PatientId;
+            if (!patientId.HasValue)
+            {
+                return BadRequest(new ErrorResponse
+                {
+                    ErrorCode = "PATIENT_NOT_FOUND",
+                    Message = "Patient not associated with appointment"
+                });
+            }
+
             // Get medical records for the patient associated with this appointment
             var medicalRecords = await _context.MedicalRecords
-                .Where(mr => mr.PatientId == appointment.PatientId)
+                .Where(mr => mr.PatientId == patientId.Value)
                 .OrderByDescending(mr => mr.CreatedAt)
                 .Take(10)
                 .ToListAsync();

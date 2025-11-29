@@ -15,7 +15,7 @@ public class MedicalRecord
     public DateTime? UpdatedAt { get; set; }
 
     // Relationships
-    public Patient Patient { get; set; } = null!;
+    public ApplicationUser Patient { get; set; } = null!;
     public Appointment? Appointment { get; set; }
     public ApplicationUser? Doctor { get; set; }
     public ICollection<Anamnesis> Anamnesis { get; set; } = new List<Anamnesis>();

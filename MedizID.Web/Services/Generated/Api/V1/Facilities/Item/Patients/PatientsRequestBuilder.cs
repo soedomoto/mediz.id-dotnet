@@ -2,6 +2,7 @@
 #pragma warning disable CS0618
 using MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Available;
 using MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Item;
+using MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search;
 using MedizID.Web.Services.Generated.Models;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions.Serialization;
@@ -23,6 +24,11 @@ namespace MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients
         public global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Available.AvailableRequestBuilder Available
         {
             get => new global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Available.AvailableRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The search property</summary>
+        public global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search.SearchRequestBuilder Search
+        {
+            get => new global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search.SearchRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>Gets an item from the MedizID.Web.Services.Generated.api.v1.facilities.item.patients.item collection</summary>
         /// <param name="position">Unique identifier of the item</param>

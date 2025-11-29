@@ -9,47 +9,47 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
-namespace MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients
+namespace MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search
 {
     /// <summary>
-    /// Builds and executes requests for operations under \api\v1\Users\{id}\patients
+    /// Builds and executes requests for operations under \api\v1\facilities\{facilityId}\patients\search
     /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    public partial class PatientsRequestBuilder : BaseRequestBuilder
+    public partial class SearchRequestBuilder : BaseRequestBuilder
     {
         /// <summary>
-        /// Instantiates a new <see cref="global::MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients.PatientsRequestBuilder"/> and sets the default values.
+        /// Instantiates a new <see cref="global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search.SearchRequestBuilder"/> and sets the default values.
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public PatientsRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/Users/{id}/patients{?page*,pageSize*}", pathParameters)
+        public SearchRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/facilities/{facilityId}/patients/search{?keyword*,page*,pageSize*}", pathParameters)
         {
         }
         /// <summary>
-        /// Instantiates a new <see cref="global::MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients.PatientsRequestBuilder"/> and sets the default values.
+        /// Instantiates a new <see cref="global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search.SearchRequestBuilder"/> and sets the default values.
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public PatientsRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/Users/{id}/patients{?page*,pageSize*}", rawUrl)
+        public SearchRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/facilities/{facilityId}/patients/search{?keyword*,page*,pageSize*}", rawUrl)
         {
         }
         /// <returns>A <see cref="global::MedizID.Web.Services.Generated.Models.FacilityPatientResponsePagedResult"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
-        /// <exception cref="global::MedizID.Web.Services.Generated.Models.ErrorResponse">When receiving a 404 status code</exception>
+        /// <exception cref="global::MedizID.Web.Services.Generated.Models.ErrorResponse">When receiving a 400 status code</exception>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public async Task<global::MedizID.Web.Services.Generated.Models.FacilityPatientResponsePagedResult?> GetAsync(Action<RequestConfiguration<global::MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients.PatientsRequestBuilder.PatientsRequestBuilderGetQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::MedizID.Web.Services.Generated.Models.FacilityPatientResponsePagedResult?> GetAsync(Action<RequestConfiguration<global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search.SearchRequestBuilder.SearchRequestBuilderGetQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
-        public async Task<global::MedizID.Web.Services.Generated.Models.FacilityPatientResponsePagedResult> GetAsync(Action<RequestConfiguration<global::MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients.PatientsRequestBuilder.PatientsRequestBuilderGetQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::MedizID.Web.Services.Generated.Models.FacilityPatientResponsePagedResult> GetAsync(Action<RequestConfiguration<global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search.SearchRequestBuilder.SearchRequestBuilderGetQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
             var requestInfo = ToGetRequestInformation(requestConfiguration);
             var errorMapping = new Dictionary<string, ParsableFactory<IParsable>>
             {
-                { "404", global::MedizID.Web.Services.Generated.Models.ErrorResponse.CreateFromDiscriminatorValue },
+                { "400", global::MedizID.Web.Services.Generated.Models.ErrorResponse.CreateFromDiscriminatorValue },
             };
             return await RequestAdapter.SendAsync<global::MedizID.Web.Services.Generated.Models.FacilityPatientResponsePagedResult>(requestInfo, global::MedizID.Web.Services.Generated.Models.FacilityPatientResponsePagedResult.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
@@ -57,11 +57,11 @@ namespace MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<global::MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients.PatientsRequestBuilder.PatientsRequestBuilderGetQueryParameters>>? requestConfiguration = default)
+        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search.SearchRequestBuilder.SearchRequestBuilderGetQueryParameters>>? requestConfiguration = default)
         {
 #nullable restore
 #else
-        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<global::MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients.PatientsRequestBuilder.PatientsRequestBuilderGetQueryParameters>> requestConfiguration = default)
+        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search.SearchRequestBuilder.SearchRequestBuilderGetQueryParameters>> requestConfiguration = default)
         {
 #endif
             var requestInfo = new RequestInformation(Method.GET, UrlTemplate, PathParameters);
@@ -72,17 +72,26 @@ namespace MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients
         /// <summary>
         /// Returns a request builder with the provided arbitrary URL. Using this method means any other path or query parameters are ignored.
         /// </summary>
-        /// <returns>A <see cref="global::MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients.PatientsRequestBuilder"/></returns>
+        /// <returns>A <see cref="global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search.SearchRequestBuilder"/></returns>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
-        public global::MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients.PatientsRequestBuilder WithUrl(string rawUrl)
+        public global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search.SearchRequestBuilder WithUrl(string rawUrl)
         {
-            return new global::MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients.PatientsRequestBuilder(rawUrl, RequestAdapter);
+            return new global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search.SearchRequestBuilder(rawUrl, RequestAdapter);
         }
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         #pragma warning disable CS1591
-        public partial class PatientsRequestBuilderGetQueryParameters 
+        public partial class SearchRequestBuilderGetQueryParameters 
         #pragma warning restore CS1591
         {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            [QueryParameter("keyword")]
+            public string? Keyword { get; set; }
+#nullable restore
+#else
+            [QueryParameter("keyword")]
+            public string Keyword { get; set; }
+#endif
             [QueryParameter("page")]
             public int? Page { get; set; }
             [QueryParameter("pageSize")]
@@ -93,7 +102,7 @@ namespace MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients
         /// </summary>
         [Obsolete("This class is deprecated. Please use the generic RequestConfiguration class generated by the generator.")]
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-        public partial class PatientsRequestBuilderGetRequestConfiguration : RequestConfiguration<global::MedizID.Web.Services.Generated.Api.V1.Users.Item.Patients.PatientsRequestBuilder.PatientsRequestBuilderGetQueryParameters>
+        public partial class SearchRequestBuilderGetRequestConfiguration : RequestConfiguration<global::MedizID.Web.Services.Generated.Api.V1.Facilities.Item.Patients.Search.SearchRequestBuilder.SearchRequestBuilderGetQueryParameters>
         {
         }
     }

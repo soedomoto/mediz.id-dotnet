@@ -20,6 +20,6 @@ public class Facility
     // Relationships
     public ICollection<ApplicationUser> Users { get; set; } = new List<ApplicationUser>();
     public ICollection<Department> Departments { get; set; } = new List<Department>();
-    public ICollection<Patient> Patients { get; set; } = new List<Patient>();
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public ICollection<FacilityPatient> FacilityPatients { get; set; } = new List<FacilityPatient>();
 }

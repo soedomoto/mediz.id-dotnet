@@ -10,7 +10,6 @@ using MedizID.Web.Services.Generated.Api.V1.Facilities;
 using MedizID.Web.Services.Generated.Api.V1.Laboratorium;
 using MedizID.Web.Services.Generated.Api.V1.MedicalRecords;
 using MedizID.Web.Services.Generated.Api.V1.Odontogram;
-using MedizID.Web.Services.Generated.Api.V1.Patients;
 using MedizID.Web.Services.Generated.Api.V1.Prescriptions;
 using MedizID.Web.Services.Generated.Api.V1.STI;
 using MedizID.Web.Services.Generated.Api.V1.Users;
@@ -77,11 +76,6 @@ namespace MedizID.Web.Services.Generated.Api.V1
         public global::MedizID.Web.Services.Generated.Api.V1.Odontogram.OdontogramRequestBuilder Odontogram
         {
             get => new global::MedizID.Web.Services.Generated.Api.V1.Odontogram.OdontogramRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The Patients property</summary>
-        public global::MedizID.Web.Services.Generated.Api.V1.Patients.PatientsRequestBuilder Patients
-        {
-            get => new global::MedizID.Web.Services.Generated.Api.V1.Patients.PatientsRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The Prescriptions property</summary>
         public global::MedizID.Web.Services.Generated.Api.V1.Prescriptions.PrescriptionsRequestBuilder Prescriptions

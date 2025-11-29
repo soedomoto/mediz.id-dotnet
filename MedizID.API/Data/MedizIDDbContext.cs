@@ -14,7 +14,6 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     // Core entities
     public DbSet<Facility> Facilities { get; set; }
     public DbSet<Department> Departments { get; set; }
-    public DbSet<Patient> Patients { get; set; }
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<MedicalRecord> MedicalRecords { get; set; }
 
@@ -74,12 +73,6 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .WithOne(d => d.Facility)
             .HasForeignKey(d => d.FacilityId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Facility>()
-            .HasMany(f => f.Patients)
-            .WithOne(p => p.Facility)
-            .HasForeignKey(p => p.FacilityId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Facility>()
             .HasMany(f => f.Appointments)
@@ -202,9 +195,15 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Appointment>()
-            .HasOne(a => a.Doctor)
+            .HasOne(a => a.FacilityPatient)
             .WithMany()
-            .HasForeignKey(a => a.DoctorId)
+            .HasForeignKey(a => a.FacilityPatientId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Appointment>()
+            .HasOne(a => a.FacilityDoctor)
+            .WithMany()
+            .HasForeignKey(a => a.FacilityDoctorId)
             .OnDelete(DeleteBehavior.SetNull);
 
         // MedicalRecord relationships
