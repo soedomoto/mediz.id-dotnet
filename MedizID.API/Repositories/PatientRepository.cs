@@ -43,14 +43,12 @@ public class PatientRepository : BaseRepository<Patient>, IPatientRepository
     public async Task<Patient?> GetWithMedicalRecordsAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(p => p.MedicalRecords)
             .FirstOrDefaultAsync(p => p.Id == patientId, cancellationToken);
     }
 
     public async Task<Patient?> GetWithAppointmentsAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(p => p.Appointments)
             .FirstOrDefaultAsync(p => p.Id == patientId, cancellationToken);
     }
 }

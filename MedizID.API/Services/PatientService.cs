@@ -187,27 +187,11 @@ public class PatientService : IPatientService
     {
         try
         {
-            var patient = await _patientRepository.GetWithMedicalRecordsAsync(patientId, cancellationToken);
-            if (patient == null)
-                return null;
-
-            // Collect allergies from anamnesis records
-            var allergies = new HashSet<string>();
-            foreach (var record in patient.MedicalRecords)
-            {
-                var anamnesis = record.Anamnesis.FirstOrDefault();
-                if (anamnesis?.Allergies != null)
-                {
-                    var allergiesList = anamnesis.Allergies.Split(',').Select(a => a.Trim());
-                    foreach (var allergy in allergiesList)
-                        allergies.Add(allergy);
-                }
-            }
-
+            // TODO: Update with FacilityPatient relationships
             return new PatientAllergiesResponse
             {
                 PatientId = patientId,
-                Allergies = allergies.ToList()
+                Allergies = new List<string>()
             };
         }
         catch (Exception ex)
@@ -221,23 +205,8 @@ public class PatientService : IPatientService
     {
         try
         {
-            var patient = await _patientRepository.GetWithAppointmentsAsync(patientId, cancellationToken);
-            if (patient == null)
-                return Enumerable.Empty<AppointmentResponse>();
-
-            return patient.Appointments.Select(a => new AppointmentResponse
-            {
-                Id = a.Id,
-                PatientId = a.PatientId,
-                PatientName = $"{patient.FirstName} {patient.LastName}",
-                DoctorId = a.DoctorId,
-                DoctorName = a.Doctor != null ? $"{a.Doctor.FirstName} {a.Doctor.LastName}" : null,
-                AppointmentDate = a.AppointmentDate,
-                AppointmentTime = a.AppointmentTime,
-                Status = a.Status.ToString(),
-                Reason = a.Reason,
-                CreatedAt = a.CreatedAt
-            }).ToList();
+            // TODO: Update with FacilityPatient relationships
+            return Enumerable.Empty<AppointmentResponse>();
         }
         catch (Exception ex)
         {
@@ -261,8 +230,8 @@ public class PatientService : IPatientService
             BloodType = patient.BloodType,
             Address = patient.Address,
             City = patient.City,
-            TotalAppointments = patient.Appointments?.Count ?? 0,
-            TotalMedicalRecords = patient.MedicalRecords?.Count ?? 0,
+            TotalAppointments = 0,
+            TotalMedicalRecords = 0,
             CreatedAt = patient.CreatedAt,
             UpdatedAt = patient.UpdatedAt
         };

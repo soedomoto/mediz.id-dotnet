@@ -12,16 +12,8 @@ namespace MedizID.Web.Services.Generated.Models
     public partial class AddStaffToFacilityRequest : IParsable
     #pragma warning restore CS1591
     {
-        /// <summary>The departmentId property</summary>
-        public Guid? DepartmentId { get; set; }
-        /// <summary>The position property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? Position { get; set; }
-#nullable restore
-#else
-        public string Position { get; set; }
-#endif
+        /// <summary>The role property</summary>
+        public int? Role { get; set; }
         /// <summary>The specialization property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -50,8 +42,7 @@ namespace MedizID.Web.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "departmentId", n => { DepartmentId = n.GetGuidValue(); } },
-                { "position", n => { Position = n.GetStringValue(); } },
+                { "role", n => { Role = n.GetIntValue(); } },
                 { "specialization", n => { Specialization = n.GetStringValue(); } },
                 { "staffId", n => { StaffId = n.GetGuidValue(); } },
             };
@@ -63,8 +54,7 @@ namespace MedizID.Web.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteGuidValue("departmentId", DepartmentId);
-            writer.WriteStringValue("position", Position);
+            writer.WriteIntValue("role", Role);
             writer.WriteStringValue("specialization", Specialization);
             writer.WriteGuidValue("staffId", StaffId);
         }

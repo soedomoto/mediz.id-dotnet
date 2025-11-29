@@ -46,8 +46,7 @@ public class StaffsController : ControllerBase
                 Id = Guid.NewGuid(),
                 FacilityId = facilityId,
                 StaffId = request.StaffId,
-                DepartmentId = request.DepartmentId,
-                Position = request.Position,
+                Role = request.Role,
                 Specialization = request.Specialization,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
@@ -63,8 +62,7 @@ public class StaffsController : ControllerBase
                 Id = facilityStaff.Id,
                 FacilityId = facilityStaff.FacilityId,
                 StaffId = facilityStaff.StaffId,
-                DepartmentId = facilityStaff.DepartmentId,
-                Position = facilityStaff.Position,
+                Role = facilityStaff.Role,
                 Specialization = facilityStaff.Specialization,
                 StartDate = facilityStaff.StartDate,
                 EndDate = facilityStaff.EndDate,
@@ -126,8 +124,8 @@ public class StaffsController : ControllerBase
                     Id = fs.Id,
                     FacilityId = fs.FacilityId,
                     StaffId = fs.StaffId,
-                    DepartmentId = fs.DepartmentId,
-                    Position = fs.Position,
+                    StaffName = fs.Staff.FirstName + " " + fs.Staff.LastName,
+                    Role = fs.Role,
                     Specialization = fs.Specialization,
                     StartDate = fs.StartDate,
                     EndDate = fs.EndDate,
@@ -182,11 +180,8 @@ public class StaffsController : ControllerBase
             if (facilityStaff == null)
                 throw new NotFoundException($"Staff with ID {staffId} not found");
 
-            if (request.DepartmentId.HasValue)
-                facilityStaff.DepartmentId = request.DepartmentId;
-
-            if (!string.IsNullOrEmpty(request.Position))
-                facilityStaff.Position = request.Position;
+            if (request.Role.HasValue)
+                facilityStaff.Role = request.Role.Value;
 
             if (!string.IsNullOrEmpty(request.Specialization))
                 facilityStaff.Specialization = request.Specialization;
@@ -206,8 +201,7 @@ public class StaffsController : ControllerBase
                 Id = facilityStaff.Id,
                 FacilityId = facilityStaff.FacilityId,
                 StaffId = facilityStaff.StaffId,
-                DepartmentId = facilityStaff.DepartmentId,
-                Position = facilityStaff.Position,
+                Role = facilityStaff.Role,
                 Specialization = facilityStaff.Specialization,
                 StartDate = facilityStaff.StartDate,
                 EndDate = facilityStaff.EndDate,

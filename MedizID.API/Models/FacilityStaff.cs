@@ -1,3 +1,5 @@
+using MedizID.API.Common.Enums;
+
 namespace MedizID.API.Models;
 
 public class FacilityStaff
@@ -5,8 +7,7 @@ public class FacilityStaff
     public Guid Id { get; set; }
     public Guid FacilityId { get; set; }
     public Guid StaffId { get; set; }
-    public Guid? DepartmentId { get; set; }
-    public string Position { get; set; } = null!;
+    public UserRoleEnum Role { get; set; }
     public string? Specialization { get; set; }
     public DateTime StartDate { get; set; } = DateTime.UtcNow;
     public DateTime? EndDate { get; set; }
@@ -17,5 +18,4 @@ public class FacilityStaff
     // Relationships
     public Facility Facility { get; set; } = null!;
     public ApplicationUser Staff { get; set; } = null!;
-    public Department? Department { get; set; }
 }

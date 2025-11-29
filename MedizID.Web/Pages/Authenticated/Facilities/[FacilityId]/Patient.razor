@@ -1,55 +1,161 @@
 @page "/facilities/{FacilityId:guid}/patient"
 @using System.Threading.Tasks
+@using MedizID.Web.Services.Generated.Models
 @layout FacilityLayout
 @inject ILocalStorageService LocalStorage
 @inject MedizIdApiClient ApiClient
 @inject FacilityLayoutState LayoutState
+@inject INotificationService _notice
+@inject ModalService _modalService
 @implements IAsyncDisposable
 
-<PageTitle>@(LayoutState.Facility != null ? LayoutState.Facility.Name + " - Patient" : "MedizID")</PageTitle>
+<PageTitle>@(LayoutState.Facility != null ? LayoutState.Facility.Name + " - Patients" : "MedizID")</PageTitle>
 
-<Table @ref="facilityTable" TItem="FacilityResponse" DataSource="facilityTableDS" PageSize="10"
-    Total="facilityTableTotal" OnChange="OnFacilityTableChange" ScrollX="1500">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h2>Patients</h2>
+    <Button Type="ButtonType.Primary" @onclick="OpenAddPatientModal">
+        + Add Patient
+    </Button>
+</div>
+
+<Table @ref="patientTable" TItem="FacilityPatientResponse" DataSource="patientTableDS" PageSize="10" Total="patientTableTotal"
+    OnChange="OnPatientTableChange" ScrollX="800">
     <ColumnDefinitions Context="row">
-        <Column Title="Name" TData="FacilityResponse">
-            <NavLink href="@($"/facilities/{row?.Id}")">@row?.Name</NavLink>
+        <Column Title="Name" DataIndex="@nameof(FacilityPatientResponse.PatientName)" TData="string" />
+        <Column Title="Medical Record #" DataIndex="@nameof(FacilityPatientResponse.MedicalRecordNumber)" TData="string" />
+        <Column Title="Active" DataIndex="@nameof(FacilityPatientResponse.IsActive)" TData="bool?" />
+        <Column Title="Actions" TData="FacilityPatientResponse">
+            <Space>
+                <SpaceItem>
+                    <Button Type="ButtonType.Primary" Size="ButtonSize.Small"
+                        @onclick="@((MouseEventArgs e) => OpenUpdatePatientModal(row))">
+                        Edit
+                    </Button>
+                </SpaceItem>
+                <SpaceItem>
+                    <Button Danger Size="ButtonSize.Small"
+                        @onclick="@((MouseEventArgs e) => OpenDeletePatientModal(row))">
+                        Delete
+                    </Button>
+                </SpaceItem>
+            </Space>
         </Column>
-        <Column Title="Email" DataIndex="@nameof(FacilityResponse.Email)" TData="string" />
-        <Column Title="Phone" DataIndex="@nameof(FacilityResponse.PhoneNumber)" TData="string" />
-        <Column Title="City" DataIndex="@nameof(FacilityResponse.City)" TData="string" />
-        <Column Title="Address" DataIndex="@nameof(FacilityResponse.Address)" TData="string" />
-        <Column Title="Active" DataIndex="@nameof(FacilityResponse.IsActive)" TData="bool?" />
-        @* <Column Title="Actions" TData="FacilityResponse">
-                <Space>
-                    <SpaceItem>
-                        <Button Type="ButtonType.Primary" Size="ButtonSize.Small"
-                            @onclick="@((MouseEventArgs e) => OpenUpdateFacilityModal(row))">
-                            Edit
-                        </Button>
-                    </SpaceItem>
-                    <SpaceItem>
-                        <Button Danger Size="ButtonSize.Small"
-                            @onclick="@((MouseEventArgs e) => OpenDeleteFacilityModal(row))">
-                            Delete
-                        </Button>
-                    </SpaceItem>
-                </Space>
-            </Column> *@
     </ColumnDefinitions>
 </Table>
+
+<Modal Title="Add New Patient" Visible="isAddPatientModalVisible" OnOk="OnAddPatientSaveClick"
+    OnCancel="CloseAddPatientModal" BodyStyle="max-height: 60vh; overflow-y: auto;">
+    @if (!string.IsNullOrEmpty(addPatientErrorMessage))
+    {
+        <Alert Message="Error" Description="@addPatientErrorMessage" Type="AlertType.Error" ShowIcon="true"
+            Style="margin-bottom: 16px;" />
+    }
+
+    <Form Model="newPatient" Layout="FormLayout.Vertical">
+        <FormItem Label="Patient ID" Required>
+            <AutoComplete @bind-Value="@newPatientKeyword" OnInput="OnNewPatientSearch" Options="@newPatientOptions"
+                OnSelectionChange="@((AutoCompleteOption item) => OnNewPatientSelected(item))"
+                Placeholder="Search patient by name or email" DebounceMilliseconds="300">
+                <OptionTemplate Context="option">
+                    <AutoCompleteOption Value="@option.Value.Id"
+                        Label="@($"{option.Value.FirstName} {option.Value.LastName} ({option.Value.Email})")" />
+                </OptionTemplate>
+            </AutoComplete>
+        </FormItem>
+    </Form>
+</Modal>
+
+<Modal Title="Update Patient" Visible="isUpdatePatientModalVisible" OnOk="OnUpdatePatientSaveClick"
+    OnCancel="CloseUpdatePatientModal" BodyStyle="max-height: 60vh; overflow-y: auto;">
+    @if (!string.IsNullOrEmpty(updatePatientErrorMessage))
+    {
+        <Alert Message="Error" Description="@updatePatientErrorMessage" Type="AlertType.Error" ShowIcon="true"
+            Style="margin-bottom: 16px;" />
+    }
+
+    <Form Model="updatePatient" Layout="FormLayout.Vertical">
+        <FormItem Label="Active">
+            <Checkbox Checked="@(updatePatient.IsActive ?? false)"
+                CheckedChanged="@((bool value) => updatePatient.IsActive = value)" />
+        </FormItem>
+    </Form>
+</Modal>
+
+<Modal Title="Delete Patient" Visible="isDeletePatientModalVisible" OnOk="OnDeletePatientConfirm"
+    OnCancel="CloseDeletePatientModal" OkButtonProps="new ButtonProps { Danger = true }" OkText="@("Delete")"
+    CancelText="@("Cancel")" BodyStyle="max-height: 60vh; overflow-y: auto;">
+    <div>
+        <p>Are you sure you want to delete this patient assignment?</p>
+        <p style="color: #ff4d4f; font-weight: bold;">This action cannot be undone.</p>
+    </div>
+</Modal>
 
 @code {
     [Parameter]
     public Guid FacilityId { get; set; }
+
     // Table-related fields
-    ITable? facilityTable;
-    List<FacilityResponse> facilityTableDS = [];
-    int facilityTableTotal = 0;
+    ITable? patientTable;
+    List<FacilityPatientResponse> patientTableDS = [];
+    int patientTableTotal = 0;
+
+    // Add new patient modal and form-related fields
+    string? newPatientKeyword;
+    List<UserResponse> newPatientOptions = [];
+
+    async Task OnNewPatientSearch(ChangeEventArgs e)
+    {
+        newPatientOptions = await SearchPatientData(e.Value?.ToString());
+    }
+
+    void OnNewPatientSelected(AutoCompleteOption item)
+    {
+        if (item?.Value != null && Guid.TryParse(item.Value.ToString(), out var patientId))
+        {
+            newPatient.PatientId = patientId;
+        }
+    }
+    bool isAddPatientModalVisible = false;
+    bool isAddPatientSaving = false;
+    CreateFacilityPatientRequest newPatient = new CreateFacilityPatientRequest();
+    string? addPatientErrorMessage;
+
+    // Update patient modal and form-related fields
+    bool isUpdatePatientModalVisible = false;
+    bool isUpdatePatientSaving = false;
+    Guid? selectedPatientId;
+    UpdateFacilityPatientRequest updatePatient = new UpdateFacilityPatientRequest();
+    string? updatePatientErrorMessage;
+
+    // Delete patient modal and form-related fields
+    bool isDeletePatientSaving = false;
+    bool isDeletePatientModalVisible = false;
+    Guid? patientIdToDelete;
+    string? deletePatientName;
 
     protected override async Task OnInitializedAsync()
     {
         LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
         LayoutState.ActiveTabKey = "patient";
+    }
+
+    private async Task<List<UserResponse>> SearchPatientData(string? keyword)
+    {
+        try
+        {
+            // Load available patients
+            var patientResponse = await ApiClient.Api.V1.Users.Search.GetAsync(config =>
+            {
+                config.QueryParameters.Keyword = keyword;
+                config.QueryParameters.Page = 1;
+                config.QueryParameters.PageSize = 1000;
+            });
+            return patientResponse?.Items ?? [];
+        }
+        catch
+        {
+            return [];
+        }
     }
 
     private async void OnAuthenticationChanged(bool isAuthenticated)
@@ -61,15 +167,213 @@
         }
     }
 
-    async Task OnFacilityTableChange(QueryModel<FacilityResponse> query)
+    async Task OnPatientTableChange(QueryModel<FacilityPatientResponse> query)
     {
-        var response = await ApiClient.Api.V1.Facilities.GetAsync(config =>
+        var response = await ApiClient.Api.V1.Facilities[FacilityId].Patients.GetAsync(config =>
         {
             config.QueryParameters.Page = query.PageIndex;
             config.QueryParameters.PageSize = query.PageSize;
         });
-        facilityTableTotal = response?.Total ?? 0;
-        facilityTableDS = response?.Items ?? [];
+        patientTableTotal = response?.Total ?? 0;
+        patientTableDS = response?.Items ?? [];
+    }
+
+    void OpenAddPatientModal()
+    {
+        newPatient = new CreateFacilityPatientRequest();
+        addPatientErrorMessage = null;
+        isAddPatientModalVisible = true;
+    }
+
+    void CloseAddPatientModal()
+    {
+        isAddPatientModalVisible = false;
+        newPatient = new CreateFacilityPatientRequest();
+        addPatientErrorMessage = null;
+    }
+
+    async Task OnAddPatientSaveClick()
+    {
+        // Validation
+        if (newPatient.PatientId == Guid.Empty)
+        {
+            addPatientErrorMessage = "Patient is required.";
+            return;
+        }
+
+        try
+        {
+            isAddPatientSaving = true;
+            addPatientErrorMessage = null;
+
+            var response = await ApiClient.Api.V1.Facilities[FacilityId].Patients.PostAsync(newPatient);
+
+            if (response != null)
+            {
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Patient added successfully!",
+                    NotificationType = NotificationType.Success
+                });
+
+                isAddPatientModalVisible = false;
+                newPatient = new CreateFacilityPatientRequest();
+
+                // Refresh the table by reloading initial data
+                var queryResponse = await ApiClient.Api.V1.Facilities[FacilityId].Patients.GetAsync(config =>
+                {
+                    config.QueryParameters.Page = 1;
+                    config.QueryParameters.PageSize = 10;
+                });
+                patientTableTotal = queryResponse?.Total ?? 0;
+                patientTableDS = queryResponse?.Items ?? [];
+            }
+            else
+            {
+                addPatientErrorMessage = "Failed to add patient. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            addPatientErrorMessage = $"Error adding patient: {ex.Message}";
+        }
+        finally
+        {
+            isAddPatientSaving = false;
+        }
+    }
+
+    async Task OpenUpdatePatientModal(FacilityPatientResponse patient)
+    {
+        selectedPatientId = patient.Id;
+        updatePatient = new UpdateFacilityPatientRequest
+        {
+            IsActive = patient.IsActive
+        };
+        updatePatientErrorMessage = null;
+        isUpdatePatientModalVisible = true;
+    }
+
+    void CloseUpdatePatientModal()
+    {
+        isUpdatePatientModalVisible = false;
+        updatePatient = new UpdateFacilityPatientRequest();
+        updatePatientErrorMessage = null;
+        selectedPatientId = null;
+    }
+
+    async Task OnUpdatePatientSaveClick()
+    {
+        try
+        {
+            isUpdatePatientSaving = true;
+            updatePatientErrorMessage = null;
+
+            if (selectedPatientId == null || selectedPatientId == Guid.Empty)
+            {
+                updatePatientErrorMessage = "No patient selected.";
+                return;
+            }
+
+            var response = await ApiClient.Api.V1.Facilities[FacilityId].Patients[selectedPatientId.Value].PutAsync(updatePatient);
+
+            if (response != null)
+            {
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Patient updated successfully!",
+                    NotificationType = NotificationType.Success
+                });
+
+                isUpdatePatientModalVisible = false;
+                updatePatient = new UpdateFacilityPatientRequest();
+
+                // Refresh the table by reloading initial data
+                var queryResponse = await ApiClient.Api.V1.Facilities[FacilityId].Patients.GetAsync(config =>
+                {
+                    config.QueryParameters.Page = 1;
+                    config.QueryParameters.PageSize = 10;
+                });
+                patientTableTotal = queryResponse?.Total ?? 0;
+                patientTableDS = queryResponse?.Items ?? [];
+            }
+            else
+            {
+                updatePatientErrorMessage = "Failed to update patient. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            updatePatientErrorMessage = $"Error updating patient: {ex.Message}";
+        }
+        finally
+        {
+            isUpdatePatientSaving = false;
+        }
+    }
+
+    void OpenDeletePatientModal(FacilityPatientResponse patient)
+    {
+        patientIdToDelete = patient.Id;
+        deletePatientName = patient.PatientName;
+        isDeletePatientModalVisible = true;
+    }
+
+    void CloseDeletePatientModal()
+    {
+        isDeletePatientModalVisible = false;
+        patientIdToDelete = null;
+        deletePatientName = null;
+    }
+
+    async Task OnDeletePatientConfirm()
+    {
+        try
+        {
+            isDeletePatientSaving = true;
+
+            if (patientIdToDelete == null || patientIdToDelete == Guid.Empty)
+            {
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Error: No patient selected for deletion.",
+                    NotificationType = NotificationType.Error
+                });
+                return;
+            }
+
+            await ApiClient.Api.V1.Facilities[FacilityId].Patients[patientIdToDelete.Value].DeleteAsync();
+
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Patient deleted successfully!",
+                NotificationType = NotificationType.Success
+            });
+
+            patientIdToDelete = null;
+            isDeletePatientModalVisible = false;
+
+            // Refresh the table by reloading initial data
+            var queryResponse = await ApiClient.Api.V1.Facilities[FacilityId].Patients.GetAsync(config =>
+            {
+                config.QueryParameters.Page = 1;
+                config.QueryParameters.PageSize = 10;
+            });
+            patientTableTotal = queryResponse?.Total ?? 0;
+            patientTableDS = queryResponse?.Items ?? [];
+        }
+        catch (Exception ex)
+        {
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error deleting patient: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            isDeletePatientSaving = false;
+        }
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()

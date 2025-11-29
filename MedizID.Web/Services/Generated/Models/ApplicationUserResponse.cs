@@ -9,30 +9,44 @@ namespace MedizID.Web.Services.Generated.Models
 {
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
     #pragma warning disable CS1591
-    public partial class UpdateFacilityStaffRequest : IParsable
+    public partial class ApplicationUserResponse : IParsable
     #pragma warning restore CS1591
     {
-        /// <summary>The isActive property</summary>
-        public bool? IsActive { get; set; }
-        /// <summary>The role property</summary>
-        public int? Role { get; set; }
-        /// <summary>The specialization property</summary>
+        /// <summary>The email property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? Specialization { get; set; }
+        public string? Email { get; set; }
 #nullable restore
 #else
-        public string Specialization { get; set; }
+        public string Email { get; set; }
+#endif
+        /// <summary>The firstName property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? FirstName { get; set; }
+#nullable restore
+#else
+        public string FirstName { get; set; }
+#endif
+        /// <summary>The id property</summary>
+        public Guid? Id { get; set; }
+        /// <summary>The lastName property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? LastName { get; set; }
+#nullable restore
+#else
+        public string LastName { get; set; }
 #endif
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
-        /// <returns>A <see cref="global::MedizID.Web.Services.Generated.Models.UpdateFacilityStaffRequest"/></returns>
+        /// <returns>A <see cref="global::MedizID.Web.Services.Generated.Models.ApplicationUserResponse"/></returns>
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-        public static global::MedizID.Web.Services.Generated.Models.UpdateFacilityStaffRequest CreateFromDiscriminatorValue(IParseNode parseNode)
+        public static global::MedizID.Web.Services.Generated.Models.ApplicationUserResponse CreateFromDiscriminatorValue(IParseNode parseNode)
         {
             if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-            return new global::MedizID.Web.Services.Generated.Models.UpdateFacilityStaffRequest();
+            return new global::MedizID.Web.Services.Generated.Models.ApplicationUserResponse();
         }
         /// <summary>
         /// The deserialization information for the current model
@@ -42,9 +56,10 @@ namespace MedizID.Web.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "isActive", n => { IsActive = n.GetBoolValue(); } },
-                { "role", n => { Role = n.GetIntValue(); } },
-                { "specialization", n => { Specialization = n.GetStringValue(); } },
+                { "email", n => { Email = n.GetStringValue(); } },
+                { "firstName", n => { FirstName = n.GetStringValue(); } },
+                { "id", n => { Id = n.GetGuidValue(); } },
+                { "lastName", n => { LastName = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -54,9 +69,10 @@ namespace MedizID.Web.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteBoolValue("isActive", IsActive);
-            writer.WriteIntValue("role", Role);
-            writer.WriteStringValue("specialization", Specialization);
+            writer.WriteStringValue("email", Email);
+            writer.WriteStringValue("firstName", FirstName);
+            writer.WriteGuidValue("id", Id);
+            writer.WriteStringValue("lastName", LastName);
         }
     }
 }

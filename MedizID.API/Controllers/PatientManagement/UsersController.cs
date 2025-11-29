@@ -77,6 +77,84 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
+    /// Search users by keyword (matches email, ID, first name, last name)
+    /// </summary>
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(PagedResult<UserResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SearchUsers(
+        [FromQuery] string keyword,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+                throw new ArgumentException("Keyword parameter is required");
+
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+            // Normalize keyword for case-insensitive search
+            var normalizedKeyword = keyword.ToLower().Trim();
+
+            var query = _context.Users
+                .Where(u => u.IsActive &&
+                    (u.Id.ToString().ToLower().Contains(normalizedKeyword) ||
+                     (u.Email != null && u.Email.ToLower().Contains(normalizedKeyword)) ||
+                     u.FirstName.ToLower().Contains(normalizedKeyword) ||
+                     u.LastName.ToLower().Contains(normalizedKeyword)))
+                .AsQueryable();
+
+            var total = await query.CountAsync();
+
+            var users = await query
+                .OrderBy(u => u.FirstName)
+                .ThenBy(u => u.LastName)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(u => new UserResponse
+                {
+                    Id = u.Id,
+                    Email = u.Email ?? string.Empty,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    Role = u.Role.ToString(),
+                    PhoneNumber = u.PhoneNumber,
+                    IsActive = u.IsActive,
+                    CreatedAt = u.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(new PagedResult<UserResponse>
+            {
+                Items = users,
+                Total = total,
+                Page = page,
+                PageSize = pageSize
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid search request");
+            return BadRequest(new ErrorResponse
+            {
+                ErrorCode = "INVALID_REQUEST",
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching users");
+            return StatusCode(500, new ErrorResponse
+            {
+                ErrorCode = "INTERNAL_SERVER_ERROR",
+                Message = "An error occurred while searching for users"
+            });
+        }
+    }
+
+    /// <summary>
     /// Search user by email
     /// </summary>
     [HttpGet("search/email")]
@@ -584,9 +662,8 @@ public class UsersController : ControllerBase
             if (page < 1) page = 1;
             if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
+            // TODO: Update with FacilityPatient relationships
             var query = _context.Patients
-                .Where(p => p.Appointments.Any(a => a.DoctorId == id))
-                .Distinct()
                 .AsQueryable();
 
             var total = await query.CountAsync();

@@ -20,7 +20,7 @@ if ! command -v kiota &> /dev/null; then
     dotnet tool install -g microsoft.kiota.cli
 fi
 
-# Generate the client
+# Generate the client with enum support
 kiota generate \
     --openapi "$SWAGGER_URL" \
     --language CSharp \
@@ -38,6 +38,8 @@ echo "📦 Generated files:"
 ls -la "$OUTPUT_DIR" | grep -v "^total" | grep -v "^d" | awk '{print "   " $NF}'
 
 echo ""
-echo "🔄 Updating kiota-lock.json..."
+echo "🔄 Generating enum classes from OpenAPI x-ms-enum extension..."
+python3 generate_enums.py
+
 echo ""
 echo "✨ Generation complete! You can now use the generated API client."

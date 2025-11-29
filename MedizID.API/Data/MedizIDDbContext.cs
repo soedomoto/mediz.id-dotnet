@@ -23,6 +23,7 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<Poli> Polis { get; set; }
     public DbSet<PoliTimeSlot> PoliTimeSlots { get; set; }
     public DbSet<FacilityStaff> FacilityStaffs { get; set; }
+    public DbSet<FacilityPatient> FacilityPatients { get; set; }
 
     // Medical records components
     public DbSet<Anamnesis> Anamnesis { get; set; }
@@ -132,11 +133,18 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .HasForeignKey(f => f.StaffId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<FacilityStaff>()
-            .HasOne(f => f.Department)
+        // FacilityPatient relationships
+        modelBuilder.Entity<FacilityPatient>()
+            .HasOne(fp => fp.Facility)
             .WithMany()
-            .HasForeignKey(f => f.DepartmentId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .HasForeignKey(fp => fp.FacilityId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<FacilityPatient>()
+            .HasOne(fp => fp.Patient)
+            .WithMany()
+            .HasForeignKey(fp => fp.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Drug relationships
         modelBuilder.Entity<Drug>()
@@ -186,19 +194,6 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .HasForeignKey(a => a.FacilityId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Patient relationships
-        modelBuilder.Entity<Patient>()
-            .HasMany(p => p.Appointments)
-            .WithOne(a => a.Patient)
-            .HasForeignKey(a => a.PatientId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Patient>()
-            .HasMany(p => p.MedicalRecords)
-            .WithOne(m => m.Patient)
-            .HasForeignKey(m => m.PatientId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         // Appointment relationships
         modelBuilder.Entity<Appointment>()
             .HasMany(a => a.MedicalRecords)
@@ -240,6 +235,10 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
         // Configure columns
         modelBuilder.Entity<ApplicationUser>()
             .Property(u => u.Role)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<FacilityStaff>()
+            .Property(f => f.Role)
             .HasConversion<string>();
 
         modelBuilder.Entity<Facility>()

@@ -14,8 +14,6 @@ namespace MedizID.Web.Services.Generated.Models
     {
         /// <summary>The createdAt property</summary>
         public DateTimeOffset? CreatedAt { get; set; }
-        /// <summary>The departmentId property</summary>
-        public Guid? DepartmentId { get; set; }
         /// <summary>The endDate property</summary>
         public DateTimeOffset? EndDate { get; set; }
         /// <summary>The facilityId property</summary>
@@ -24,14 +22,8 @@ namespace MedizID.Web.Services.Generated.Models
         public Guid? Id { get; set; }
         /// <summary>The isActive property</summary>
         public bool? IsActive { get; set; }
-        /// <summary>The position property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? Position { get; set; }
-#nullable restore
-#else
-        public string Position { get; set; }
-#endif
+        /// <summary>The role property</summary>
+        public int? Role { get; set; }
         /// <summary>The specialization property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -42,6 +34,14 @@ namespace MedizID.Web.Services.Generated.Models
 #endif
         /// <summary>The staffId property</summary>
         public Guid? StaffId { get; set; }
+        /// <summary>The staffName property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? StaffName { get; set; }
+#nullable restore
+#else
+        public string StaffName { get; set; }
+#endif
         /// <summary>The startDate property</summary>
         public DateTimeOffset? StartDate { get; set; }
         /// <summary>The updatedAt property</summary>
@@ -65,14 +65,14 @@ namespace MedizID.Web.Services.Generated.Models
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
-                { "departmentId", n => { DepartmentId = n.GetGuidValue(); } },
                 { "endDate", n => { EndDate = n.GetDateTimeOffsetValue(); } },
                 { "facilityId", n => { FacilityId = n.GetGuidValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
                 { "isActive", n => { IsActive = n.GetBoolValue(); } },
-                { "position", n => { Position = n.GetStringValue(); } },
+                { "role", n => { Role = n.GetIntValue(); } },
                 { "specialization", n => { Specialization = n.GetStringValue(); } },
                 { "staffId", n => { StaffId = n.GetGuidValue(); } },
+                { "staffName", n => { StaffName = n.GetStringValue(); } },
                 { "startDate", n => { StartDate = n.GetDateTimeOffsetValue(); } },
                 { "updatedAt", n => { UpdatedAt = n.GetDateTimeOffsetValue(); } },
             };
@@ -85,14 +85,14 @@ namespace MedizID.Web.Services.Generated.Models
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
-            writer.WriteGuidValue("departmentId", DepartmentId);
             writer.WriteDateTimeOffsetValue("endDate", EndDate);
             writer.WriteGuidValue("facilityId", FacilityId);
             writer.WriteGuidValue("id", Id);
             writer.WriteBoolValue("isActive", IsActive);
-            writer.WriteStringValue("position", Position);
+            writer.WriteIntValue("role", Role);
             writer.WriteStringValue("specialization", Specialization);
             writer.WriteGuidValue("staffId", StaffId);
+            writer.WriteStringValue("staffName", StaffName);
             writer.WriteDateTimeOffsetValue("startDate", StartDate);
             writer.WriteDateTimeOffsetValue("updatedAt", UpdatedAt);
         }

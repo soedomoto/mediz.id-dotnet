@@ -169,6 +169,9 @@ builder.Services.AddSwaggerGen(c =>
             new string[] { }
         }
     });
+
+    // Enable enum generation for Kiota
+    c.SchemaFilter<EnumSchemaFilter>();
 });
 
 var app = builder.Build();

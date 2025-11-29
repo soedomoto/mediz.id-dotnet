@@ -9,20 +9,20 @@ namespace MedizID.Web.Services.Generated.Models
 {
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
     #pragma warning disable CS1591
-    public partial class CreateFacilityPatientRequest : IParsable
+    public partial class UpdateFacilityPatientRequest : IParsable
     #pragma warning restore CS1591
     {
-        /// <summary>The patientId property</summary>
-        public Guid? PatientId { get; set; }
+        /// <summary>The isActive property</summary>
+        public bool? IsActive { get; set; }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
-        /// <returns>A <see cref="global::MedizID.Web.Services.Generated.Models.CreateFacilityPatientRequest"/></returns>
+        /// <returns>A <see cref="global::MedizID.Web.Services.Generated.Models.UpdateFacilityPatientRequest"/></returns>
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-        public static global::MedizID.Web.Services.Generated.Models.CreateFacilityPatientRequest CreateFromDiscriminatorValue(IParseNode parseNode)
+        public static global::MedizID.Web.Services.Generated.Models.UpdateFacilityPatientRequest CreateFromDiscriminatorValue(IParseNode parseNode)
         {
             if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-            return new global::MedizID.Web.Services.Generated.Models.CreateFacilityPatientRequest();
+            return new global::MedizID.Web.Services.Generated.Models.UpdateFacilityPatientRequest();
         }
         /// <summary>
         /// The deserialization information for the current model
@@ -32,7 +32,7 @@ namespace MedizID.Web.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "patientId", n => { PatientId = n.GetGuidValue(); } },
+                { "isActive", n => { IsActive = n.GetBoolValue(); } },
             };
         }
         /// <summary>
@@ -42,7 +42,7 @@ namespace MedizID.Web.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteGuidValue("patientId", PatientId);
+            writer.WriteBoolValue("isActive", IsActive);
         }
     }
 }
