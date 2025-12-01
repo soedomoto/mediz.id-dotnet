@@ -12,23 +12,33 @@ namespace MedizID.Web.Services.Generated.Models
     public partial class CreateDiagnosisRequest : IParsable
     #pragma warning restore CS1591
     {
+        /// <summary>The appointmentId property</summary>
+        public Guid? AppointmentId { get; set; }
+        /// <summary>The caseType property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? CaseType { get; set; }
+#nullable restore
+#else
+        public string CaseType { get; set; }
+#endif
+        /// <summary>The clinicalNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ClinicalNotes { get; set; }
+#nullable restore
+#else
+        public string ClinicalNotes { get; set; }
+#endif
         /// <summary>The confidencePercentage property</summary>
         public int? ConfidencePercentage { get; set; }
-        /// <summary>The diagnosisCode property</summary>
+        /// <summary>The description property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? DiagnosisCode { get; set; }
+        public string? Description { get; set; }
 #nullable restore
 #else
-        public string DiagnosisCode { get; set; }
-#endif
-        /// <summary>The diagnosisDescription property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? DiagnosisDescription { get; set; }
-#nullable restore
-#else
-        public string DiagnosisDescription { get; set; }
+        public string Description { get; set; }
 #endif
         /// <summary>The diagnosisType property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
@@ -38,15 +48,21 @@ namespace MedizID.Web.Services.Generated.Models
 #else
         public string DiagnosisType { get; set; }
 #endif
-        /// <summary>The medicalRecordId property</summary>
-        public Guid? MedicalRecordId { get; set; }
-        /// <summary>The reason property</summary>
+        /// <summary>The icD10Code property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? Reason { get; set; }
+        public string? IcD10Code { get; set; }
 #nullable restore
 #else
-        public string Reason { get; set; }
+        public string IcD10Code { get; set; }
+#endif
+        /// <summary>The scientificDescription property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ScientificDescription { get; set; }
+#nullable restore
+#else
+        public string ScientificDescription { get; set; }
 #endif
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
@@ -66,12 +82,14 @@ namespace MedizID.Web.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "appointmentId", n => { AppointmentId = n.GetGuidValue(); } },
+                { "caseType", n => { CaseType = n.GetStringValue(); } },
+                { "clinicalNotes", n => { ClinicalNotes = n.GetStringValue(); } },
                 { "confidencePercentage", n => { ConfidencePercentage = n.GetIntValue(); } },
-                { "diagnosisCode", n => { DiagnosisCode = n.GetStringValue(); } },
-                { "diagnosisDescription", n => { DiagnosisDescription = n.GetStringValue(); } },
+                { "description", n => { Description = n.GetStringValue(); } },
                 { "diagnosisType", n => { DiagnosisType = n.GetStringValue(); } },
-                { "medicalRecordId", n => { MedicalRecordId = n.GetGuidValue(); } },
-                { "reason", n => { Reason = n.GetStringValue(); } },
+                { "icD10Code", n => { IcD10Code = n.GetStringValue(); } },
+                { "scientificDescription", n => { ScientificDescription = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -81,12 +99,14 @@ namespace MedizID.Web.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteGuidValue("appointmentId", AppointmentId);
+            writer.WriteStringValue("caseType", CaseType);
+            writer.WriteStringValue("clinicalNotes", ClinicalNotes);
             writer.WriteIntValue("confidencePercentage", ConfidencePercentage);
-            writer.WriteStringValue("diagnosisCode", DiagnosisCode);
-            writer.WriteStringValue("diagnosisDescription", DiagnosisDescription);
+            writer.WriteStringValue("description", Description);
             writer.WriteStringValue("diagnosisType", DiagnosisType);
-            writer.WriteGuidValue("medicalRecordId", MedicalRecordId);
-            writer.WriteStringValue("reason", Reason);
+            writer.WriteStringValue("icD10Code", IcD10Code);
+            writer.WriteStringValue("scientificDescription", ScientificDescription);
         }
     }
 }

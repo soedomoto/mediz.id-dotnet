@@ -12,6 +12,14 @@ namespace MedizID.Web.Services.Generated.Models
     public partial class AppointmentDetailResponse : IParsable
     #pragma warning restore CS1591
     {
+        /// <summary>The anamnesis property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public List<global::MedizID.Web.Services.Generated.Models.AnamnesisResponse>? Anamnesis { get; set; }
+#nullable restore
+#else
+        public List<global::MedizID.Web.Services.Generated.Models.AnamnesisResponse> Anamnesis { get; set; }
+#endif
         /// <summary>The appointmentDate property</summary>
         public DateTimeOffset? AppointmentDate { get; set; }
         /// <summary>The appointmentTime property</summary>
@@ -24,6 +32,14 @@ namespace MedizID.Web.Services.Generated.Models
 #endif
         /// <summary>The createdAt property</summary>
         public DateTimeOffset? CreatedAt { get; set; }
+        /// <summary>The diagnoses property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public List<global::MedizID.Web.Services.Generated.Models.DiagnosisResponse>? Diagnoses { get; set; }
+#nullable restore
+#else
+        public List<global::MedizID.Web.Services.Generated.Models.DiagnosisResponse> Diagnoses { get; set; }
+#endif
         /// <summary>The doctorName property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -53,6 +69,14 @@ namespace MedizID.Web.Services.Generated.Models
 #nullable restore
 #else
         public string Insurance { get; set; }
+#endif
+        /// <summary>The laboratoriumTests property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public List<global::MedizID.Web.Services.Generated.Models.LaboratoriumResponse>? LaboratoriumTests { get; set; }
+#nullable restore
+#else
+        public List<global::MedizID.Web.Services.Generated.Models.LaboratoriumResponse> LaboratoriumTests { get; set; }
 #endif
         /// <summary>The notes property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
@@ -93,6 +117,14 @@ namespace MedizID.Web.Services.Generated.Models
 #nullable restore
 #else
         public string PoliName { get; set; }
+#endif
+        /// <summary>The prescriptions property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public List<global::MedizID.Web.Services.Generated.Models.PrescriptionResponse>? Prescriptions { get; set; }
+#nullable restore
+#else
+        public List<global::MedizID.Web.Services.Generated.Models.PrescriptionResponse> Prescriptions { get; set; }
 #endif
         /// <summary>The reason property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
@@ -136,20 +168,24 @@ namespace MedizID.Web.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "anamnesis", n => { Anamnesis = n.GetCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.AnamnesisResponse>(global::MedizID.Web.Services.Generated.Models.AnamnesisResponse.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "appointmentDate", n => { AppointmentDate = n.GetDateTimeOffsetValue(); } },
                 { "appointmentTime", n => { AppointmentTime = n.GetStringValue(); } },
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
+                { "diagnoses", n => { Diagnoses = n.GetCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.DiagnosisResponse>(global::MedizID.Web.Services.Generated.Models.DiagnosisResponse.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "doctorName", n => { DoctorName = n.GetStringValue(); } },
                 { "facilityDoctorId", n => { FacilityDoctorId = n.GetGuidValue(); } },
                 { "facilityPatientId", n => { FacilityPatientId = n.GetGuidValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
                 { "installationName", n => { InstallationName = n.GetStringValue(); } },
                 { "insurance", n => { Insurance = n.GetStringValue(); } },
+                { "laboratoriumTests", n => { LaboratoriumTests = n.GetCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.LaboratoriumResponse>(global::MedizID.Web.Services.Generated.Models.LaboratoriumResponse.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "notes", n => { Notes = n.GetStringValue(); } },
                 { "patientIdNumber", n => { PatientIdNumber = n.GetStringValue(); } },
                 { "patientName", n => { PatientName = n.GetStringValue(); } },
                 { "patientRoomBed", n => { PatientRoomBed = n.GetStringValue(); } },
                 { "poliName", n => { PoliName = n.GetStringValue(); } },
+                { "prescriptions", n => { Prescriptions = n.GetCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.PrescriptionResponse>(global::MedizID.Web.Services.Generated.Models.PrescriptionResponse.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "reason", n => { Reason = n.GetStringValue(); } },
                 { "referringDoctor", n => { ReferringDoctor = n.GetStringValue(); } },
                 { "status", n => { Status = n.GetStringValue(); } },
@@ -162,20 +198,24 @@ namespace MedizID.Web.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.AnamnesisResponse>("anamnesis", Anamnesis);
             writer.WriteDateTimeOffsetValue("appointmentDate", AppointmentDate);
             writer.WriteStringValue("appointmentTime", AppointmentTime);
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
+            writer.WriteCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.DiagnosisResponse>("diagnoses", Diagnoses);
             writer.WriteStringValue("doctorName", DoctorName);
             writer.WriteGuidValue("facilityDoctorId", FacilityDoctorId);
             writer.WriteGuidValue("facilityPatientId", FacilityPatientId);
             writer.WriteGuidValue("id", Id);
             writer.WriteStringValue("installationName", InstallationName);
             writer.WriteStringValue("insurance", Insurance);
+            writer.WriteCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.LaboratoriumResponse>("laboratoriumTests", LaboratoriumTests);
             writer.WriteStringValue("notes", Notes);
             writer.WriteStringValue("patientIdNumber", PatientIdNumber);
             writer.WriteStringValue("patientName", PatientName);
             writer.WriteStringValue("patientRoomBed", PatientRoomBed);
             writer.WriteStringValue("poliName", PoliName);
+            writer.WriteCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.PrescriptionResponse>("prescriptions", Prescriptions);
             writer.WriteStringValue("reason", Reason);
             writer.WriteStringValue("referringDoctor", ReferringDoctor);
             writer.WriteStringValue("status", Status);

@@ -10,7 +10,7 @@ public interface IPrescriptionRepository : IRepository<Prescription>
     /// <summary>
     /// Get prescriptions by medical record
     /// </summary>
-    Task<IEnumerable<Prescription>> GetByMedicalRecordAsync(Guid medicalRecordId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Prescription>> GetByAppointmentAsync(Guid appointmentId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get prescriptions by patient

@@ -2,7 +2,7 @@ namespace MedizID.API.DTOs;
 
 public class CreateAIRecommendationRequest
 {
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string RecommendationType { get; set; } = null!;
     public string Content { get; set; } = null!;
     public float ConfidenceScore { get; set; }
@@ -17,7 +17,7 @@ public class UpdateAIRecommendationFeedbackRequest
 public class AIRecommendationResponse
 {
     public Guid Id { get; set; }
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string RecommendationType { get; set; } = null!;
     public string Content { get; set; } = null!;
     public float ConfidenceScore { get; set; }

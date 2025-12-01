@@ -3,7 +3,7 @@ namespace MedizID.API.Models;
 public class MedicalProcedure
 {
     public Guid Id { get; set; }
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string ProcedureName { get; set; } = null!;
     public DateTime ProcedureDate { get; set; }
     public string? Indication { get; set; }
@@ -13,5 +13,5 @@ public class MedicalProcedure
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Relationships
-    public MedicalRecord MedicalRecord { get; set; } = null!;
+    public Appointment Appointment { get; set; } = null!;
 }

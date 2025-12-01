@@ -53,5 +53,6 @@ builder.Services.AddScoped(sp =>
 });
 
 builder.Services.AddScoped<FacilityLayoutState>();
+builder.Services.AddScoped<AppointmentLayoutState>();
 
 await builder.Build().RunAsync();

@@ -105,3 +105,18 @@ public enum AppointmentStatusEnum
     Cancelled,
     NoShow
 }
+
+// Diagnosis Enums - ICD-10 Standard
+public enum DiagnosisTypeEnum
+{
+    Primary,
+    Secondary,
+    Complication
+}
+
+public enum DiagnosisCaseTypeEnum
+{
+    New,
+    Existing
+}
+

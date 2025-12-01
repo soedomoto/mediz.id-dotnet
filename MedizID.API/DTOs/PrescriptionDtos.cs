@@ -2,7 +2,7 @@ namespace MedizID.API.DTOs;
 
 public class CreatePrescriptionRequest
 {
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string MedicationName { get; set; } = null!;
     public string Dosage { get; set; } = null!;
     public string Frequency { get; set; } = null!;
@@ -28,7 +28,7 @@ public class PrescriptionDetailResponse
     public string Frequency { get; set; } = null!;
     public int Duration { get; set; }
     public string? Instructions { get; set; }
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 

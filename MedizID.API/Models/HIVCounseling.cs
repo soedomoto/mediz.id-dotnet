@@ -5,7 +5,7 @@ namespace MedizID.API.Models;
 public class HIVCounseling
 {
     public Guid Id { get; set; }
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public HIVCounselingVisitStatusEnum VisitStatus { get; set; }
     public HIVCounselingClientStatusEnum ClientStatus { get; set; }
     public HIVCounselingRiskGroupEnum? RiskGroup { get; set; }
@@ -20,5 +20,5 @@ public class HIVCounseling
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Relationships
-    public MedicalRecord MedicalRecord { get; set; } = null!;
+    public Appointment Appointment { get; set; } = null!;
 }

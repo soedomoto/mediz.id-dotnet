@@ -12,8 +12,8 @@ namespace MedizID.Web.Services.Generated.Models
     public partial class CreateOdontogramRequest : IParsable
     #pragma warning restore CS1591
     {
-        /// <summary>The medicalRecordId property</summary>
-        public Guid? MedicalRecordId { get; set; }
+        /// <summary>The appointmentId property</summary>
+        public Guid? AppointmentId { get; set; }
         /// <summary>The status property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -64,7 +64,7 @@ namespace MedizID.Web.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "medicalRecordId", n => { MedicalRecordId = n.GetGuidValue(); } },
+                { "appointmentId", n => { AppointmentId = n.GetGuidValue(); } },
                 { "status", n => { Status = n.GetStringValue(); } },
                 { "surface", n => { Surface = n.GetStringValue(); } },
                 { "toothNumber", n => { ToothNumber = n.GetStringValue(); } },
@@ -78,7 +78,7 @@ namespace MedizID.Web.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteGuidValue("medicalRecordId", MedicalRecordId);
+            writer.WriteGuidValue("appointmentId", AppointmentId);
             writer.WriteStringValue("status", Status);
             writer.WriteStringValue("surface", Surface);
             writer.WriteStringValue("toothNumber", ToothNumber);

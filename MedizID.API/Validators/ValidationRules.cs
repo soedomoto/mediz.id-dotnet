@@ -130,17 +130,18 @@ public class CreateDiagnosisRequestValidator : AbstractValidator<CreateDiagnosis
 {
     public CreateDiagnosisRequestValidator()
     {
-        RuleFor(x => x.MedicalRecordId)
+        RuleFor(x => x.AppointmentId)
             .NotEmpty()
-            .WithMessage("Medical record ID is required");
+            .WithMessage("Appointment ID is required");
 
-        RuleFor(x => x.DiagnosisCode)
+        RuleFor(x => x.ICD10Code)
             .NotEmpty()
-            .WithMessage("Diagnosis code is required");
+            .WithMessage("ICD-10 code is required");
 
-        RuleFor(x => x.DiagnosisDescription)
+        RuleFor(x => x.ScientificDescription)
             .NotEmpty()
-            .WithMessage("Diagnosis description is required")
+            .WithMessage("Scientific description is required")
             .MaximumLength(500);
     }
 }
+

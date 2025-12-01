@@ -2,8 +2,7 @@ namespace MedizID.API.DTOs;
 
 public class CreateSTIRequest
 {
-    public Guid MedicalRecordId { get; set; }
-    public Guid? AppointmentId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string VisitStatus { get; set; } = null!;
     public string RiskGroup { get; set; } = null!;
     public string? Screening { get; set; }
@@ -23,8 +22,7 @@ public class UpdateSTIRequest
 public class STIResponse
 {
     public Guid Id { get; set; }
-    public Guid MedicalRecordId { get; set; }
-    public Guid? AppointmentId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string VisitStatus { get; set; } = null!;
     public string RiskGroup { get; set; } = null!;
     public string? Screening { get; set; }

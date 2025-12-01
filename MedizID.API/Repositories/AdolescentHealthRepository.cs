@@ -10,16 +10,17 @@ public class AdolescentHealthRepository : BaseRepository<AdolescentHealth>, IAdo
     {
     }
 
-    public async Task<AdolescentHealth?> GetByMedicalRecordAsync(Guid medicalRecordId, CancellationToken cancellationToken = default)
+    public async Task<AdolescentHealth?> GetByAppointmentAsync(Guid appointmentId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .FirstOrDefaultAsync(a => a.MedicalRecordId == medicalRecordId, cancellationToken);
+            .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId, cancellationToken);
     }
 
     public async Task<IEnumerable<AdolescentHealth>> GetByPatientAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Where(a => a.MedicalRecord.PatientId == patientId)
+            .Include(a => a.Appointment)
+            .Where(a => a.Appointment != null && a.Appointment.FacilityPatient.PatientId == patientId)
             .ToListAsync(cancellationToken);
     }
 }

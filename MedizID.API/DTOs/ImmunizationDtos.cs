@@ -2,7 +2,7 @@ namespace MedizID.API.DTOs;
 
 public class CreateImmunizationRequest
 {
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string VaccineName { get; set; } = null!;
     public DateTime VaccineDate { get; set; }
     public int? DoseNumber { get; set; }

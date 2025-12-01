@@ -405,25 +405,25 @@ public class AppointmentsController : ControllerBase
                 });
             }
 
-            // Get medical records for the patient associated with this appointment
-            var medicalRecords = await _context.MedicalRecords
-                .Where(mr => mr.PatientId == patientId.Value)
-                .OrderByDescending(mr => mr.CreatedAt)
+            // Get medical records for this appointment
+            var anamnesises = await _context.Anamnesis
+                .Where(a => a.AppointmentId == appointmentId)
+                .OrderByDescending(a => a.CreatedAt)
                 .Take(10)
                 .ToListAsync();
 
             var history = new List<AppointmentMedicalHistoryResponse>();
             int index = 0;
 
-            foreach (var record in medicalRecords)
+            foreach (var record in anamnesises)
             {
                 history.Add(new AppointmentMedicalHistoryResponse
                 {
                     Waktu = record.CreatedAt.ToString("dd MMM\nyyyy HH:mm"),
                     KodeICD10 = "J10.1",
                     NamaICD10 = "Influenza with other respiratory manifestations",
-                    Diagnosa = record.Diagnosis ?? "No diagnosis recorded",
-                    ObatObatan = "No data",
+                    Diagnosa = record.ChiefComplaint ?? "No chief complaint recorded",
+                    ObatObatan = record.CurrentMedications ?? "No data",
                     Status = index == 0 ? "Current" : (index + 1).ToString()
                 });
                 index++;
@@ -441,4 +441,311 @@ public class AppointmentsController : ControllerBase
             });
         }
     }
+
+    /// <summary>
+    /// Get diagnoses for a specific appointment
+    /// </summary>
+    [HttpGet("{appointmentId}/diagnoses")]
+    [ProducesResponseType(typeof(List<DiagnosisDetailResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAppointmentDiagnoses(Guid appointmentId)
+    {
+        try
+        {
+            var appointment = await _context.Appointments.FindAsync(appointmentId);
+            if (appointment == null)
+            {
+                return NotFound(new ErrorResponse
+                {
+                    ErrorCode = "APPOINTMENT_NOT_FOUND",
+                    Message = "Appointment not found"
+                });
+            }
+
+            var diagnoses = await _context.Diagnoses
+                .Where(d => d.AppointmentId == appointmentId)
+                .OrderByDescending(d => d.CreatedAt)
+                .Select(d => new DiagnosisDetailResponse
+                {
+                    Id = d.Id,
+                    ICD10Code = d.ICD10Code,
+                    ScientificDescription = d.ScientificDescription,
+                    DiagnosisType = d.DiagnosisType.ToString(),
+                    CaseType = d.CaseType.ToString(),
+                    ConfidencePercentage = d.ConfidencePercentage,
+                    ClinicalNotes = d.ClinicalNotes,
+                    Description = d.Description,
+                    IsRecommendedByAI = d.IsRecommendedByAI,
+                    AIRecommendationConfidence = d.AIRecommendationConfidence,
+                    AppointmentId = d.AppointmentId,
+                    CreatedAt = d.CreatedAt,
+                    UpdatedAt = d.UpdatedAt
+                })
+                .ToListAsync();
+
+            return Ok(diagnoses);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching appointment diagnoses");
+            return StatusCode(500, new ErrorResponse
+            {
+                ErrorCode = "INTERNAL_SERVER_ERROR",
+                Message = "An error occurred while fetching diagnoses"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Create a diagnosis for an appointment
+    /// </summary>
+    [HttpPost("{appointmentId}/diagnoses")]
+    [ProducesResponseType(typeof(DiagnosisDetailResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CreateDiagnosis(Guid appointmentId, [FromBody] CreateDiagnosisRequest request)
+    {
+        try
+        {
+            var appointment = await _context.Appointments.FindAsync(appointmentId);
+            if (appointment == null)
+            {
+                return NotFound(new ErrorResponse
+                {
+                    ErrorCode = "APPOINTMENT_NOT_FOUND",
+                    Message = "Appointment not found"
+                });
+            }
+
+            // Parse enum values
+            if (!Enum.TryParse<DiagnosisTypeEnum>(request.DiagnosisType, true, out var diagnosisType))
+            {
+                diagnosisType = DiagnosisTypeEnum.Primary;
+            }
+
+            if (!Enum.TryParse<DiagnosisCaseTypeEnum>(request.CaseType, true, out var caseType))
+            {
+                caseType = DiagnosisCaseTypeEnum.New;
+            }
+
+            var diagnosis = new Diagnosis
+            {
+                Id = Guid.NewGuid(),
+                AppointmentId = appointmentId,
+                ICD10Code = request.ICD10Code,
+                ScientificDescription = request.ScientificDescription,
+                DiagnosisType = diagnosisType,
+                CaseType = caseType,
+                ConfidencePercentage = request.ConfidencePercentage,
+                ClinicalNotes = request.ClinicalNotes,
+                Description = request.Description,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Diagnoses.Add(diagnosis);
+            await _context.SaveChangesAsync();
+
+            var response = new DiagnosisDetailResponse
+            {
+                Id = diagnosis.Id,
+                ICD10Code = diagnosis.ICD10Code,
+                ScientificDescription = diagnosis.ScientificDescription,
+                DiagnosisType = diagnosis.DiagnosisType.ToString(),
+                CaseType = diagnosis.CaseType.ToString(),
+                ConfidencePercentage = diagnosis.ConfidencePercentage,
+                ClinicalNotes = diagnosis.ClinicalNotes,
+                Description = diagnosis.Description,
+                IsRecommendedByAI = diagnosis.IsRecommendedByAI,
+                AIRecommendationConfidence = diagnosis.AIRecommendationConfidence,
+                AppointmentId = diagnosis.AppointmentId,
+                CreatedAt = diagnosis.CreatedAt,
+                UpdatedAt = diagnosis.UpdatedAt
+            };
+
+            return CreatedAtAction(nameof(GetAppointmentDiagnoses), new { appointmentId }, response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating diagnosis");
+            return StatusCode(500, new ErrorResponse
+            {
+                ErrorCode = "INTERNAL_SERVER_ERROR",
+                Message = "An error occurred while creating diagnosis"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Update a diagnosis
+    /// </summary>
+    [HttpPut("diagnoses/{diagnosisId}")]
+    [ProducesResponseType(typeof(DiagnosisDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateDiagnosis(Guid diagnosisId, [FromBody] CreateDiagnosisRequest request)
+    {
+        try
+        {
+            var diagnosis = await _context.Diagnoses.FindAsync(diagnosisId);
+            if (diagnosis == null)
+            {
+                return NotFound(new ErrorResponse
+                {
+                    ErrorCode = "DIAGNOSIS_NOT_FOUND",
+                    Message = "Diagnosis not found"
+                });
+            }
+
+            // Parse enum values
+            if (!Enum.TryParse<DiagnosisTypeEnum>(request.DiagnosisType, true, out var diagnosisType))
+            {
+                diagnosisType = DiagnosisTypeEnum.Primary;
+            }
+
+            if (!Enum.TryParse<DiagnosisCaseTypeEnum>(request.CaseType, true, out var caseType))
+            {
+                caseType = DiagnosisCaseTypeEnum.New;
+            }
+
+            diagnosis.ICD10Code = request.ICD10Code;
+            diagnosis.ScientificDescription = request.ScientificDescription;
+            diagnosis.DiagnosisType = diagnosisType;
+            diagnosis.CaseType = caseType;
+            diagnosis.ConfidencePercentage = request.ConfidencePercentage;
+            diagnosis.ClinicalNotes = request.ClinicalNotes;
+            diagnosis.Description = request.Description;
+            diagnosis.UpdatedAt = DateTime.UtcNow;
+
+            _context.Diagnoses.Update(diagnosis);
+            await _context.SaveChangesAsync();
+
+            var response = new DiagnosisDetailResponse
+            {
+                Id = diagnosis.Id,
+                ICD10Code = diagnosis.ICD10Code,
+                ScientificDescription = diagnosis.ScientificDescription,
+                DiagnosisType = diagnosis.DiagnosisType.ToString(),
+                CaseType = diagnosis.CaseType.ToString(),
+                ConfidencePercentage = diagnosis.ConfidencePercentage,
+                ClinicalNotes = diagnosis.ClinicalNotes,
+                Description = diagnosis.Description,
+                IsRecommendedByAI = diagnosis.IsRecommendedByAI,
+                AIRecommendationConfidence = diagnosis.AIRecommendationConfidence,
+                AppointmentId = diagnosis.AppointmentId,
+                CreatedAt = diagnosis.CreatedAt,
+                UpdatedAt = diagnosis.UpdatedAt
+            };
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating diagnosis");
+            return StatusCode(500, new ErrorResponse
+            {
+                ErrorCode = "INTERNAL_SERVER_ERROR",
+                Message = "An error occurred while updating diagnosis"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Delete a diagnosis
+    /// </summary>
+    [HttpDelete("diagnoses/{diagnosisId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteDiagnosis(Guid diagnosisId)
+    {
+        try
+        {
+            var diagnosis = await _context.Diagnoses.FindAsync(diagnosisId);
+            if (diagnosis == null)
+            {
+                return NotFound(new ErrorResponse
+                {
+                    ErrorCode = "DIAGNOSIS_NOT_FOUND",
+                    Message = "Diagnosis not found"
+                });
+            }
+
+            _context.Diagnoses.Remove(diagnosis);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting diagnosis");
+            return StatusCode(500, new ErrorResponse
+            {
+                ErrorCode = "INTERNAL_SERVER_ERROR",
+                Message = "An error occurred while deleting diagnosis"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Generate AI-recommended diagnoses for an appointment
+    /// </summary>
+    [HttpPost("{appointmentId}/diagnoses/generate-recommendations")]
+    [ProducesResponseType(typeof(GenerateDiagnosisRecommendationResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GenerateDiagnosisRecommendations(Guid appointmentId, [FromBody] GenerateDiagnosisRecommendationRequest request)
+    {
+        try
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.FacilityPatient)
+                .ThenInclude(fp => fp.Patient)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+            if (appointment == null)
+            {
+                return NotFound(new ErrorResponse
+                {
+                    ErrorCode = "APPOINTMENT_NOT_FOUND",
+                    Message = "Appointment not found"
+                });
+            }
+
+            // TODO: Integrate with AI/ML service for diagnosis recommendations
+            // For now, returning empty recommendations as placeholder
+            var recommendations = new List<DiagnosisRecommendation>();
+
+            // Get existing anamnesis for context
+            var anamnesises = await _context.Anamnesis
+                .Where(a => a.AppointmentId == appointmentId)
+                .OrderByDescending(a => a.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (anamnesises != null)
+            {
+                // Example: Could integrate with AI service here
+                // var aiRecommendations = await _aiService.GetDiagnosisRecommendations(
+                //     anamnesises.ChiefComplaint,
+                //     request.ClinicalFindings,
+                //     request.MaxRecommendations ?? 5
+                // );
+            }
+
+            var response = new GenerateDiagnosisRecommendationResponse
+            {
+                AppointmentId = appointmentId,
+                Recommendations = recommendations,
+                GeneratedAt = DateTime.UtcNow
+            };
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating diagnosis recommendations");
+            return StatusCode(500, new ErrorResponse
+            {
+                ErrorCode = "INTERNAL_SERVER_ERROR",
+                Message = "An error occurred while generating diagnosis recommendations"
+            });
+        }
+    }
 }
+

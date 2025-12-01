@@ -38,8 +38,6 @@ namespace MedizID.Web.Services.Generated.Models
 #else
         public string HealthConcern { get; set; }
 #endif
-        /// <summary>The medicalRecordId property</summary>
-        public Guid? MedicalRecordId { get; set; }
         /// <summary>The sexualActivity property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -70,7 +68,6 @@ namespace MedizID.Web.Services.Generated.Models
                 { "contraception", n => { Contraception = n.GetStringValue(); } },
                 { "counseling", n => { Counseling = n.GetStringValue(); } },
                 { "healthConcern", n => { HealthConcern = n.GetStringValue(); } },
-                { "medicalRecordId", n => { MedicalRecordId = n.GetGuidValue(); } },
                 { "sexualActivity", n => { SexualActivity = n.GetStringValue(); } },
             };
         }
@@ -85,7 +82,6 @@ namespace MedizID.Web.Services.Generated.Models
             writer.WriteStringValue("contraception", Contraception);
             writer.WriteStringValue("counseling", Counseling);
             writer.WriteStringValue("healthConcern", HealthConcern);
-            writer.WriteGuidValue("medicalRecordId", MedicalRecordId);
             writer.WriteStringValue("sexualActivity", SexualActivity);
         }
     }

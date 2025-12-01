@@ -10,7 +10,7 @@ public interface IAnamnesisRepository : IRepository<Anamnesis>
     /// <summary>
     /// Get anamnesis by medical record
     /// </summary>
-    Task<Anamnesis?> GetByMedicalRecordAsync(Guid medicalRecordId, CancellationToken cancellationToken = default);
+    Task<Anamnesis?> GetByAppointmentAsync(Guid appointmentId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get anamnesis by patient

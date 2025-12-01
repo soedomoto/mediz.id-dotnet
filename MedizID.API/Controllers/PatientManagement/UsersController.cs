@@ -477,24 +477,28 @@ public class UsersController : ControllerBase
             if (page < 1) page = 1;
             if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
-            var query = _context.MedicalRecords.Where(m => m.DoctorId == id).AsQueryable();
+            var query = _context.Anamnesis
+                .Where(a => a.Appointment.FacilityDoctorId == id)
+                .AsQueryable();
             var total = await query.CountAsync();
 
             var records = await query
-                .Include(m => m.Patient)
-                .OrderByDescending(m => m.VisitDate)
+                .Include(a => a.Appointment)
+                .ThenInclude(apt => apt.FacilityPatient)
+                .ThenInclude(fp => fp.Patient)
+                .OrderByDescending(a => a.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(m => new MedicalRecordResponse
+                .Select(a => new MedicalRecordResponse
                 {
-                    Id = m.Id,
-                    PatientId = m.PatientId,
-                    PatientName = $"{m.Patient.FirstName} {m.Patient.LastName}",
-                    VisitDate = m.VisitDate,
-                    ChiefComplaint = m.ChiefComplaint,
-                    Diagnosis = m.Diagnosis,
-                    Treatment = m.Treatment,
-                    CreatedAt = m.CreatedAt
+                    Id = a.Id,
+                    PatientId = a.Appointment.FacilityPatientId,
+                    PatientName = $"{a.Appointment.FacilityPatient.Patient.FirstName} {a.Appointment.FacilityPatient.Patient.LastName}",
+                    VisitDate = a.CreatedAt,
+                    ChiefComplaint = a.ChiefComplaint,
+                    Diagnosis = a.PastMedicalHistory,
+                    Treatment = a.DrugAllergies,
+                    CreatedAt = a.CreatedAt
                 })
                 .ToListAsync();
 
@@ -543,7 +547,7 @@ public class UsersController : ControllerBase
             if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
             var query = _context.Prescriptions
-                .Where(p => p.MedicalRecord.DoctorId == id)
+                .Where(p => p.Appointment.FacilityDoctorId == id)
                 .AsQueryable();
 
             var total = await query.CountAsync();

@@ -55,6 +55,9 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<float>("ConfidenceScore")
                         .HasColumnType("real");
 
@@ -71,9 +74,6 @@ namespace MedizID.API.Migrations
                     b.Property<string>("FeedbackStatus")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("RecommendationType")
                         .IsRequired()
                         .HasColumnType("text");
@@ -83,7 +83,7 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("AIRecommendations");
                 });
@@ -94,6 +94,9 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<decimal?>("BMI")
                         .HasColumnType("numeric");
 
@@ -102,9 +105,6 @@ namespace MedizID.API.Migrations
 
                     b.Property<decimal?>("Height")
                         .HasColumnType("numeric");
-
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("MentalHealthStatus")
                         .HasColumnType("text");
@@ -123,7 +123,7 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("AdolescentHealths");
                 });
@@ -134,11 +134,59 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Allergies")
+                    b.Property<string>("AbdominalExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AdditionalComplaints")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AdditionalFindings")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AdditionalRemarks")
+                        .HasColumnType("text");
+
+                    b.Property<bool?>("AlcoholConsumption")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Assessment")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BMIClassification")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BiopsychosocialAssessment")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BodyAnatomyFindings")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("BodyMassIndex")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("BodyTemperature")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("BodyWeight")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("CardiovascularExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ChestAxillaExamination")
                         .HasColumnType("text");
 
                     b.Property<string>("ChiefComplaint")
                         .HasColumnType("text");
+
+                    b.Property<string>("ClinicalNotes")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ConsciousnessLevel")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -146,21 +194,156 @@ namespace MedizID.API.Migrations
                     b.Property<string>("CurrentMedications")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("DiastolicBloodPressure")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DrugAllergies")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("DurationDays")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DurationMonths")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DurationYears")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("EarExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EyeExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FamilyHistory")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FoodAllergies")
+                        .HasColumnType("text");
+
+                    b.Property<string>("GeneralAppearance")
+                        .HasColumnType("text");
+
+                    b.Property<string>("GenitaliaExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HeadExamination")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("HeartRhythm")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("Height")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("HeightMeasurementMethod")
+                        .HasColumnType("integer");
+
+                    b.Property<bool?>("InsufficientVegetableFruitIntake")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LowerExtremityExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LungExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MouthExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NailExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NeckExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NeurologicalExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NoseExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NursingCareDescription")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("NursingCareType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("NursingInterventions")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ObjectiveFindings")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ObservationNotes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OtherAllergies")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("OxygenSaturation")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("PainScale")
+                        .HasColumnType("integer");
 
                     b.Property<string>("PastMedicalHistory")
                         .HasColumnType("text");
 
-                    b.Property<string>("PresentingIllness")
+                    b.Property<string>("PatientEducation")
                         .HasColumnType("text");
+
+                    b.Property<string>("PhysicalActivity")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PlanOfCare")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PresentIllnessHistory")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("PulseRate")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RespiratoryRate")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SkinExamination")
+                        .HasColumnType("text");
+
+                    b.Property<bool?>("SmokingStatus")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("SocialHistory")
                         .HasColumnType("text");
 
+                    b.Property<string>("SubjectiveAssessment")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SystolicBloodPressure")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ThroatExamination")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Treatment")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("TriageLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpperExtremityExamination")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("WaistCircumference")
+                        .HasColumnType("numeric");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("Anamnesis");
                 });
@@ -389,32 +572,47 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int?>("AIRecommendationConfidence")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CaseType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ClinicalNotes")
+                        .HasColumnType("text");
+
                     b.Property<int?>("ConfidencePercentage")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DiagnosisCode")
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int>("DiagnosisType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ICD10Code")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("DiagnosisDescription")
+                    b.Property<bool?>("IsRecommendedByAI")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ScientificDescription")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("DiagnosisType")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Reason")
-                        .HasColumnType("text");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("Diagnoses");
                 });
@@ -651,14 +849,14 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CurrentMethod")
                         .HasColumnType("text");
-
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
@@ -671,7 +869,7 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("FamilyPlannings");
                 });
@@ -680,6 +878,9 @@ namespace MedizID.API.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AppointmentId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("ClientStatus")
@@ -691,9 +892,6 @@ namespace MedizID.API.Migrations
 
                     b.Property<DateTime?>("LastTestDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
@@ -725,7 +923,7 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("HIVCounselings");
                 });
@@ -764,6 +962,9 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -772,9 +973,6 @@ namespace MedizID.API.Migrations
 
                     b.Property<string>("Lot")
                         .HasColumnType("text");
-
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Reactions")
                         .HasColumnType("text");
@@ -794,7 +992,7 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("Immunizations");
                 });
@@ -846,11 +1044,11 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("ReferenceRange")
                         .HasColumnType("text");
@@ -876,7 +1074,7 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("LaboratoriumTests");
                 });
@@ -887,6 +1085,9 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("BloodPressure")
                         .HasColumnType("text");
 
@@ -895,9 +1096,6 @@ namespace MedizID.API.Migrations
 
                     b.Property<string>("FetalHeartRate")
                         .HasColumnType("text");
-
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
@@ -910,7 +1108,7 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("MaternalChildHealths");
                 });
@@ -991,6 +1189,9 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Complications")
                         .HasColumnType("text");
 
@@ -1002,9 +1203,6 @@ namespace MedizID.API.Migrations
 
                     b.Property<string>("Indication")
                         .HasColumnType("text");
-
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
@@ -1018,56 +1216,9 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
-
-                    b.ToTable("MedicalProcedures");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.MedicalRecord", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("AppointmentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ChiefComplaint")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Diagnosis")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("DoctorId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Treatment")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("VisitDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
                     b.HasIndex("AppointmentId");
 
-                    b.HasIndex("DoctorId");
-
-                    b.HasIndex("PatientId");
-
-                    b.ToTable("MedicalRecords");
+                    b.ToTable("MedicalProcedures");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Odontogram", b =>
@@ -1076,11 +1227,11 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Status")
                         .HasColumnType("text");
@@ -1096,7 +1247,7 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("Odontograms");
                 });
@@ -1189,6 +1340,9 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1209,16 +1363,13 @@ namespace MedizID.API.Migrations
                     b.Property<string>("Instructions")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("MedicationName")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("Prescriptions");
                 });
@@ -1229,14 +1380,14 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AppointmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("DiagnosisSTI")
                         .HasColumnType("text");
-
-                    b.Property<Guid>("MedicalRecordId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
@@ -1262,7 +1413,7 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalRecordId");
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("STIs");
                 });
@@ -1399,35 +1550,35 @@ namespace MedizID.API.Migrations
 
             modelBuilder.Entity("MedizID.API.Models.AIRecommendation", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
+                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany()
-                        .HasForeignKey("MedicalRecordId")
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MedicalRecord");
+                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.AdolescentHealth", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
+                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany()
-                        .HasForeignKey("MedicalRecordId")
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MedicalRecord");
+                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Anamnesis", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
+                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany("Anamnesis")
-                        .HasForeignKey("MedicalRecordId")
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MedicalRecord");
+                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.AnamnesisTemplate", b =>
@@ -1490,13 +1641,13 @@ namespace MedizID.API.Migrations
 
             modelBuilder.Entity("MedizID.API.Models.Diagnosis", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
+                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany("Diagnoses")
-                        .HasForeignKey("MedicalRecordId")
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MedicalRecord");
+                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Drug", b =>
@@ -1554,35 +1705,35 @@ namespace MedizID.API.Migrations
 
             modelBuilder.Entity("MedizID.API.Models.FamilyPlanning", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
+                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany()
-                        .HasForeignKey("MedicalRecordId")
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MedicalRecord");
+                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.HIVCounseling", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
+                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany()
-                        .HasForeignKey("MedicalRecordId")
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MedicalRecord");
+                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Immunization", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
+                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany()
-                        .HasForeignKey("MedicalRecordId")
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MedicalRecord");
+                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Installation", b =>
@@ -1598,24 +1749,24 @@ namespace MedizID.API.Migrations
 
             modelBuilder.Entity("MedizID.API.Models.Laboratorium", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
+                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany("LaboratoriumTests")
-                        .HasForeignKey("MedicalRecordId")
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MedicalRecord");
+                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.MaternalChildHealth", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
+                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany()
-                        .HasForeignKey("MedicalRecordId")
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MedicalRecord");
+                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.MedicalEquipment", b =>
@@ -1639,48 +1790,24 @@ namespace MedizID.API.Migrations
 
             modelBuilder.Entity("MedizID.API.Models.MedicalProcedure", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
-                        .WithMany()
-                        .HasForeignKey("MedicalRecordId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MedicalRecord");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.MedicalRecord", b =>
-                {
                     b.HasOne("MedizID.API.Models.Appointment", "Appointment")
-                        .WithMany("MedicalRecords")
+                        .WithMany()
                         .HasForeignKey("AppointmentId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("MedizID.API.Models.ApplicationUser", "Doctor")
-                        .WithMany()
-                        .HasForeignKey("DoctorId");
-
-                    b.HasOne("MedizID.API.Models.ApplicationUser", "Patient")
-                        .WithMany()
-                        .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Appointment");
-
-                    b.Navigation("Doctor");
-
-                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Odontogram", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
+                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany()
-                        .HasForeignKey("MedicalRecordId")
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MedicalRecord");
+                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Poli", b =>
@@ -1722,24 +1849,24 @@ namespace MedizID.API.Migrations
 
             modelBuilder.Entity("MedizID.API.Models.Prescription", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
+                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany("Prescriptions")
-                        .HasForeignKey("MedicalRecordId")
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MedicalRecord");
+                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.STI", b =>
                 {
-                    b.HasOne("MedizID.API.Models.MedicalRecord", "MedicalRecord")
+                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany()
-                        .HasForeignKey("MedicalRecordId")
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MedicalRecord");
+                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -1795,7 +1922,13 @@ namespace MedizID.API.Migrations
 
             modelBuilder.Entity("MedizID.API.Models.Appointment", b =>
                 {
-                    b.Navigation("MedicalRecords");
+                    b.Navigation("Anamnesis");
+
+                    b.Navigation("Diagnoses");
+
+                    b.Navigation("LaboratoriumTests");
+
+                    b.Navigation("Prescriptions");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.DrugCategory", b =>
@@ -1817,17 +1950,6 @@ namespace MedizID.API.Migrations
             modelBuilder.Entity("MedizID.API.Models.MedicalEquipmentType", b =>
                 {
                     b.Navigation("Equipment");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.MedicalRecord", b =>
-                {
-                    b.Navigation("Anamnesis");
-
-                    b.Navigation("Diagnoses");
-
-                    b.Navigation("LaboratoriumTests");
-
-                    b.Navigation("Prescriptions");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Poli", b =>

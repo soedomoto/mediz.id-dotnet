@@ -13,16 +13,17 @@ public class AnamnesisRepository : BaseRepository<Anamnesis>, IAnamnesisReposito
     {
     }
 
-    public async Task<Anamnesis?> GetByMedicalRecordAsync(Guid medicalRecordId, CancellationToken cancellationToken = default)
+    public async Task<Anamnesis?> GetByAppointmentAsync(Guid appointmentId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .FirstOrDefaultAsync(a => a.MedicalRecordId == medicalRecordId, cancellationToken);
+            .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId, cancellationToken);
     }
 
     public async Task<IEnumerable<Anamnesis>> GetByPatientAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Where(a => a.MedicalRecord != null && a.MedicalRecord.PatientId == patientId)
+            .Include(a => a.Appointment)
+            .Where(a => a.Appointment != null && a.Appointment.FacilityPatient.PatientId == patientId)
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -30,7 +31,8 @@ public class AnamnesisRepository : BaseRepository<Anamnesis>, IAnamnesisReposito
     public async Task<Anamnesis?> GetLatestForPatientAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Where(a => a.MedicalRecord != null && a.MedicalRecord.PatientId == patientId)
+            .Include(a => a.Appointment)
+            .Where(a => a.Appointment != null && a.Appointment.FacilityPatient.PatientId == patientId)
             .OrderByDescending(a => a.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
     }

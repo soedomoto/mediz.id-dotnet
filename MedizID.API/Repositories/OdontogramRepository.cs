@@ -10,17 +10,10 @@ public class OdontogramRepository : BaseRepository<Odontogram>, IOdontogramRepos
     {
     }
 
-    public async Task<Odontogram?> GetByMedicalRecordAsync(Guid medicalRecordId, CancellationToken cancellationToken = default)
+    public async Task<Odontogram?> GetByAppointmentAsync(Guid appointmentId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .FirstOrDefaultAsync(o => o.MedicalRecordId == medicalRecordId, cancellationToken);
-    }
-
-    public async Task<IEnumerable<Odontogram>> GetByAppointmentAsync(Guid appointmentId, CancellationToken cancellationToken = default)
-    {
-        return await _dbSet
-            .Where(o => o.MedicalRecord.AppointmentId == appointmentId)
-            .ToListAsync(cancellationToken);
+            .FirstOrDefaultAsync(o => o.AppointmentId == appointmentId, cancellationToken);
     }
 
     public async Task<IEnumerable<Odontogram>> GetByToothNumberAsync(string toothNumber, CancellationToken cancellationToken = default)

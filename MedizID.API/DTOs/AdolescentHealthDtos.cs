@@ -2,8 +2,7 @@ namespace MedizID.API.DTOs;
 
 public class CreateAdolescentHealthRequest
 {
-    public Guid MedicalRecordId { get; set; }
-    public Guid? AppointmentId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string? HealthConcern { get; set; }
     public string? SexualActivity { get; set; }
     public string? Contraception { get; set; }
@@ -21,8 +20,7 @@ public class UpdateAdolescentHealthRequest
 public class AdolescentHealthResponse
 {
     public Guid Id { get; set; }
-    public Guid MedicalRecordId { get; set; }
-    public Guid? AppointmentId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string? HealthConcern { get; set; }
     public string? SexualActivity { get; set; }
     public string? Contraception { get; set; }

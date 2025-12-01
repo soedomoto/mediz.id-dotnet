@@ -68,7 +68,10 @@ public class AppointmentRepository : BaseRepository<Appointment>, IAppointmentRe
             .Include(a => a.FacilityDoctor)
             .ThenInclude(fs => fs.Staff)
             .Include(a => a.Facility)
-            .Include(a => a.MedicalRecords)
+            .Include(a => a.Anamnesis)
+            .Include(a => a.Diagnoses)
+            .Include(a => a.Prescriptions)
+            .Include(a => a.LaboratoriumTests)
             .FirstOrDefaultAsync(a => a.Id == appointmentId, cancellationToken);
     }
 }

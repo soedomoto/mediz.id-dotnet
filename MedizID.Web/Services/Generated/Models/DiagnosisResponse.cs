@@ -12,26 +12,18 @@ namespace MedizID.Web.Services.Generated.Models
     public partial class DiagnosisResponse : IParsable
     #pragma warning restore CS1591
     {
+        /// <summary>The caseType property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? CaseType { get; set; }
+#nullable restore
+#else
+        public string CaseType { get; set; }
+#endif
         /// <summary>The confidencePercentage property</summary>
         public int? ConfidencePercentage { get; set; }
         /// <summary>The createdAt property</summary>
         public DateTimeOffset? CreatedAt { get; set; }
-        /// <summary>The diagnosisCode property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? DiagnosisCode { get; set; }
-#nullable restore
-#else
-        public string DiagnosisCode { get; set; }
-#endif
-        /// <summary>The diagnosisDescription property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? DiagnosisDescription { get; set; }
-#nullable restore
-#else
-        public string DiagnosisDescription { get; set; }
-#endif
         /// <summary>The diagnosisType property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -40,8 +32,24 @@ namespace MedizID.Web.Services.Generated.Models
 #else
         public string DiagnosisType { get; set; }
 #endif
+        /// <summary>The icD10Code property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? IcD10Code { get; set; }
+#nullable restore
+#else
+        public string IcD10Code { get; set; }
+#endif
         /// <summary>The id property</summary>
         public Guid? Id { get; set; }
+        /// <summary>The scientificDescription property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ScientificDescription { get; set; }
+#nullable restore
+#else
+        public string ScientificDescription { get; set; }
+#endif
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
@@ -60,12 +68,13 @@ namespace MedizID.Web.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "caseType", n => { CaseType = n.GetStringValue(); } },
                 { "confidencePercentage", n => { ConfidencePercentage = n.GetIntValue(); } },
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
-                { "diagnosisCode", n => { DiagnosisCode = n.GetStringValue(); } },
-                { "diagnosisDescription", n => { DiagnosisDescription = n.GetStringValue(); } },
                 { "diagnosisType", n => { DiagnosisType = n.GetStringValue(); } },
+                { "icD10Code", n => { IcD10Code = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
+                { "scientificDescription", n => { ScientificDescription = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -75,12 +84,13 @@ namespace MedizID.Web.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteStringValue("caseType", CaseType);
             writer.WriteIntValue("confidencePercentage", ConfidencePercentage);
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
-            writer.WriteStringValue("diagnosisCode", DiagnosisCode);
-            writer.WriteStringValue("diagnosisDescription", DiagnosisDescription);
             writer.WriteStringValue("diagnosisType", DiagnosisType);
+            writer.WriteStringValue("icD10Code", IcD10Code);
             writer.WriteGuidValue("id", Id);
+            writer.WriteStringValue("scientificDescription", ScientificDescription);
         }
     }
 }

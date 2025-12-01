@@ -2,7 +2,7 @@ namespace MedizID.API.DTOs;
 
 public class CreateLaboratoriumRequest
 {
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string TestName { get; set; } = null!;
     public string? TestCode { get; set; }
     public string? Result { get; set; }
@@ -25,7 +25,7 @@ public class LaboratoriumResponse
 public class PatientLaboratoriumSchema
 {
     public Guid Id { get; set; }
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string TestName { get; set; } = null!;
     public string? TestCode { get; set; }
     public string? Result { get; set; }

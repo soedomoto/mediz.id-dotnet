@@ -2,7 +2,7 @@ namespace MedizID.API.DTOs;
 
 public class CreateMedicalProcedureRequest
 {
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string ProcedureName { get; set; } = null!;
     public DateTime ProcedureDate { get; set; }
     public string? Indication { get; set; }
@@ -23,7 +23,7 @@ public class MedicalProcedureResponse
 
 public class CreateOdontogramRequest
 {
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string? ToothNumber { get; set; }
     public string? Surface { get; set; }
     public string? Status { get; set; }

@@ -1,0 +1,504 @@
+@page "/appointments/{AppointmentId:guid}/diagnosis"
+@layout AppointmentLayout
+@using System.Threading.Tasks
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using MedizID.Web.Services.Generated.Models
+@using AntDesign
+@inject ILocalStorageService LocalStorage
+@inject MedizIdApiClient ApiClient
+@inject AppointmentLayoutState LayoutState
+@inject MessageService MessageService
+@implements IAsyncDisposable
+
+<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Diagnosis" : "MedizID")</PageTitle>
+
+<div class="diagnosis-container">
+    <Card Title="Clinical Diagnoses (ICD-10)" Class="diagnosis-card">
+        <Extra>
+            <Space>
+                <Button Type="@ButtonType.Primary" Icon="plus" @onclick="OpenNewDiagnosisForm">
+                    Add Diagnosis
+                </Button>
+                <Button Icon="brain" Loading="@IsGeneratingRecommendations" @onclick="GenerateAIRecommendations">
+                    AI Recommendations
+                </Button>
+            </Space>
+        </Extra>
+        <Body>
+            @if (IsLoading)
+            {
+                <Spin Tip="Loading diagnoses..." />
+            }
+            else if (Diagnoses == null || Diagnoses.Count == 0)
+            {
+                <Empty></Empty>
+            }
+            else
+            {
+                <div class="ant-table">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="background: #fafafa; border-bottom: 1px solid #f0f0f0;">
+                            <tr>
+                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">ICD-10 Code</th>
+                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">Scientific Description</th>
+                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">Type</th>
+                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">Case</th>
+                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">Confidence</th>
+                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">AI</th>
+                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">Notes</th>
+                                <th style="padding: 8px 12px; text-align: center; font-weight: 600;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var d in Diagnoses)
+                            {
+                                <tr style="border-bottom: 1px solid #f0f0f0;">
+                                    <td style="padding: 8px 12px;"><strong>@d.IcD10Code</strong></td>
+                                    <td style="padding: 8px 12px;">
+                                        <Tooltip Title="@d.ScientificDescription">
+                                            @TruncateText(d.ScientificDescription, 50)
+                                        </Tooltip>
+                                    </td>
+                                    <td style="padding: 8px 12px;">
+                                        <Tag Color="@GetTypeColor(d.DiagnosisType)">@GetTypeLabel(d.DiagnosisType)</Tag>
+                                    </td>
+                                    <td style="padding: 8px 12px;">
+                                        <Tag Color="@GetCaseColor(d.CaseType)">@GetCaseLabel(d.CaseType)</Tag>
+                                    </td>
+                                    <td style="padding: 8px 12px;">
+                                        @if (d.ConfidencePercentage.HasValue)
+                                        {
+                                            <Progress Type="ProgressType.Circle" Percent="@d.ConfidencePercentage.Value" Width="40" Format="@(p => $"{p}%")" />
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
+                                        }
+                                    </td>
+                                    <td style="padding: 8px 12px;">
+                                        @if (d.IsRecommendedByAI == true)
+                                        {
+                                            <Icon Type="check-circle" Style="color: #52c41a; font-size: 16px; cursor: pointer;" Title="@($"AI Confidence: {d.AiRecommendationConfidence}%")" />
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
+                                        }
+                                    </td>
+                                    <td style="padding: 8px 12px;">
+                                        <Tooltip Title="@(d.ClinicalNotes ?? d.Description)">
+                                            @TruncateText(d.ClinicalNotes ?? d.Description, 30)
+                                        </Tooltip>
+                                    </td>
+                                    <td style="padding: 8px 12px; text-align: center;">
+                                        <Space>
+                                            <Button Type="@ButtonType.Text" @onclick="() => EditDiagnosis(d)">
+                                                <Icon Type="edit" />
+                                            </Button>
+                                            <Popconfirm Title="Delete?" Description="Are you sure?" OnConfirm="() => OnDeleteConfirm(d.Id)">
+                                                <Button Type="@ButtonType.Text" Danger>
+                                                    <Icon Type="delete" />
+                                                </Button>
+                                            </Popconfirm>
+                                        </Space>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </Body>
+    </Card>
+</div>
+
+<!-- AI Recommendations Modal -->
+@if (ShowAIRecommendations && AIRecommendations != null)
+{
+    <Modal Title="AI-Generated Diagnosis Recommendations" 
+           Visible="@ShowAIRecommendations" 
+           OnOk="@OnCloseAIModal" 
+           OnCancel="@OnCloseAIModal" 
+           OkText=@("Close") 
+           CancelButtonVisible="false" 
+           Width="700">
+        <Spin Spinning="@IsGeneratingRecommendations">
+            @if (AIRecommendations.Count == 0)
+            {
+                <Empty />
+            }
+            else
+            {
+                <div class="recommendations-list">
+                    @foreach (var rec in AIRecommendations)
+                    {
+                        <Card Class="recommendation-card">
+                            <Body>
+                                <Row>
+                                    <AntDesign.Col Span="16">
+                                        <h5><Badge Color="@("blue")" Text="@rec.IcD10Code" /> @rec.ScientificDescription</h5>
+                                        @if (!string.IsNullOrEmpty(rec.Reasoning))
+                                        {
+                                            <div><strong>Reasoning:</strong> @rec.Reasoning</div>
+                                        }
+                                    </AntDesign.Col>
+                                    <AntDesign.Col Span="8" Style="text-align: right;">
+                                        <div style="margin-bottom: 8px;">
+                                            <Tag Color="@("green")">Confidence: @rec.ConfidenceScore%</Tag>
+                                        </div>
+                                        <Button Type="@ButtonType.Primary" @onclick="() => AcceptRecommendation(rec)">
+                                            <Icon Type="check" /> Accept
+                                        </Button>
+                                    </AntDesign.Col>
+                                </Row>
+                            </Body>
+                        </Card>
+                    }
+                </div>
+            }
+        </Spin>
+    </Modal>
+}
+
+<!-- New/Edit Diagnosis Modal -->
+@if (ShowDiagnosisForm)
+{
+    <Modal Title="@(CurrentDiagnosis.Id == Guid.Empty ? "Add New Diagnosis" : "Edit Diagnosis")" 
+           Visible="@ShowDiagnosisForm" 
+           OnOk="@OnSaveModalAsync" 
+           OnCancel="@CloseDiagnosisForm"
+           OkText=@("Save") 
+           CancelText=@("Cancel") 
+           Width="700"
+           ConfirmLoading="@IsSaving">
+        <div style="max-height: 500px; overflow-y: auto;">
+            <div style="margin-bottom: 16px;">
+                <Row>
+                    <AntDesign.Col Span="12">
+                        <div>
+                            <label class="ant-form-item-label"><span class="ant-form-item-required">ICD-10 Code</span></label>
+                            <input type="text" class="ant-input" @bind="CurrentDiagnosis.Icd10Code" placeholder="e.g., J00" />
+                        </div>
+                    </AntDesign.Col>
+                    <AntDesign.Col Span="12">
+                        <div>
+                            <label class="ant-form-item-label"><span class="ant-form-item-required">Diagnosis Type</span></label>
+                            <select class="ant-select-selector" @bind="CurrentDiagnosis.DiagnosisType">
+                                <option value="Primary">Primary</option>
+                                <option value="Secondary">Secondary</option>
+                                <option value="Complication">Complication</option>
+                            </select>
+                        </div>
+                    </AntDesign.Col>
+                </Row>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label class="ant-form-item-label"><span class="ant-form-item-required">Scientific Description</span></label>
+                <textarea class="ant-input" style="resize: vertical;" @bind="CurrentDiagnosis.ScientificDescription" placeholder="Medical/scientific terminology" rows="3"></textarea>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <Row>
+                    <AntDesign.Col Span="12">
+                        <div>
+                            <label class="ant-form-item-label"><span class="ant-form-item-required">Case Type</span></label>
+                            <select class="ant-select-selector" @bind="CurrentDiagnosis.CaseType">
+                                <option value="New">New</option>
+                                <option value="Existing">Existing</option>
+                            </select>
+                        </div>
+                    </AntDesign.Col>
+                    <AntDesign.Col Span="12">
+                        <div>
+                            <label class="ant-form-item-label">Confidence Percentage (%)</label>
+                            <input type="number" class="ant-input" min="0" max="100" @bind="CurrentDiagnosis.ConfidencePercentage" />
+                        </div>
+                    </AntDesign.Col>
+                </Row>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label class="ant-form-item-label">Clinical Notes</label>
+                <textarea class="ant-input" style="resize: vertical;" @bind="CurrentDiagnosis.ClinicalNotes" placeholder="Additional clinical observations..." rows="2"></textarea>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label class="ant-form-item-label">Description</label>
+                <textarea class="ant-input" style="resize: vertical;" @bind="CurrentDiagnosis.Description" placeholder="General description..." rows="2"></textarea>
+            </div>
+        </div>
+    </Modal>
+}
+
+<style>
+    .diagnosis-container {
+        padding: 24px;
+    }
+
+    .diagnosis-card {
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    .diagnosis-table {
+        font-size: 13px;
+    }
+
+    .recommendations-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .recommendation-card {
+        border-left: 3px solid #1890ff;
+    }
+
+    :deep(.ant-progress-circle-text) {
+        font-size: 11px !important;
+    }
+
+    :deep(.ant-table-cell) {
+        padding: 8px 12px !important;
+    }
+
+    :deep(.ant-form-item-label > label) {
+        height: auto;
+        margin-bottom: 4px;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public Guid AppointmentId { get; set; }
+
+    private List<DiagnosisDetailResponse> Diagnoses = new();
+    private List<DiagnosisRecommendation> AIRecommendations = new();
+    private DiagnosisFormModel CurrentDiagnosis = new();
+
+    private bool IsLoading = false;
+    private bool IsSaving = false;
+    private bool IsGeneratingRecommendations = false;
+    private bool ShowDiagnosisForm = false;
+    private bool ShowAIRecommendations = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
+        LayoutState.ActiveTabKey = "diagnosis";
+
+        if (LayoutState.IsAuthenticated)
+        {
+            await LoadDiagnoses();
+        }
+    }
+
+    private async void OnAuthenticationChanged(bool isAuthenticated)
+    {
+        if (isAuthenticated && AppointmentId != Guid.Empty)
+        {
+            await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadDiagnoses();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadDiagnoses()
+    {
+        try
+        {
+            IsLoading = true;
+            // TODO: Call API endpoint to fetch diagnoses
+            // Diagnoses = await ApiClient.Appointments[AppointmentId].Diagnoses.GetAsync();
+            await Task.Delay(500);
+        }
+        catch
+        {
+            MessageService.Error("Error loading diagnoses");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void OpenNewDiagnosisForm()
+    {
+        CurrentDiagnosis = new DiagnosisFormModel { DiagnosisType = "Primary", CaseType = "New" };
+        ShowDiagnosisForm = true;
+    }
+
+    private void EditDiagnosis(DiagnosisDetailResponse diagnosis)
+    {
+        CurrentDiagnosis = new DiagnosisFormModel
+        {
+            Id = diagnosis.Id,
+            Icd10Code = diagnosis.IcD10Code,
+            ScientificDescription = diagnosis.ScientificDescription,
+            DiagnosisType = diagnosis.DiagnosisType,
+            CaseType = diagnosis.CaseType,
+            ConfidencePercentage = diagnosis.ConfidencePercentage,
+            ClinicalNotes = diagnosis.ClinicalNotes,
+            Description = diagnosis.Description
+        };
+        ShowDiagnosisForm = true;
+    }
+
+    private async Task OnSaveModalAsync()
+    {
+        await SaveDiagnosis();
+        CloseDiagnosisForm();
+    }
+
+    private async Task SaveDiagnosis()
+    {
+        try
+        {
+            IsSaving = true;
+            // TODO: Call API endpoint to save diagnosis
+            // if (CurrentDiagnosis.Id == Guid.Empty)
+            // {
+            //     await ApiClient.Appointments[AppointmentId].Diagnoses.PostAsync(new CreateDiagnosisRequest { ... });
+            // }
+            // else
+            // {
+            //     await ApiClient.Appointments.Diagnoses[CurrentDiagnosis.Id].PatchAsync(...);
+            // }
+
+            await LoadDiagnoses();
+            MessageService.Success("Diagnosis saved successfully");
+        }
+        catch
+        {
+            MessageService.Error("Error saving diagnosis");
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private async Task OnDeleteConfirm(Guid? diagnosisId)
+    {
+        if (!diagnosisId.HasValue)
+            return;
+
+        try
+        {
+            // TODO: Call API endpoint to delete diagnosis
+            // await ApiClient.Appointments.Diagnoses[diagnosisId.Value].DeleteAsync();
+
+            await LoadDiagnoses();
+            MessageService.Success("Diagnosis deleted successfully");
+        }
+        catch
+        {
+            MessageService.Error("Error deleting diagnosis");
+        }
+    }
+
+    private async Task GenerateAIRecommendations()
+    {
+        try
+        {
+            IsGeneratingRecommendations = true;
+            // TODO: Call API endpoint to generate recommendations
+            // var response = await ApiClient.Appointments[AppointmentId].Diagnoses["generate-recommendations"].PostAsync(...);
+            // AIRecommendations = response.Recommendations;
+
+            AIRecommendations = new List<DiagnosisRecommendation>();
+            ShowAIRecommendations = true;
+            MessageService.Info("AI recommendations generated");
+        }
+        catch
+        {
+            MessageService.Error("Error generating AI recommendations");
+        }
+        finally
+        {
+            IsGeneratingRecommendations = false;
+        }
+    }
+
+    private async Task AcceptRecommendation(DiagnosisRecommendation rec)
+    {
+        CurrentDiagnosis = new DiagnosisFormModel
+        {
+            Icd10Code = rec.IcD10Code,
+            ScientificDescription = rec.ScientificDescription,
+            ConfidencePercentage = rec.ConfidenceScore,
+            DiagnosisType = "Primary",
+            CaseType = "New"
+        };
+        ShowAIRecommendations = false;
+        ShowDiagnosisForm = true;
+        await Task.CompletedTask;
+    }
+
+    private void CloseDiagnosisForm()
+    {
+        ShowDiagnosisForm = false;
+        CurrentDiagnosis = new DiagnosisFormModel();
+    }
+
+    private async Task OnCloseAIModal()
+    {
+        ShowAIRecommendations = false;
+        await Task.CompletedTask;
+    }
+
+    private string GetTypeLabel(string type) => type switch
+    {
+        "Primary" => "Primary",
+        "Secondary" => "Secondary",
+        "Complication" => "Complication",
+        _ => type
+    };
+
+    private string GetTypeColor(string type) => type switch
+    {
+        "Primary" => "red",
+        "Secondary" => "orange",
+        "Complication" => "blue",
+        _ => "default"
+    };
+
+    private string GetCaseLabel(string caseType) => caseType switch
+    {
+        "New" => "New",
+        "Existing" => "Existing",
+        _ => caseType
+    };
+
+    private string GetCaseColor(string caseType) => caseType switch
+    {
+        "New" => "green",
+        "Existing" => "cyan",
+        _ => "default"
+    };
+
+    private string TruncateText(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text))
+            return "-";
+        return text.Length > maxLength ? text.Substring(0, maxLength) + "..." : text;
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        LayoutState.OnAuthenticationChanged -= OnAuthenticationChanged;
+        await Task.CompletedTask;
+    }
+
+    private class DiagnosisFormModel
+    {
+        public Guid? Id { get; set; }
+        public string Icd10Code { get; set; }
+        public string ScientificDescription { get; set; }
+        public string DiagnosisType { get; set; } = "Primary";
+        public string CaseType { get; set; } = "New";
+        public int? ConfidencePercentage { get; set; }
+        public string ClinicalNotes { get; set; }
+        public string Description { get; set; }
+    }
+}

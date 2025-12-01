@@ -48,7 +48,7 @@ namespace MedizID.Web.Services.Generated.Api.V1.Prescriptions
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public PrescriptionsRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/Prescriptions{?medicalRecordId*,page*,pageSize*}", pathParameters)
+        public PrescriptionsRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/Prescriptions{?appointmentId*,page*,pageSize*}", pathParameters)
         {
         }
         /// <summary>
@@ -56,7 +56,7 @@ namespace MedizID.Web.Services.Generated.Api.V1.Prescriptions
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public PrescriptionsRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/Prescriptions{?medicalRecordId*,page*,pageSize*}", rawUrl)
+        public PrescriptionsRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/Prescriptions{?appointmentId*,page*,pageSize*}", rawUrl)
         {
         }
         /// <returns>A <see cref="global::MedizID.Web.Services.Generated.Models.PrescriptionResponsePagedResult"/></returns>
@@ -145,8 +145,8 @@ namespace MedizID.Web.Services.Generated.Api.V1.Prescriptions
         public partial class PrescriptionsRequestBuilderGetQueryParameters 
         #pragma warning restore CS1591
         {
-            [QueryParameter("medicalRecordId")]
-            public Guid? MedicalRecordId { get; set; }
+            [QueryParameter("appointmentId")]
+            public Guid? AppointmentId { get; set; }
             [QueryParameter("page")]
             public int? Page { get; set; }
             [QueryParameter("pageSize")]

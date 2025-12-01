@@ -2,7 +2,7 @@ namespace MedizID.API.DTOs;
 
 public class CreateMaternalChildHealthRequest
 {
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string? PregnancyWeeks { get; set; }
     public string? BloodPressure { get; set; }
     public decimal? Weight { get; set; }

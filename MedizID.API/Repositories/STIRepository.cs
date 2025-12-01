@@ -10,23 +10,17 @@ public class STIRepository : BaseRepository<STI>, ISTIRepository
     {
     }
 
-    public async Task<STI?> GetByMedicalRecordAsync(Guid medicalRecordId, CancellationToken cancellationToken = default)
+    public async Task<STI?> GetByAppointmentAsync(Guid appointmentId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .FirstOrDefaultAsync(s => s.MedicalRecordId == medicalRecordId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.AppointmentId == appointmentId, cancellationToken);
     }
 
     public async Task<IEnumerable<STI>> GetByPatientAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Where(s => s.MedicalRecord.PatientId == patientId)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IEnumerable<STI>> GetByAppointmentAsync(Guid appointmentId, CancellationToken cancellationToken = default)
-    {
-        return await _dbSet
-            .Where(s => s.MedicalRecord.AppointmentId == appointmentId)
+            .Include(s => s.Appointment)
+            .Where(s => s.Appointment != null && s.Appointment.FacilityPatient.PatientId == patientId)
             .ToListAsync(cancellationToken);
     }
 }

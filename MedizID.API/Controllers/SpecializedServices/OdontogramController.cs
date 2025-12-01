@@ -63,7 +63,7 @@ public class OdontogramController : ControllerBase
         try
         {
             var appointment = await _context.Appointments
-                .Include(a => a.MedicalRecords)
+                .Include(a => a.Anamnesis)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
 
             if (appointment == null)
@@ -71,9 +71,9 @@ public class OdontogramController : ControllerBase
                 throw new NotFoundException($"Appointment with ID {appointmentId} not found");
             }
 
-            var medicalRecordIds = appointment.MedicalRecords.Select(m => m.Id).ToList();
+            var odontogramRecordIds = appointment.Anamnesis.Select(m => m.AppointmentId).Distinct().ToList();
             var odontograms = await _context.Odontograms
-                .Where(o => medicalRecordIds.Contains(o.MedicalRecordId))
+                .Where(o => odontogramRecordIds.Contains(o.AppointmentId))
                 .ToListAsync();
 
             var responses = odontograms.Select(o => new OdontogramResponse
@@ -116,18 +116,18 @@ public class OdontogramController : ControllerBase
     {
         try
         {
-            var medicalRecord = await _context.MedicalRecords
-                .FirstOrDefaultAsync(m => m.Id == request.MedicalRecordId);
+            var medicalRecord = await _context.Appointments
+                .FirstOrDefaultAsync(m => m.Id == request.AppointmentId);
 
             if (medicalRecord == null)
             {
-                throw new NotFoundException($"Medical record with ID {request.MedicalRecordId} not found");
+                throw new NotFoundException($"Appointment with ID {request.AppointmentId} not found");
             }
 
             var odontogram = new Odontogram
             {
                 Id = Guid.NewGuid(),
-                MedicalRecordId = request.MedicalRecordId,
+                AppointmentId = request.AppointmentId,
                 ToothNumber = request.ToothNumber,
                 Surface = request.Surface,
                 Status = request.Status,

@@ -31,7 +31,7 @@ public class PrescriptionsController : ControllerBase
     public async Task<IActionResult> GetPrescriptions(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] Guid? medicalRecordId = null)
+        [FromQuery] Guid? appointmentId = null)
     {
         try
         {
@@ -40,8 +40,8 @@ public class PrescriptionsController : ControllerBase
 
             var query = _context.Prescriptions.AsQueryable();
 
-            if (medicalRecordId.HasValue)
-                query = query.Where(p => p.MedicalRecordId == medicalRecordId.Value);
+            if (appointmentId.HasValue)
+                query = query.Where(p => p.AppointmentId == appointmentId.Value);
 
             var total = await query.CountAsync();
 
@@ -137,21 +137,21 @@ public class PrescriptionsController : ControllerBase
     {
         try
         {
-            // Validate medical record exists
-            var medicalRecord = await _context.MedicalRecords.FirstOrDefaultAsync(mr => mr.Id == request.MedicalRecordId);
-            if (medicalRecord == null)
+            // Validate appointment exists
+            var appointment = await _context.Appointments.FirstOrDefaultAsync(a => a.Id == request.AppointmentId);
+            if (appointment == null)
             {
                 return BadRequest(new ErrorResponse
                 {
-                    ErrorCode = "MEDICAL_RECORD_NOT_FOUND",
-                    Message = "Medical record not found"
+                    ErrorCode = "APPOINTMENT_NOT_FOUND",
+                    Message = "Appointment not found"
                 });
             }
 
             var prescription = new Prescription
             {
                 Id = Guid.NewGuid(),
-                MedicalRecordId = request.MedicalRecordId,
+                AppointmentId = request.AppointmentId,
                 MedicationName = request.MedicationName,
                 Dosage = request.Dosage,
                 Frequency = request.Frequency,

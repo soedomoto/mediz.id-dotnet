@@ -3,7 +3,7 @@ namespace MedizID.API.Models;
 public class AIRecommendation
 {
     public Guid Id { get; set; }
-    public Guid MedicalRecordId { get; set; }
+    public Guid AppointmentId { get; set; }
     public string RecommendationType { get; set; } = null!; // Diagnosis, Prescription, etc.
     public string Content { get; set; } = null!;
     public float ConfidenceScore { get; set; }
@@ -13,5 +13,5 @@ public class AIRecommendation
     public DateTime? UpdatedAt { get; set; }
 
     // Relationships
-    public MedicalRecord MedicalRecord { get; set; } = null!;
+    public Appointment Appointment { get; set; } = null!;
 }

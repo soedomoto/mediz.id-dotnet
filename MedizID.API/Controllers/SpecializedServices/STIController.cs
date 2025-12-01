@@ -34,18 +34,18 @@ public class STIController : ControllerBase
     {
         try
         {
-            var medicalRecord = await _context.MedicalRecords
-                .FirstOrDefaultAsync(m => m.Id == request.MedicalRecordId);
+            var medicalRecord = await _context.Appointments
+                .FirstOrDefaultAsync(m => m.Id == request.AppointmentId);
 
             if (medicalRecord == null)
             {
-                throw new NotFoundException($"Medical record with ID {request.MedicalRecordId} not found");
+                throw new NotFoundException($"Appointment with ID {request.AppointmentId} not found");
             }
 
             var sti = new STI
             {
                 Id = Guid.NewGuid(),
-                MedicalRecordId = request.MedicalRecordId,
+                AppointmentId = request.AppointmentId,
                 VisitStatus = request.VisitStatus != null ? Enum.Parse<STIVisitStatusEnum>(request.VisitStatus) : STIVisitStatusEnum.DatangSendiri,
                 RiskGroup = request.RiskGroup != null ? Enum.Parse<STIRiskGroupEnum>(request.RiskGroup) : null,
                 Symptoms = request.Screening,
@@ -62,7 +62,7 @@ public class STIController : ControllerBase
             var response = new STIResponse
             {
                 Id = sti.Id,
-                MedicalRecordId = sti.MedicalRecordId,
+                AppointmentId = sti.AppointmentId,
                 VisitStatus = sti.VisitStatus.ToString(),
                 RiskGroup = sti.RiskGroup?.ToString() ?? "",
                 Screening = sti.Symptoms,
@@ -113,7 +113,7 @@ public class STIController : ControllerBase
                 .Select(s => new STIResponse
                 {
                     Id = s.Id,
-                    MedicalRecordId = s.MedicalRecordId,
+                    AppointmentId = s.AppointmentId,
                     VisitStatus = s.VisitStatus.ToString(),
                     RiskGroup = s.RiskGroup != null ? s.RiskGroup.ToString() : "",
                     Screening = s.Symptoms,
@@ -162,7 +162,7 @@ public class STIController : ControllerBase
             var response = new STIResponse
             {
                 Id = sti.Id,
-                MedicalRecordId = sti.MedicalRecordId,
+                AppointmentId = sti.AppointmentId,
                 VisitStatus = sti.VisitStatus.ToString(),
                 RiskGroup = sti.RiskGroup?.ToString() ?? "",
                 Screening = sti.Symptoms,
@@ -203,7 +203,7 @@ public class STIController : ControllerBase
         try
         {
             var appointment = await _context.Appointments
-                .Include(a => a.MedicalRecords)
+                .Include(a => a.Anamnesis)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
 
             if (appointment == null)
@@ -211,9 +211,9 @@ public class STIController : ControllerBase
                 throw new NotFoundException($"Appointment with ID {appointmentId} not found");
             }
 
-            var medicalRecordIds = appointment.MedicalRecords.Select(m => m.Id).ToList();
+            var medicalRecordIds = appointment.Anamnesis.Select(m => m.Id).ToList();
             var sti = await _context.STIs
-                .Where(s => medicalRecordIds.Contains(s.MedicalRecordId))
+                .Where(s => medicalRecordIds.Contains(s.AppointmentId))
                 .FirstOrDefaultAsync();
 
             if (sti == null)
@@ -224,8 +224,7 @@ public class STIController : ControllerBase
             var response = new STIResponse
             {
                 Id = sti.Id,
-                MedicalRecordId = sti.MedicalRecordId,
-                AppointmentId = appointmentId,
+                AppointmentId = sti.AppointmentId,
                 VisitStatus = sti.VisitStatus.ToString(),
                 RiskGroup = sti.RiskGroup?.ToString() ?? "",
                 Screening = sti.Symptoms,
@@ -295,7 +294,7 @@ public class STIController : ControllerBase
             var response = new STIResponse
             {
                 Id = sti.Id,
-                MedicalRecordId = sti.MedicalRecordId,
+                AppointmentId = sti.AppointmentId,
                 VisitStatus = sti.VisitStatus.ToString(),
                 RiskGroup = sti.RiskGroup?.ToString() ?? "",
                 Screening = sti.Symptoms,

@@ -13,10 +13,10 @@ public class PrescriptionRepository : BaseRepository<Prescription>, IPrescriptio
     {
     }
 
-    public async Task<IEnumerable<Prescription>> GetByMedicalRecordAsync(Guid medicalRecordId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Prescription>> GetByAppointmentAsync(Guid appointmentId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Where(p => p.MedicalRecordId == medicalRecordId)
+            .Where(p => p.AppointmentId == appointmentId)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -24,7 +24,8 @@ public class PrescriptionRepository : BaseRepository<Prescription>, IPrescriptio
     public async Task<IEnumerable<Prescription>> GetByPatientAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Where(p => p.MedicalRecord != null && p.MedicalRecord.PatientId == patientId)
+            .Include(p => p.Appointment)
+            .Where(p => p.Appointment != null && p.Appointment.FacilityPatient.PatientId == patientId)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -32,7 +33,8 @@ public class PrescriptionRepository : BaseRepository<Prescription>, IPrescriptio
     public async Task<IEnumerable<Prescription>> GetActivePrescriptionsAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Where(p => p.MedicalRecord != null && p.MedicalRecord.PatientId == patientId &&
+            .Include(p => p.Appointment)
+            .Where(p => p.Appointment != null && p.Appointment.FacilityPatient.PatientId == patientId &&
                        (p.ExpiryDate == null || p.ExpiryDate >= DateTime.UtcNow))
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -49,14 +51,15 @@ public class PrescriptionRepository : BaseRepository<Prescription>, IPrescriptio
     public async Task<Prescription?> GetDetailedAsync(Guid prescriptionId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(p => p.MedicalRecord)
+            .Include(p => p.Appointment)
             .FirstOrDefaultAsync(p => p.Id == prescriptionId, cancellationToken);
     }
 
     public async Task<IEnumerable<Prescription>> GetPatientPrescriptionHistoryAsync(Guid patientId, int limit = 20, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Where(p => p.MedicalRecord != null && p.MedicalRecord.PatientId == patientId)
+            .Include(p => p.Appointment)
+            .Where(p => p.Appointment != null && p.Appointment.FacilityPatient.PatientId == patientId)
             .OrderByDescending(p => p.CreatedAt)
             .Take(limit)
             .ToListAsync(cancellationToken);

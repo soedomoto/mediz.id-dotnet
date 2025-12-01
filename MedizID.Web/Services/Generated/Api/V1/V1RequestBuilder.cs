@@ -5,10 +5,7 @@ using MedizID.Web.Services.Generated.Api.V1.Anamnesis;
 using MedizID.Web.Services.Generated.Api.V1.Appointments;
 using MedizID.Web.Services.Generated.Api.V1.Auth;
 using MedizID.Web.Services.Generated.Api.V1.Departments;
-using MedizID.Web.Services.Generated.Api.V1.Diagnosis;
 using MedizID.Web.Services.Generated.Api.V1.Facilities;
-using MedizID.Web.Services.Generated.Api.V1.Laboratorium;
-using MedizID.Web.Services.Generated.Api.V1.MedicalRecords;
 using MedizID.Web.Services.Generated.Api.V1.Odontogram;
 using MedizID.Web.Services.Generated.Api.V1.Prescriptions;
 using MedizID.Web.Services.Generated.Api.V1.STI;
@@ -52,25 +49,10 @@ namespace MedizID.Web.Services.Generated.Api.V1
         {
             get => new global::MedizID.Web.Services.Generated.Api.V1.Departments.DepartmentsRequestBuilder(PathParameters, RequestAdapter);
         }
-        /// <summary>The Diagnosis property</summary>
-        public global::MedizID.Web.Services.Generated.Api.V1.Diagnosis.DiagnosisRequestBuilder Diagnosis
-        {
-            get => new global::MedizID.Web.Services.Generated.Api.V1.Diagnosis.DiagnosisRequestBuilder(PathParameters, RequestAdapter);
-        }
         /// <summary>The facilities property</summary>
         public global::MedizID.Web.Services.Generated.Api.V1.Facilities.FacilitiesRequestBuilder Facilities
         {
             get => new global::MedizID.Web.Services.Generated.Api.V1.Facilities.FacilitiesRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The Laboratorium property</summary>
-        public global::MedizID.Web.Services.Generated.Api.V1.Laboratorium.LaboratoriumRequestBuilder Laboratorium
-        {
-            get => new global::MedizID.Web.Services.Generated.Api.V1.Laboratorium.LaboratoriumRequestBuilder(PathParameters, RequestAdapter);
-        }
-        /// <summary>The MedicalRecords property</summary>
-        public global::MedizID.Web.Services.Generated.Api.V1.MedicalRecords.MedicalRecordsRequestBuilder MedicalRecords
-        {
-            get => new global::MedizID.Web.Services.Generated.Api.V1.MedicalRecords.MedicalRecordsRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The Odontogram property</summary>
         public global::MedizID.Web.Services.Generated.Api.V1.Odontogram.OdontogramRequestBuilder Odontogram

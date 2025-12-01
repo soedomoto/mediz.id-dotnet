@@ -12,6 +12,8 @@ namespace MedizID.Web.Services.Generated.Models
     public partial class CreatePrescriptionRequest : IParsable
     #pragma warning restore CS1591
     {
+        /// <summary>The appointmentId property</summary>
+        public Guid? AppointmentId { get; set; }
         /// <summary>The dosage property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -38,8 +40,6 @@ namespace MedizID.Web.Services.Generated.Models
 #else
         public string Instructions { get; set; }
 #endif
-        /// <summary>The medicalRecordId property</summary>
-        public Guid? MedicalRecordId { get; set; }
         /// <summary>The medicationName property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -66,11 +66,11 @@ namespace MedizID.Web.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "appointmentId", n => { AppointmentId = n.GetGuidValue(); } },
                 { "dosage", n => { Dosage = n.GetStringValue(); } },
                 { "duration", n => { Duration = n.GetIntValue(); } },
                 { "frequency", n => { Frequency = n.GetStringValue(); } },
                 { "instructions", n => { Instructions = n.GetStringValue(); } },
-                { "medicalRecordId", n => { MedicalRecordId = n.GetGuidValue(); } },
                 { "medicationName", n => { MedicationName = n.GetStringValue(); } },
             };
         }
@@ -81,11 +81,11 @@ namespace MedizID.Web.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteGuidValue("appointmentId", AppointmentId);
             writer.WriteStringValue("dosage", Dosage);
             writer.WriteIntValue("duration", Duration);
             writer.WriteStringValue("frequency", Frequency);
             writer.WriteStringValue("instructions", Instructions);
-            writer.WriteGuidValue("medicalRecordId", MedicalRecordId);
             writer.WriteStringValue("medicationName", MedicationName);
         }
     }

@@ -10,7 +10,7 @@ public interface IDiagnosisRepository : IRepository<Diagnosis>
     /// <summary>
     /// Get diagnoses by medical record
     /// </summary>
-    Task<IEnumerable<Diagnosis>> GetByMedicalRecordAsync(Guid medicalRecordId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Diagnosis>> GetByAppointmentAsync(Guid appointmentId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get diagnoses by ICD10 code
@@ -25,7 +25,7 @@ public interface IDiagnosisRepository : IRepository<Diagnosis>
     /// <summary>
     /// Get primary diagnosis for medical record
     /// </summary>
-    Task<Diagnosis?> GetPrimaryDiagnosisAsync(Guid medicalRecordId, CancellationToken cancellationToken = default);
+    Task<Diagnosis?> GetPrimaryDiagnosisAsync(Guid appointmentId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get diagnosis history for patient

@@ -1,0 +1,41 @@
+@page "/appointments/{AppointmentId:guid}/maternal-child-health"
+@layout AppointmentLayout
+@using System.Threading.Tasks
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using MedizID.Web.Services.Generated.Models
+@inject ILocalStorageService LocalStorage
+@inject MedizIdApiClient ApiClient
+@inject AppointmentLayoutState LayoutState
+@inject INotificationService _notice
+@implements IAsyncDisposable
+
+<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Maternal Child Health" : "MedizID")
+</PageTitle>
+
+@code {
+    [Parameter]
+    public Guid AppointmentId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
+        LayoutState.ActiveTabKey = "maternal-child-health";
+    }
+
+    private async void OnAuthenticationChanged(bool isAuthenticated)
+    {
+        if (isAuthenticated && AppointmentId != Guid.Empty)
+        {
+            await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            StateHasChanged();
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        LayoutState.OnAuthenticationChanged -= OnAuthenticationChanged;
+        await Task.CompletedTask;
+    }
+
+}

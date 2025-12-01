@@ -20,5 +20,8 @@ public class Appointment
     public Facility Facility { get; set; } = null!;
     public FacilityPatient FacilityPatient { get; set; } = null!;
     public FacilityStaff? FacilityDoctor { get; set; }
-    public ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
+    public ICollection<Anamnesis> Anamnesis { get; set; } = new List<Anamnesis>();
+    public ICollection<Diagnosis> Diagnoses { get; set; } = new List<Diagnosis>();
+    public ICollection<Prescription> Prescriptions { get; set; } = new List<Prescription>();
+    public ICollection<Laboratorium> LaboratoriumTests { get; set; } = new List<Laboratorium>();
 }

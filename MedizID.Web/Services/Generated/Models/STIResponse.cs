@@ -26,8 +26,6 @@ namespace MedizID.Web.Services.Generated.Models
 #endif
         /// <summary>The id property</summary>
         public Guid? Id { get; set; }
-        /// <summary>The medicalRecordId property</summary>
-        public Guid? MedicalRecordId { get; set; }
         /// <summary>The riskGroup property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -84,7 +82,6 @@ namespace MedizID.Web.Services.Generated.Models
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
                 { "diagnosis", n => { Diagnosis = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
-                { "medicalRecordId", n => { MedicalRecordId = n.GetGuidValue(); } },
                 { "riskGroup", n => { RiskGroup = n.GetStringValue(); } },
                 { "screening", n => { Screening = n.GetStringValue(); } },
                 { "treatment", n => { Treatment = n.GetStringValue(); } },
@@ -103,7 +100,6 @@ namespace MedizID.Web.Services.Generated.Models
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
             writer.WriteStringValue("diagnosis", Diagnosis);
             writer.WriteGuidValue("id", Id);
-            writer.WriteGuidValue("medicalRecordId", MedicalRecordId);
             writer.WriteStringValue("riskGroup", RiskGroup);
             writer.WriteStringValue("screening", Screening);
             writer.WriteStringValue("treatment", Treatment);

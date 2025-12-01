@@ -34,7 +34,7 @@ public class AdolescentHealthController : ControllerBase
         try
         {
             var appointment = await _context.Appointments
-                .Include(a => a.MedicalRecords)
+                .Include(a => a.Anamnesis)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
 
             if (appointment == null)
@@ -42,16 +42,10 @@ public class AdolescentHealthController : ControllerBase
                 throw new NotFoundException($"Appointment with ID {appointmentId} not found");
             }
 
-            var medicalRecord = appointment.MedicalRecords.FirstOrDefault();
-            if (medicalRecord == null)
-            {
-                throw new ApiException("No medical record associated with this appointment");
-            }
-
             var adolescentHealth = new AdolescentHealth
             {
                 Id = Guid.NewGuid(),
-                MedicalRecordId = medicalRecord.Id,
+                AppointmentId = appointmentId,
                 PubertanStage = request.HealthConcern,
                 RiskyBehaviors = request.SexualActivity,
                 MentalHealthStatus = request.Contraception,
@@ -67,8 +61,7 @@ public class AdolescentHealthController : ControllerBase
             var response = new AdolescentHealthResponse
             {
                 Id = adolescentHealth.Id,
-                MedicalRecordId = adolescentHealth.MedicalRecordId,
-                AppointmentId = appointmentId,
+                AppointmentId = adolescentHealth.AppointmentId,
                 HealthConcern = adolescentHealth.PubertanStage,
                 SexualActivity = adolescentHealth.RiskyBehaviors,
                 Contraception = adolescentHealth.MentalHealthStatus,
@@ -116,7 +109,7 @@ public class AdolescentHealthController : ControllerBase
         try
         {
             var appointment = await _context.Appointments
-                .Include(a => a.MedicalRecords)
+                .Include(a => a.Anamnesis)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
 
             if (appointment == null)
@@ -124,9 +117,9 @@ public class AdolescentHealthController : ControllerBase
                 throw new NotFoundException($"Appointment with ID {appointmentId} not found");
             }
 
-            var medicalRecordIds = appointment.MedicalRecords.Select(m => m.Id).ToList();
+            var medicalRecordIds = appointment.Anamnesis.Select(m => m.Id).ToList();
             var adolescentHealth = await _context.AdolescentHealths
-                .Where(a => medicalRecordIds.Contains(a.MedicalRecordId))
+                .Where(a => medicalRecordIds.Contains(a.AppointmentId))
                 .FirstOrDefaultAsync();
 
             if (adolescentHealth == null)
@@ -137,8 +130,7 @@ public class AdolescentHealthController : ControllerBase
             var response = new AdolescentHealthResponse
             {
                 Id = adolescentHealth.Id,
-                MedicalRecordId = adolescentHealth.MedicalRecordId,
-                AppointmentId = appointmentId,
+                AppointmentId = adolescentHealth.AppointmentId,
                 HealthConcern = adolescentHealth.PubertanStage,
                 SexualActivity = adolescentHealth.RiskyBehaviors,
                 Contraception = adolescentHealth.MentalHealthStatus,
@@ -187,7 +179,7 @@ public class AdolescentHealthController : ControllerBase
             var response = new AdolescentHealthResponse
             {
                 Id = adolescentHealth.Id,
-                MedicalRecordId = adolescentHealth.MedicalRecordId,
+                AppointmentId = adolescentHealth.AppointmentId,
                 HealthConcern = adolescentHealth.PubertanStage,
                 SexualActivity = adolescentHealth.RiskyBehaviors,
                 Contraception = adolescentHealth.MentalHealthStatus,
@@ -227,7 +219,7 @@ public class AdolescentHealthController : ControllerBase
         try
         {
             var appointment = await _context.Appointments
-                .Include(a => a.MedicalRecords)
+                .Include(a => a.Anamnesis)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
 
             if (appointment == null)
@@ -235,9 +227,9 @@ public class AdolescentHealthController : ControllerBase
                 throw new NotFoundException($"Appointment with ID {appointmentId} not found");
             }
 
-            var medicalRecordIds = appointment.MedicalRecords.Select(m => m.Id).ToList();
+            var medicalRecordIds = appointment.Anamnesis.Select(m => m.Id).ToList();
             var adolescentHealth = await _context.AdolescentHealths
-                .Where(a => medicalRecordIds.Contains(a.MedicalRecordId))
+                .Where(a => medicalRecordIds.Contains(a.AppointmentId))
                 .FirstOrDefaultAsync();
 
             if (adolescentHealth == null)
@@ -265,8 +257,7 @@ public class AdolescentHealthController : ControllerBase
             var response = new AdolescentHealthResponse
             {
                 Id = adolescentHealth.Id,
-                MedicalRecordId = adolescentHealth.MedicalRecordId,
-                AppointmentId = appointmentId,
+                AppointmentId = adolescentHealth.AppointmentId,
                 HealthConcern = adolescentHealth.PubertanStage,
                 SexualActivity = adolescentHealth.RiskyBehaviors,
                 Contraception = adolescentHealth.MentalHealthStatus,
@@ -332,7 +323,7 @@ public class AdolescentHealthController : ControllerBase
             var response = new AdolescentHealthResponse
             {
                 Id = adolescentHealth.Id,
-                MedicalRecordId = adolescentHealth.MedicalRecordId,
+                AppointmentId = adolescentHealth.AppointmentId,
                 HealthConcern = adolescentHealth.PubertanStage,
                 SexualActivity = adolescentHealth.RiskyBehaviors,
                 Contraception = adolescentHealth.MentalHealthStatus,
@@ -372,7 +363,7 @@ public class AdolescentHealthController : ControllerBase
         try
         {
             var appointment = await _context.Appointments
-                .Include(a => a.MedicalRecords)
+                .Include(a => a.Anamnesis)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
 
             if (appointment == null)
@@ -380,9 +371,9 @@ public class AdolescentHealthController : ControllerBase
                 throw new NotFoundException($"Appointment with ID {appointmentId} not found");
             }
 
-            var medicalRecordIds = appointment.MedicalRecords.Select(m => m.Id).ToList();
+            var medicalRecordIds = appointment.Anamnesis.Select(m => m.Id).ToList();
             var adolescentHealth = await _context.AdolescentHealths
-                .Where(a => medicalRecordIds.Contains(a.MedicalRecordId))
+                .Where(a => medicalRecordIds.Contains(a.AppointmentId))
                 .FirstOrDefaultAsync();
 
             if (adolescentHealth == null)

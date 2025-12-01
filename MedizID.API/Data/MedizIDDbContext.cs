@@ -15,7 +15,6 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<Facility> Facilities { get; set; }
     public DbSet<Department> Departments { get; set; }
     public DbSet<Appointment> Appointments { get; set; }
-    public DbSet<MedicalRecord> MedicalRecords { get; set; }
 
     // Facility management
     public DbSet<Installation> Installations { get; set; }
@@ -161,23 +160,23 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
 
         // AIRecommendation relationships
         modelBuilder.Entity<AIRecommendation>()
-            .HasOne(a => a.MedicalRecord)
+            .HasOne(a => a.Appointment)
             .WithMany()
-            .HasForeignKey(a => a.MedicalRecordId)
+            .HasForeignKey(a => a.AppointmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Odontogram relationships
         modelBuilder.Entity<Odontogram>()
-            .HasOne(o => o.MedicalRecord)
+            .HasOne(o => o.Appointment)
             .WithMany()
-            .HasForeignKey(o => o.MedicalRecordId)
+            .HasForeignKey(o => o.AppointmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // STI relationships
         modelBuilder.Entity<STI>()
-            .HasOne(s => s.MedicalRecord)
+            .HasOne(s => s.Appointment)
             .WithMany()
-            .HasForeignKey(s => s.MedicalRecordId)
+            .HasForeignKey(s => s.AppointmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // AnamnesisTemplate relationships
@@ -189,10 +188,28 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
 
         // Appointment relationships
         modelBuilder.Entity<Appointment>()
-            .HasMany(a => a.MedicalRecords)
-            .WithOne(m => m.Appointment)
-            .HasForeignKey(m => m.AppointmentId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .HasMany(a => a.Anamnesis)
+            .WithOne(a => a.Appointment)
+            .HasForeignKey(a => a.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Appointment>()
+            .HasMany(a => a.Diagnoses)
+            .WithOne(d => d.Appointment)
+            .HasForeignKey(d => d.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Appointment>()
+            .HasMany(a => a.Prescriptions)
+            .WithOne(p => p.Appointment)
+            .HasForeignKey(p => p.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Appointment>()
+            .HasMany(a => a.LaboratoriumTests)
+            .WithOne(l => l.Appointment)
+            .HasForeignKey(l => l.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Appointment>()
             .HasOne(a => a.FacilityPatient)
@@ -206,29 +223,41 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .HasForeignKey(a => a.FacilityDoctorId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // MedicalRecord relationships
-        modelBuilder.Entity<MedicalRecord>()
-            .HasMany(m => m.Anamnesis)
-            .WithOne(a => a.MedicalRecord)
-            .HasForeignKey(a => a.MedicalRecordId)
+        // Specialized services relationships to Appointment
+        modelBuilder.Entity<AdolescentHealth>()
+            .HasOne(a => a.Appointment)
+            .WithMany()
+            .HasForeignKey(a => a.AppointmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<MedicalRecord>()
-            .HasMany(m => m.Diagnoses)
-            .WithOne(d => d.MedicalRecord)
-            .HasForeignKey(d => d.MedicalRecordId)
+        modelBuilder.Entity<FamilyPlanning>()
+            .HasOne(f => f.Appointment)
+            .WithMany()
+            .HasForeignKey(f => f.AppointmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<MedicalRecord>()
-            .HasMany(m => m.Prescriptions)
-            .WithOne(p => p.MedicalRecord)
-            .HasForeignKey(p => p.MedicalRecordId)
+        modelBuilder.Entity<MaternalChildHealth>()
+            .HasOne(m => m.Appointment)
+            .WithMany()
+            .HasForeignKey(m => m.AppointmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<MedicalRecord>()
-            .HasMany(m => m.LaboratoriumTests)
-            .WithOne(l => l.MedicalRecord)
-            .HasForeignKey(l => l.MedicalRecordId)
+        modelBuilder.Entity<Immunization>()
+            .HasOne(i => i.Appointment)
+            .WithMany()
+            .HasForeignKey(i => i.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MedicalProcedure>()
+            .HasOne(m => m.Appointment)
+            .WithMany()
+            .HasForeignKey(m => m.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<HIVCounseling>()
+            .HasOne(h => h.Appointment)
+            .WithMany()
+            .HasForeignKey(h => h.AppointmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Configure columns

@@ -51,6 +51,10 @@ public class AppointmentDetailResponse
     public string? PatientRoomBed { get; set; }
     public string? Insurance { get; set; }
     public string? ReferringDoctor { get; set; }
+    public List<AnamnesisResponse> Anamnesis { get; set; } = new();
+    public List<DiagnosisResponse> Diagnoses { get; set; } = new();
+    public List<PrescriptionResponse> Prescriptions { get; set; } = new();
+    public List<LaboratoriumResponse> LaboratoriumTests { get; set; } = new();
     public DateTime CreatedAt { get; set; }
 }
 
