@@ -253,7 +253,7 @@
     {
         try
         {
-            var response = await HttpClient.GetFromJsonAsync<AnamnesisResponse>($"api/v1/anamnesis/appointment/{AppointmentId}");
+            var response = await ApiClient.Api.V1.Anamnesis.Appointment[AppointmentId].GetAsync();
             
             if (response != null)
             {

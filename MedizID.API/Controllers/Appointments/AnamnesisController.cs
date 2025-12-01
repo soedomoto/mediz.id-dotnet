@@ -155,7 +155,6 @@ public class AnamnesisController : ControllerBase
     /// Get anamnesis record by ID
     /// </summary>
     [HttpGet("{id}")]
-    [AllowAnonymous]
     [ProducesResponseType(typeof(AnamnesisResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAnamnesisRecord(Guid id)
@@ -279,7 +278,6 @@ public class AnamnesisController : ControllerBase
     /// Get anamnesis record by appointment ID
     /// </summary>
     [HttpGet("appointment/{appointmentId}")]
-    [AllowAnonymous]
     [ProducesResponseType(typeof(AnamnesisResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAnamnesisRecordByAppointmentId(Guid appointmentId)
