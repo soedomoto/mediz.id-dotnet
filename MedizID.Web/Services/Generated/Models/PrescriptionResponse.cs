@@ -12,8 +12,6 @@ namespace MedizID.Web.Services.Generated.Models
     public partial class PrescriptionResponse : IParsable
     #pragma warning restore CS1591
     {
-        /// <summary>The aiRecommendationConfidence property</summary>
-        public int? AiRecommendationConfidence { get; set; }
         /// <summary>The appointmentId property</summary>
         public Guid? AppointmentId { get; set; }
         /// <summary>The createdAt property</summary>
@@ -28,8 +26,6 @@ namespace MedizID.Web.Services.Generated.Models
 #endif
         /// <summary>The id property</summary>
         public Guid? Id { get; set; }
-        /// <summary>The isRecommendedByAI property</summary>
-        public bool? IsRecommendedByAI { get; set; }
         /// <summary>The updatedAt property</summary>
         public DateTimeOffset? UpdatedAt { get; set; }
         /// <summary>
@@ -50,12 +46,10 @@ namespace MedizID.Web.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "aiRecommendationConfidence", n => { AiRecommendationConfidence = n.GetIntValue(); } },
                 { "appointmentId", n => { AppointmentId = n.GetGuidValue(); } },
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
                 { "details", n => { Details = n.GetCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.PrescriptionDetailResponse>(global::MedizID.Web.Services.Generated.Models.PrescriptionDetailResponse.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
-                { "isRecommendedByAI", n => { IsRecommendedByAI = n.GetBoolValue(); } },
                 { "updatedAt", n => { UpdatedAt = n.GetDateTimeOffsetValue(); } },
             };
         }
@@ -66,12 +60,10 @@ namespace MedizID.Web.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteIntValue("aiRecommendationConfidence", AiRecommendationConfidence);
             writer.WriteGuidValue("appointmentId", AppointmentId);
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
             writer.WriteCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.PrescriptionDetailResponse>("details", Details);
             writer.WriteGuidValue("id", Id);
-            writer.WriteBoolValue("isRecommendedByAI", IsRecommendedByAI);
             writer.WriteDateTimeOffsetValue("updatedAt", UpdatedAt);
         }
     }

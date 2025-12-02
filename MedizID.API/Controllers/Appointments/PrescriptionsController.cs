@@ -65,8 +65,6 @@ public class PrescriptionsController : ControllerBase
                 {
                     Id = p.Id,
                     AppointmentId = p.AppointmentId,
-                    IsRecommendedByAI = p.IsRecommendedByAI,
-                    AIRecommendationConfidence = p.AIRecommendationConfidence,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt,
                     Details = p.PrescriptionDetails.Select(pd => new PrescriptionDetailResponse
@@ -86,6 +84,8 @@ public class PrescriptionsController : ControllerBase
                         Packaging = pd.Packaging,
                         RecipeType = pd.RecipeType,
                         RequestedQuantity = pd.RequestedQuantity,
+                        IsRecommendedByAI = pd.IsRecommendedByAI,
+                        AIRecommendationConfidence = pd.AIRecommendationConfidence,
                         CreatedAt = pd.CreatedAt,
                         UpdatedAt = pd.UpdatedAt
                     }).ToList()
@@ -135,8 +135,6 @@ public class PrescriptionsController : ControllerBase
             {
                 Id = prescription.Id,
                 AppointmentId = prescription.AppointmentId,
-                IsRecommendedByAI = prescription.IsRecommendedByAI,
-                AIRecommendationConfidence = prescription.AIRecommendationConfidence,
                 CreatedAt = prescription.CreatedAt,
                 UpdatedAt = prescription.UpdatedAt,
                 Details = prescription.PrescriptionDetails.Select(pd => new PrescriptionDetailResponse
@@ -156,6 +154,8 @@ public class PrescriptionsController : ControllerBase
                     Packaging = pd.Packaging,
                     RecipeType = pd.RecipeType,
                     RequestedQuantity = pd.RequestedQuantity,
+                    IsRecommendedByAI = pd.IsRecommendedByAI,
+                    AIRecommendationConfidence = pd.AIRecommendationConfidence,
                     CreatedAt = pd.CreatedAt,
                     UpdatedAt = pd.UpdatedAt
                 }).ToList()
@@ -219,8 +219,6 @@ public class PrescriptionsController : ControllerBase
                 {
                     Id = p.Id,
                     AppointmentId = p.AppointmentId,
-                    IsRecommendedByAI = p.IsRecommendedByAI,
-                    AIRecommendationConfidence = p.AIRecommendationConfidence,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt,
                     Details = p.PrescriptionDetails.Select(pd => new PrescriptionDetailResponse
@@ -240,6 +238,8 @@ public class PrescriptionsController : ControllerBase
                         Packaging = pd.Packaging,
                         RecipeType = pd.RecipeType,
                         RequestedQuantity = pd.RequestedQuantity,
+                        IsRecommendedByAI = pd.IsRecommendedByAI,
+                        AIRecommendationConfidence = pd.AIRecommendationConfidence,
                         CreatedAt = pd.CreatedAt,
                         UpdatedAt = pd.UpdatedAt
                     }).ToList()
@@ -337,8 +337,6 @@ public class PrescriptionsController : ControllerBase
             {
                 Id = prescription.Id,
                 AppointmentId = prescription.AppointmentId,
-                IsRecommendedByAI = prescription.IsRecommendedByAI,
-                AIRecommendationConfidence = prescription.AIRecommendationConfidence,
                 CreatedAt = prescription.CreatedAt,
                 UpdatedAt = prescription.UpdatedAt,
                 Details = request.Details.Select((d, i) => new PrescriptionDetailResponse
@@ -428,8 +426,6 @@ public class PrescriptionsController : ControllerBase
             {
                 Id = prescription.Id,
                 AppointmentId = prescription.AppointmentId,
-                IsRecommendedByAI = prescription.IsRecommendedByAI,
-                AIRecommendationConfidence = prescription.AIRecommendationConfidence,
                 CreatedAt = prescription.CreatedAt,
                 UpdatedAt = prescription.UpdatedAt,
                 Details = request.Details.Select(d => new PrescriptionDetailResponse
@@ -720,9 +716,6 @@ Requirements:
 7. Consider the patient's age when recommending dosages and medications (avoid age-inappropriate options)
 8. Include any relevant warnings or precautions in the notes field based on patient allergies and age";
 
-Console.WriteLine("Generated OpenAI Prompt:");
-Console.WriteLine(prompt);
-
             try
             {
                 // Validate OpenAI API key
@@ -787,9 +780,6 @@ Console.WriteLine(prompt);
 
                     var responseText = openAiResponse.Choices[0].Message.Content.Trim();
 
-                    Console.WriteLine("OpenAI Response Text:");
-                    Console.WriteLine(responseText);
-
                     // Clean the response if it contains markdown code blocks
                     if (responseText.StartsWith("```json"))
                         responseText = responseText[7..];
@@ -853,8 +843,6 @@ Console.WriteLine(prompt);
                     {
                         Id = Guid.NewGuid(),
                         AppointmentId = appointmentId,
-                        IsRecommendedByAI = true,
-                        AIRecommendationConfidence = (int)recommendations.Average(r => r.ConfidenceScore),
                         CreatedAt = DateTime.UtcNow
                     };
 
@@ -875,6 +863,8 @@ Console.WriteLine(prompt);
                             Quantity = rec.Quantity,
                             Instructions = rec.Instructions,
                             Notes = rec.Notes,
+                            IsRecommendedByAI = true,
+                            AIRecommendationConfidence = rec.ConfidenceScore,
                             CreatedAt = DateTime.UtcNow
                         };
 
@@ -891,6 +881,8 @@ Console.WriteLine(prompt);
                             Quantity = detail.Quantity,
                             Instructions = detail.Instructions,
                             Notes = detail.Notes,
+                            IsRecommendedByAI = detail.IsRecommendedByAI,
+                            AIRecommendationConfidence = detail.AIRecommendationConfidence,
                             CreatedAt = detail.CreatedAt,
                             UpdatedAt = detail.UpdatedAt
                         });
@@ -904,8 +896,6 @@ Console.WriteLine(prompt);
                     {
                         Id = prescription.Id,
                         AppointmentId = prescription.AppointmentId,
-                        IsRecommendedByAI = prescription.IsRecommendedByAI,
-                        AIRecommendationConfidence = prescription.AIRecommendationConfidence,
                         CreatedAt = prescription.CreatedAt,
                         UpdatedAt = prescription.UpdatedAt,
                         Details = prescriptionDetails

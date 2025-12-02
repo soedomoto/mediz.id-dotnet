@@ -561,8 +561,6 @@ public class UsersController : ControllerBase
                 {
                     Id = p.Id,
                     AppointmentId = p.AppointmentId,
-                    IsRecommendedByAI = p.IsRecommendedByAI,
-                    AIRecommendationConfidence = p.AIRecommendationConfidence,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt,
                     Details = p.PrescriptionDetails.Select(pd => new PrescriptionDetailResponse
@@ -578,6 +576,8 @@ public class UsersController : ControllerBase
                         Notes = pd.Notes,
                         Price = pd.Price,
                         Packaging = pd.Packaging,
+                        IsRecommendedByAI = pd.IsRecommendedByAI,
+                        AIRecommendationConfidence = pd.AIRecommendationConfidence,
                         CreatedAt = pd.CreatedAt,
                         UpdatedAt = pd.UpdatedAt
                     }).ToList()

@@ -4,8 +4,6 @@ public class Prescription
 {
     public Guid Id { get; set; }
     public Guid AppointmentId { get; set; }
-    public bool? IsRecommendedByAI { get; set; }
-    public int? AIRecommendationConfidence { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
@@ -31,6 +29,8 @@ public class PrescriptionDetail
     public decimal? Packaging { get; set; } // Embalase
     public string? RecipeType { get; set; } // Racikan (R1, R2, etc.)
     public int? RequestedQuantity { get; set; } // Jumlah Permintaan
+    public bool? IsRecommendedByAI { get; set; }
+    public int? AIRecommendationConfidence { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 

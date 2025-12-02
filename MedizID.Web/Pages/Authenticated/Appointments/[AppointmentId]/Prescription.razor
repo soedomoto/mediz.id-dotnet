@@ -41,22 +41,16 @@
                 <Column TData="PrescriptionDetailResponse" Title="Signa">
                     @context.Signa
                 </Column>
-                <Column TData="PrescriptionDetailResponse" Title="Frequency">
-                    @context.Frequency
-                </Column>
                 <Column TData="PrescriptionDetailResponse" Title="Quantity">
                     @context.Quantity
                 </Column>
                 <Column TData="PrescriptionDetailResponse" Title="Recipe Type">
                     <Tag Color="@GetRecipeTypeColor(context.RecipeType)">@context.RecipeType</Tag>
                 </Column>
-                <Column TData="PrescriptionDetailResponse" Title="Price">
-                    $@context.Price
-                </Column>
                 <Column TData="PrescriptionDetailResponse" Title="AI" Align="ColumnAlign.Center">
-                    @if (CurrentPrescription?.IsRecommendedByAI == true && CurrentPrescription != null)
+                    @if (context.IsRecommendedByAI == true)
                     {
-                        <Tooltip Title="AI Recommended">
+                        <Tooltip Title="@($"AI Confidence: {context.AiRecommendationConfidence}%")">
                             <Icon Type="check-circle" Style="color: #52c41a; font-size: 16px; cursor: pointer;" />
                         </Tooltip>
                     }

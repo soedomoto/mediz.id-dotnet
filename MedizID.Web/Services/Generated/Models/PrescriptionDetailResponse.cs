@@ -12,6 +12,8 @@ namespace MedizID.Web.Services.Generated.Models
     public partial class PrescriptionDetailResponse : IParsable
     #pragma warning restore CS1591
     {
+        /// <summary>The aiRecommendationConfidence property</summary>
+        public int? AiRecommendationConfidence { get; set; }
         /// <summary>The createdAt property</summary>
         public DateTimeOffset? CreatedAt { get; set; }
         /// <summary>The dosage property</summary>
@@ -42,6 +44,8 @@ namespace MedizID.Web.Services.Generated.Models
 #else
         public string Instructions { get; set; }
 #endif
+        /// <summary>The isRecommendedByAI property</summary>
+        public bool? IsRecommendedByAI { get; set; }
         /// <summary>The medicalEquipmentId property</summary>
         public Guid? MedicalEquipmentId { get; set; }
         /// <summary>The medicationName property</summary>
@@ -106,12 +110,14 @@ namespace MedizID.Web.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "aiRecommendationConfidence", n => { AiRecommendationConfidence = n.GetIntValue(); } },
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
                 { "dosage", n => { Dosage = n.GetStringValue(); } },
                 { "drugId", n => { DrugId = n.GetGuidValue(); } },
                 { "frequency", n => { Frequency = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
                 { "instructions", n => { Instructions = n.GetStringValue(); } },
+                { "isRecommendedByAI", n => { IsRecommendedByAI = n.GetBoolValue(); } },
                 { "medicalEquipmentId", n => { MedicalEquipmentId = n.GetGuidValue(); } },
                 { "medicationName", n => { MedicationName = n.GetStringValue(); } },
                 { "notes", n => { Notes = n.GetStringValue(); } },
@@ -132,12 +138,14 @@ namespace MedizID.Web.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteIntValue("aiRecommendationConfidence", AiRecommendationConfidence);
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
             writer.WriteStringValue("dosage", Dosage);
             writer.WriteGuidValue("drugId", DrugId);
             writer.WriteStringValue("frequency", Frequency);
             writer.WriteGuidValue("id", Id);
             writer.WriteStringValue("instructions", Instructions);
+            writer.WriteBoolValue("isRecommendedByAI", IsRecommendedByAI);
             writer.WriteGuidValue("medicalEquipmentId", MedicalEquipmentId);
             writer.WriteStringValue("medicationName", MedicationName);
             writer.WriteStringValue("notes", Notes);

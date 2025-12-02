@@ -29,8 +29,6 @@ public class PrescriptionResponse
 {
     public Guid Id { get; set; }
     public Guid AppointmentId { get; set; }
-    public bool? IsRecommendedByAI { get; set; }
-    public int? AIRecommendationConfidence { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public List<PrescriptionDetailResponse> Details { get; set; } = new();
@@ -53,6 +51,8 @@ public class PrescriptionDetailResponse
     public decimal? Packaging { get; set; }
     public string? RecipeType { get; set; }
     public int? RequestedQuantity { get; set; }
+    public bool? IsRecommendedByAI { get; set; }
+    public int? AIRecommendationConfidence { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }
