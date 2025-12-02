@@ -547,6 +547,7 @@ public class UsersController : ControllerBase
             if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
             var query = _context.Prescriptions
+                .Include(p => p.PrescriptionDetails)
                 .Where(p => p.Appointment.FacilityDoctorId == id)
                 .AsQueryable();
 
@@ -559,11 +560,27 @@ public class UsersController : ControllerBase
                 .Select(p => new PrescriptionResponse
                 {
                     Id = p.Id,
-                    MedicationName = p.MedicationName,
-                    Dosage = p.Dosage,
-                    Frequency = p.Frequency,
-                    Duration = p.Duration,
-                    CreatedAt = p.CreatedAt
+                    AppointmentId = p.AppointmentId,
+                    IsRecommendedByAI = p.IsRecommendedByAI,
+                    AIRecommendationConfidence = p.AIRecommendationConfidence,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt,
+                    Details = p.PrescriptionDetails.Select(pd => new PrescriptionDetailResponse
+                    {
+                        Id = pd.Id,
+                        PrescriptionId = pd.PrescriptionId,
+                        MedicationName = pd.MedicationName,
+                        Dosage = pd.Dosage,
+                        Signa = pd.Signa,
+                        Frequency = pd.Frequency,
+                        Quantity = pd.Quantity,
+                        Instructions = pd.Instructions,
+                        Notes = pd.Notes,
+                        Price = pd.Price,
+                        Packaging = pd.Packaging,
+                        CreatedAt = pd.CreatedAt,
+                        UpdatedAt = pd.UpdatedAt
+                    }).ToList()
                 })
                 .ToListAsync();
 

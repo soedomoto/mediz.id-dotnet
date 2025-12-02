@@ -28,6 +28,7 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<AnamnesisTemplate> AnamnesisTemplates { get; set; }
     public DbSet<Diagnosis> Diagnoses { get; set; }
     public DbSet<Prescription> Prescriptions { get; set; }
+    public DbSet<PrescriptionDetail> PrescriptionDetails { get; set; }
     public DbSet<Laboratorium> LaboratoriumTests { get; set; }
 
     // Pharmacy
@@ -204,6 +205,24 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .WithOne(p => p.Appointment)
             .HasForeignKey(p => p.AppointmentId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Prescription>()
+            .HasMany(p => p.PrescriptionDetails)
+            .WithOne(pd => pd.Prescription)
+            .HasForeignKey(pd => pd.PrescriptionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PrescriptionDetail>()
+            .HasOne(pd => pd.Drug)
+            .WithMany()
+            .HasForeignKey(pd => pd.DrugId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<PrescriptionDetail>()
+            .HasOne(pd => pd.MedicalEquipment)
+            .WithMany()
+            .HasForeignKey(pd => pd.MedicalEquipmentId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Appointment>()
             .HasMany(a => a.LaboratoriumTests)

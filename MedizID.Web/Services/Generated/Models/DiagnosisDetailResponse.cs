@@ -36,14 +36,6 @@ namespace MedizID.Web.Services.Generated.Models
         public int? ConfidencePercentage { get; set; }
         /// <summary>The createdAt property</summary>
         public DateTimeOffset? CreatedAt { get; set; }
-        /// <summary>The description property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? Description { get; set; }
-#nullable restore
-#else
-        public string Description { get; set; }
-#endif
         /// <summary>The diagnosisType property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -98,7 +90,6 @@ namespace MedizID.Web.Services.Generated.Models
                 { "clinicalNotes", n => { ClinicalNotes = n.GetStringValue(); } },
                 { "confidencePercentage", n => { ConfidencePercentage = n.GetIntValue(); } },
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
-                { "description", n => { Description = n.GetStringValue(); } },
                 { "diagnosisType", n => { DiagnosisType = n.GetStringValue(); } },
                 { "icD10Code", n => { IcD10Code = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
@@ -120,7 +111,6 @@ namespace MedizID.Web.Services.Generated.Models
             writer.WriteStringValue("clinicalNotes", ClinicalNotes);
             writer.WriteIntValue("confidencePercentage", ConfidencePercentage);
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
-            writer.WriteStringValue("description", Description);
             writer.WriteStringValue("diagnosisType", DiagnosisType);
             writer.WriteStringValue("icD10Code", IcD10Code);
             writer.WriteGuidValue("id", Id);

@@ -34,8 +34,7 @@ public class PrescriptionRepository : BaseRepository<Prescription>, IPrescriptio
     {
         return await _dbSet
             .Include(p => p.Appointment)
-            .Where(p => p.Appointment != null && p.Appointment.FacilityPatient.PatientId == patientId &&
-                       (p.ExpiryDate == null || p.ExpiryDate >= DateTime.UtcNow))
+            .Where(p => p.Appointment != null && p.Appointment.FacilityPatient.PatientId == patientId)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
     }

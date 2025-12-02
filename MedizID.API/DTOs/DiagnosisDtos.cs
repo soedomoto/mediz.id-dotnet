@@ -123,24 +123,6 @@ public class DiagnosisRecommendationItem
     public int ConfidenceScore { get; set; }
 }
 
-public class OpenAIResponse
-{
-    [JsonPropertyName("choices")]
-    public List<OpenAIChoice> Choices { get; set; } = new();
-}
-
-public class OpenAIChoice
-{
-    [JsonPropertyName("message")]
-    public OpenAIMessage Message { get; set; } = null!;
-}
-
-public class OpenAIMessage
-{
-    [JsonPropertyName("content")]
-    public string Content { get; set; } = null!;
-}
-
 public class DiagnosisRecommendationResponse
 {
     [JsonPropertyName("possibleDiagnoses")]

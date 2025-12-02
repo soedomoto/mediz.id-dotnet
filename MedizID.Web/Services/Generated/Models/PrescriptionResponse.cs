@@ -12,36 +12,26 @@ namespace MedizID.Web.Services.Generated.Models
     public partial class PrescriptionResponse : IParsable
     #pragma warning restore CS1591
     {
+        /// <summary>The aiRecommendationConfidence property</summary>
+        public int? AiRecommendationConfidence { get; set; }
+        /// <summary>The appointmentId property</summary>
+        public Guid? AppointmentId { get; set; }
         /// <summary>The createdAt property</summary>
         public DateTimeOffset? CreatedAt { get; set; }
-        /// <summary>The dosage property</summary>
+        /// <summary>The details property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? Dosage { get; set; }
+        public List<global::MedizID.Web.Services.Generated.Models.PrescriptionDetailResponse>? Details { get; set; }
 #nullable restore
 #else
-        public string Dosage { get; set; }
-#endif
-        /// <summary>The duration property</summary>
-        public int? Duration { get; set; }
-        /// <summary>The frequency property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? Frequency { get; set; }
-#nullable restore
-#else
-        public string Frequency { get; set; }
+        public List<global::MedizID.Web.Services.Generated.Models.PrescriptionDetailResponse> Details { get; set; }
 #endif
         /// <summary>The id property</summary>
         public Guid? Id { get; set; }
-        /// <summary>The medicationName property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? MedicationName { get; set; }
-#nullable restore
-#else
-        public string MedicationName { get; set; }
-#endif
+        /// <summary>The isRecommendedByAI property</summary>
+        public bool? IsRecommendedByAI { get; set; }
+        /// <summary>The updatedAt property</summary>
+        public DateTimeOffset? UpdatedAt { get; set; }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
@@ -60,12 +50,13 @@ namespace MedizID.Web.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "aiRecommendationConfidence", n => { AiRecommendationConfidence = n.GetIntValue(); } },
+                { "appointmentId", n => { AppointmentId = n.GetGuidValue(); } },
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
-                { "dosage", n => { Dosage = n.GetStringValue(); } },
-                { "duration", n => { Duration = n.GetIntValue(); } },
-                { "frequency", n => { Frequency = n.GetStringValue(); } },
+                { "details", n => { Details = n.GetCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.PrescriptionDetailResponse>(global::MedizID.Web.Services.Generated.Models.PrescriptionDetailResponse.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
-                { "medicationName", n => { MedicationName = n.GetStringValue(); } },
+                { "isRecommendedByAI", n => { IsRecommendedByAI = n.GetBoolValue(); } },
+                { "updatedAt", n => { UpdatedAt = n.GetDateTimeOffsetValue(); } },
             };
         }
         /// <summary>
@@ -75,12 +66,13 @@ namespace MedizID.Web.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteIntValue("aiRecommendationConfidence", AiRecommendationConfidence);
+            writer.WriteGuidValue("appointmentId", AppointmentId);
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
-            writer.WriteStringValue("dosage", Dosage);
-            writer.WriteIntValue("duration", Duration);
-            writer.WriteStringValue("frequency", Frequency);
+            writer.WriteCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.PrescriptionDetailResponse>("details", Details);
             writer.WriteGuidValue("id", Id);
-            writer.WriteStringValue("medicationName", MedicationName);
+            writer.WriteBoolValue("isRecommendedByAI", IsRecommendedByAI);
+            writer.WriteDateTimeOffsetValue("updatedAt", UpdatedAt);
         }
     }
 }

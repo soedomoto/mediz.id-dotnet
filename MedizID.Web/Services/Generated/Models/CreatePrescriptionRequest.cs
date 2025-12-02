@@ -14,39 +14,13 @@ namespace MedizID.Web.Services.Generated.Models
     {
         /// <summary>The appointmentId property</summary>
         public Guid? AppointmentId { get; set; }
-        /// <summary>The dosage property</summary>
+        /// <summary>The details property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? Dosage { get; set; }
+        public List<global::MedizID.Web.Services.Generated.Models.CreatePrescriptionDetailRequest>? Details { get; set; }
 #nullable restore
 #else
-        public string Dosage { get; set; }
-#endif
-        /// <summary>The duration property</summary>
-        public int? Duration { get; set; }
-        /// <summary>The frequency property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? Frequency { get; set; }
-#nullable restore
-#else
-        public string Frequency { get; set; }
-#endif
-        /// <summary>The instructions property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? Instructions { get; set; }
-#nullable restore
-#else
-        public string Instructions { get; set; }
-#endif
-        /// <summary>The medicationName property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? MedicationName { get; set; }
-#nullable restore
-#else
-        public string MedicationName { get; set; }
+        public List<global::MedizID.Web.Services.Generated.Models.CreatePrescriptionDetailRequest> Details { get; set; }
 #endif
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
@@ -67,11 +41,7 @@ namespace MedizID.Web.Services.Generated.Models
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "appointmentId", n => { AppointmentId = n.GetGuidValue(); } },
-                { "dosage", n => { Dosage = n.GetStringValue(); } },
-                { "duration", n => { Duration = n.GetIntValue(); } },
-                { "frequency", n => { Frequency = n.GetStringValue(); } },
-                { "instructions", n => { Instructions = n.GetStringValue(); } },
-                { "medicationName", n => { MedicationName = n.GetStringValue(); } },
+                { "details", n => { Details = n.GetCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.CreatePrescriptionDetailRequest>(global::MedizID.Web.Services.Generated.Models.CreatePrescriptionDetailRequest.CreateFromDiscriminatorValue)?.AsList(); } },
             };
         }
         /// <summary>
@@ -82,11 +52,7 @@ namespace MedizID.Web.Services.Generated.Models
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteGuidValue("appointmentId", AppointmentId);
-            writer.WriteStringValue("dosage", Dosage);
-            writer.WriteIntValue("duration", Duration);
-            writer.WriteStringValue("frequency", Frequency);
-            writer.WriteStringValue("instructions", Instructions);
-            writer.WriteStringValue("medicationName", MedicationName);
+            writer.WriteCollectionOfObjectValues<global::MedizID.Web.Services.Generated.Models.CreatePrescriptionDetailRequest>("details", Details);
         }
     }
 }
