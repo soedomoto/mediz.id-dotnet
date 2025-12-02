@@ -16,6 +16,8 @@ public class DatabaseSettings
 public class OpenAISettings
 {
     public string ApiKey { get; set; } = null!;
+    public string ApiBaseUrl { get; set; } = "https://api.openai.com/v1/";
+    public string ModelName { get; set; } = "gpt-4.1-mini";
 }
 
 public class ApiSettings

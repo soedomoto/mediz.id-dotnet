@@ -12,7 +12,6 @@ public class Diagnosis
     public DiagnosisCaseTypeEnum CaseType { get; set; } = DiagnosisCaseTypeEnum.New;
     public int? ConfidencePercentage { get; set; }
     public string? ClinicalNotes { get; set; }
-    public string? Description { get; set; }
     public bool? IsRecommendedByAI { get; set; }
     public int? AIRecommendationConfidence { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

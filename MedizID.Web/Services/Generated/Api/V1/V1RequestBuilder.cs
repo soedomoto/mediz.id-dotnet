@@ -5,6 +5,7 @@ using MedizID.Web.Services.Generated.Api.V1.Anamnesis;
 using MedizID.Web.Services.Generated.Api.V1.Appointments;
 using MedizID.Web.Services.Generated.Api.V1.Auth;
 using MedizID.Web.Services.Generated.Api.V1.Departments;
+using MedizID.Web.Services.Generated.Api.V1.Diagnosis;
 using MedizID.Web.Services.Generated.Api.V1.Facilities;
 using MedizID.Web.Services.Generated.Api.V1.Odontogram;
 using MedizID.Web.Services.Generated.Api.V1.Prescriptions;
@@ -48,6 +49,11 @@ namespace MedizID.Web.Services.Generated.Api.V1
         public global::MedizID.Web.Services.Generated.Api.V1.Departments.DepartmentsRequestBuilder Departments
         {
             get => new global::MedizID.Web.Services.Generated.Api.V1.Departments.DepartmentsRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The Diagnosis property</summary>
+        public global::MedizID.Web.Services.Generated.Api.V1.Diagnosis.DiagnosisRequestBuilder Diagnosis
+        {
+            get => new global::MedizID.Web.Services.Generated.Api.V1.Diagnosis.DiagnosisRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The facilities property</summary>
         public global::MedizID.Web.Services.Generated.Api.V1.Facilities.FacilitiesRequestBuilder Facilities

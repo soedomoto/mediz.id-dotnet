@@ -1,5 +1,7 @@
 namespace MedizID.API.DTOs;
 
+using System.Text.Json.Serialization;
+
 public class CreateDiagnosisRequest
 {
     public Guid AppointmentId { get; set; }
@@ -9,7 +11,6 @@ public class CreateDiagnosisRequest
     public string CaseType { get; set; } = "New"; // New, Existing
     public int? ConfidencePercentage { get; set; }
     public string? ClinicalNotes { get; set; }
-    public string? Description { get; set; }
 }
 
 public class DiagnosisResponse
@@ -32,7 +33,6 @@ public class DiagnosisDetailResponse
     public string CaseType { get; set; } = null!;
     public int? ConfidencePercentage { get; set; }
     public string? ClinicalNotes { get; set; }
-    public string? Description { get; set; }
     public bool? IsRecommendedByAI { get; set; }
     public int? AIRecommendationConfidence { get; set; }
     public Guid AppointmentId { get; set; }
@@ -106,5 +106,44 @@ public class GenerateDiagnosisRecommendationResponse
     public Guid AppointmentId { get; set; }
     public List<DiagnosisRecommendation> Recommendations { get; set; } = new();
     public DateTime GeneratedAt { get; set; }
+}
+
+public class DiagnosisRecommendationItem
+{
+    [JsonPropertyName("icd10Code")]
+    public string Icd10Code { get; set; } = null!;
+
+    [JsonPropertyName("scientificDescription")]
+    public string ScientificDescription { get; set; } = null!;
+
+    [JsonPropertyName("clinicalNotes")]
+    public string ClinicalNotes { get; set; } = null!;
+
+    [JsonPropertyName("confidenceScore")]
+    public int ConfidenceScore { get; set; }
+}
+
+public class OpenAIResponse
+{
+    [JsonPropertyName("choices")]
+    public List<OpenAIChoice> Choices { get; set; } = new();
+}
+
+public class OpenAIChoice
+{
+    [JsonPropertyName("message")]
+    public OpenAIMessage Message { get; set; } = null!;
+}
+
+public class OpenAIMessage
+{
+    [JsonPropertyName("content")]
+    public string Content { get; set; } = null!;
+}
+
+public class DiagnosisRecommendationResponse
+{
+    [JsonPropertyName("possibleDiagnoses")]
+    public List<DiagnosisRecommendationItem> PossibleDiagnoses { get; set; } = new();
 }
 

@@ -8,279 +8,130 @@
 @inject ILocalStorageService LocalStorage
 @inject MedizIdApiClient ApiClient
 @inject AppointmentLayoutState LayoutState
-@inject MessageService MessageService
+@inject INotificationService _notice
+@inject ILogger<Diagnosis> _logger
 @implements IAsyncDisposable
 
-<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Diagnosis" : "MedizID")</PageTitle>
+<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Diagnosis" : "MedizID")
+</PageTitle>
 
-<div class="diagnosis-container">
-    <Card Title="Clinical Diagnoses (ICD-10)" Class="diagnosis-card">
-        <Extra>
-            <Space>
-                <Button Type="@ButtonType.Primary" Icon="plus" @onclick="OpenNewDiagnosisForm">
-                    Add Diagnosis
-                </Button>
-                <Button Icon="brain" Loading="@IsGeneratingRecommendations" @onclick="GenerateAIRecommendations">
-                    AI Recommendations
-                </Button>
-            </Space>
-        </Extra>
-        <Body>
-            @if (IsLoading)
-            {
-                <Spin Tip="Loading diagnoses..." />
-            }
-            else if (Diagnoses == null || Diagnoses.Count == 0)
-            {
-                <Empty></Empty>
-            }
-            else
-            {
-                <div class="ant-table">
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead style="background: #fafafa; border-bottom: 1px solid #f0f0f0;">
-                            <tr>
-                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">ICD-10 Code</th>
-                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">Scientific Description</th>
-                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">Type</th>
-                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">Case</th>
-                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">Confidence</th>
-                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">AI</th>
-                                <th style="padding: 8px 12px; text-align: left; font-weight: 600;">Notes</th>
-                                <th style="padding: 8px 12px; text-align: center; font-weight: 600;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var d in Diagnoses)
-                            {
-                                <tr style="border-bottom: 1px solid #f0f0f0;">
-                                    <td style="padding: 8px 12px;"><strong>@d.IcD10Code</strong></td>
-                                    <td style="padding: 8px 12px;">
-                                        <Tooltip Title="@d.ScientificDescription">
-                                            @TruncateText(d.ScientificDescription, 50)
-                                        </Tooltip>
-                                    </td>
-                                    <td style="padding: 8px 12px;">
-                                        <Tag Color="@GetTypeColor(d.DiagnosisType)">@GetTypeLabel(d.DiagnosisType)</Tag>
-                                    </td>
-                                    <td style="padding: 8px 12px;">
-                                        <Tag Color="@GetCaseColor(d.CaseType)">@GetCaseLabel(d.CaseType)</Tag>
-                                    </td>
-                                    <td style="padding: 8px 12px;">
-                                        @if (d.ConfidencePercentage.HasValue)
-                                        {
-                                            <Progress Type="ProgressType.Circle" Percent="@d.ConfidencePercentage.Value" Width="40" Format="@(p => $"{p}%")" />
-                                        }
-                                        else
-                                        {
-                                            <span>-</span>
-                                        }
-                                    </td>
-                                    <td style="padding: 8px 12px;">
-                                        @if (d.IsRecommendedByAI == true)
-                                        {
-                                            <Icon Type="check-circle" Style="color: #52c41a; font-size: 16px; cursor: pointer;" Title="@($"AI Confidence: {d.AiRecommendationConfidence}%")" />
-                                        }
-                                        else
-                                        {
-                                            <span>-</span>
-                                        }
-                                    </td>
-                                    <td style="padding: 8px 12px;">
-                                        <Tooltip Title="@(d.ClinicalNotes ?? d.Description)">
-                                            @TruncateText(d.ClinicalNotes ?? d.Description, 30)
-                                        </Tooltip>
-                                    </td>
-                                    <td style="padding: 8px 12px; text-align: center;">
-                                        <Space>
-                                            <Button Type="@ButtonType.Text" @onclick="() => EditDiagnosis(d)">
-                                                <Icon Type="edit" />
-                                            </Button>
-                                            <Popconfirm Title="Delete?" Description="Are you sure?" OnConfirm="() => OnDeleteConfirm(d.Id)">
-                                                <Button Type="@ButtonType.Text" Danger>
-                                                    <Icon Type="delete" />
-                                                </Button>
-                                            </Popconfirm>
-                                        </Space>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </Body>
-    </Card>
-</div>
-
-<!-- AI Recommendations Modal -->
-@if (ShowAIRecommendations && AIRecommendations != null)
-{
-    <Modal Title="AI-Generated Diagnosis Recommendations" 
-           Visible="@ShowAIRecommendations" 
-           OnOk="@OnCloseAIModal" 
-           OnCancel="@OnCloseAIModal" 
-           OkText=@("Close") 
-           CancelButtonVisible="false" 
-           Width="700">
-        <Spin Spinning="@IsGeneratingRecommendations">
-            @if (AIRecommendations.Count == 0)
-            {
-                <Empty />
-            }
-            else
-            {
-                <div class="recommendations-list">
-                    @foreach (var rec in AIRecommendations)
+<div style="padding: 24px; background-color: white; border-radius: 8px;">
+    <Space Direction="SpaceDirection.Vertical" Style="width: 100%;">
+        <SpaceItem>
+            <Flex Justify="FlexJustify.SpaceBetween" Align="FlexAlign.Center" Gap="@("16px")">
+                <div></div>
+                <Flex Gap="@("8px")">
+                    <Button Type="@ButtonType.Primary" Icon="plus" @onclick="OpenNewDiagnosisForm">
+                        Add Diagnosis
+                    </Button>
+                    <Button Icon="brain" Loading="@IsGeneratingRecommendations" @onclick="GenerateAIRecommendations">
+                        AI Recommendations
+                    </Button>
+                </Flex>
+            </Flex>
+        </SpaceItem>
+        <SpaceItem>
+            <Table TItem="DiagnosisDetailResponse" DataSource="@Diagnoses" Loading=@(IsLoading ||
+                                                                                           IsGeneratingRecommendations) Size="TableSize.Small">
+                <Column TData="DiagnosisDetailResponse" Title="ICD-10 Code">
+                    <strong>@context.IcD10Code</strong>
+                </Column>
+                <Column TData="DiagnosisDetailResponse" Title="Scientific Description">
+                    <Tooltip Title="@context.ScientificDescription">
+                        @TruncateText(context.ScientificDescription, 50)
+                    </Tooltip>
+                </Column>
+                <Column TData="DiagnosisDetailResponse" Title="Type">
+                    <Tag Color="@GetTypeColor(context.DiagnosisType)">@GetTypeLabel(context.DiagnosisType)</Tag>
+                </Column>
+                <Column TData="DiagnosisDetailResponse" Title="Case">
+                    <Tag Color="@GetCaseColor(context.CaseType)">@GetCaseLabel(context.CaseType)</Tag>
+                </Column>
+                <Column TData="DiagnosisDetailResponse" Title="AI" Align="ColumnAlign.Center">
+                    @if (context.IsRecommendedByAI == true)
                     {
-                        <Card Class="recommendation-card">
-                            <Body>
-                                <Row>
-                                    <AntDesign.Col Span="16">
-                                        <h5><Badge Color="@("blue")" Text="@rec.IcD10Code" /> @rec.ScientificDescription</h5>
-                                        @if (!string.IsNullOrEmpty(rec.Reasoning))
-                                        {
-                                            <div><strong>Reasoning:</strong> @rec.Reasoning</div>
-                                        }
-                                    </AntDesign.Col>
-                                    <AntDesign.Col Span="8" Style="text-align: right;">
-                                        <div style="margin-bottom: 8px;">
-                                            <Tag Color="@("green")">Confidence: @rec.ConfidenceScore%</Tag>
-                                        </div>
-                                        <Button Type="@ButtonType.Primary" @onclick="() => AcceptRecommendation(rec)">
-                                            <Icon Type="check" /> Accept
-                                        </Button>
-                                    </AntDesign.Col>
-                                </Row>
-                            </Body>
-                        </Card>
+                        <Tooltip Title="@($"AI Confidence: {context.AiRecommendationConfidence}%")">
+                            <Icon Type="check-circle" Style="color: #52c41a; font-size: 16px; cursor: pointer;" />
+                        </Tooltip>
                     }
-                </div>
-            }
-        </Spin>
-    </Modal>
-}
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </Column>
+                <Column TData="DiagnosisDetailResponse" Title="Notes">
+                    <Tooltip Title="@(context.ClinicalNotes ?? "")">
+                        @TruncateText(context.ClinicalNotes ?? "", 30)
+                    </Tooltip>
+                </Column>
+                <Column TData="DiagnosisDetailResponse" Title="Actions" Fixed="ColumnFixPlacement.Right"
+                    Align="ColumnAlign.Center">
+                    <Space>
+                        <Button Type="@ButtonType.Text" @onclick="() => EditDiagnosis(context)">
+                            <Icon Type="edit" />
+                        </Button>
+                        <Popconfirm Title="Delete this diagnosis?" OnConfirm="() => OnDeleteConfirm(context.Id)">
+                            <Button Type="@ButtonType.Text" Danger>
+                                <Icon Type="delete" />
+                            </Button>
+                        </Popconfirm>
+                    </Space>
+                </Column>
+            </Table>
+        </SpaceItem>
+    </Space>
+</div>
 
 <!-- New/Edit Diagnosis Modal -->
 @if (ShowDiagnosisForm)
 {
-    <Modal Title="@(CurrentDiagnosis.Id == Guid.Empty ? "Add New Diagnosis" : "Edit Diagnosis")" 
-           Visible="@ShowDiagnosisForm" 
-           OnOk="@OnSaveModalAsync" 
-           OnCancel="@CloseDiagnosisForm"
-           OkText=@("Save") 
-           CancelText=@("Cancel") 
-           Width="700"
-           ConfirmLoading="@IsSaving">
-        <div style="max-height: 500px; overflow-y: auto;">
-            <div style="margin-bottom: 16px;">
-                <Row>
-                    <AntDesign.Col Span="12">
-                        <div>
-                            <label class="ant-form-item-label"><span class="ant-form-item-required">ICD-10 Code</span></label>
-                            <input type="text" class="ant-input" @bind="CurrentDiagnosis.Icd10Code" placeholder="e.g., J00" />
-                        </div>
-                    </AntDesign.Col>
-                    <AntDesign.Col Span="12">
-                        <div>
-                            <label class="ant-form-item-label"><span class="ant-form-item-required">Diagnosis Type</span></label>
-                            <select class="ant-select-selector" @bind="CurrentDiagnosis.DiagnosisType">
-                                <option value="Primary">Primary</option>
-                                <option value="Secondary">Secondary</option>
-                                <option value="Complication">Complication</option>
-                            </select>
-                        </div>
-                    </AntDesign.Col>
-                </Row>
-            </div>
+    <Modal Title="@(CurrentDiagnosis.Id == Guid.Empty ? "Add New Diagnosis" : "Edit Diagnosis")"
+        Visible="@ShowDiagnosisForm" OnOk="@OnSaveModalAsync" OnCancel="@CloseDiagnosisForm" OkText=@("Save")
+        CancelText=@("Cancel") Width="700" ConfirmLoading="@IsSaving">
+        <Form TModel="DiagnosisFormModel" Model="@CurrentDiagnosis" Layout="@FormLayout.Vertical">
+            <FormItem Label="ICD-10 Code" Required>
+                <Input @bind-Value="@CurrentDiagnosis.Icd10Code" Placeholder="e.g., J00" />
+            </FormItem>
 
-            <div style="margin-bottom: 16px;">
-                <label class="ant-form-item-label"><span class="ant-form-item-required">Scientific Description</span></label>
-                <textarea class="ant-input" style="resize: vertical;" @bind="CurrentDiagnosis.ScientificDescription" placeholder="Medical/scientific terminology" rows="3"></textarea>
-            </div>
+            <FormItem Label="Diagnosis Type" Required>
+                <Select TItemValue="string" TItem="string" @bind-Value="@CurrentDiagnosis.DiagnosisType" Placeholder="Select diagnosis type">
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Primary")" Label="Primary" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Secondary")" Label="Secondary" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Complication")" Label="Complication" />
+                </Select>
+            </FormItem>
 
-            <div style="margin-bottom: 16px;">
-                <Row>
-                    <AntDesign.Col Span="12">
-                        <div>
-                            <label class="ant-form-item-label"><span class="ant-form-item-required">Case Type</span></label>
-                            <select class="ant-select-selector" @bind="CurrentDiagnosis.CaseType">
-                                <option value="New">New</option>
-                                <option value="Existing">Existing</option>
-                            </select>
-                        </div>
-                    </AntDesign.Col>
-                    <AntDesign.Col Span="12">
-                        <div>
-                            <label class="ant-form-item-label">Confidence Percentage (%)</label>
-                            <input type="number" class="ant-input" min="0" max="100" @bind="CurrentDiagnosis.ConfidencePercentage" />
-                        </div>
-                    </AntDesign.Col>
-                </Row>
-            </div>
+            <FormItem Label="Scientific Description" Required>
+                <TextArea @bind-Value="@CurrentDiagnosis.ScientificDescription"
+                    Placeholder="Medical/scientific terminology" Rows="3" />
+            </FormItem>
 
-            <div style="margin-bottom: 16px;">
-                <label class="ant-form-item-label">Clinical Notes</label>
-                <textarea class="ant-input" style="resize: vertical;" @bind="CurrentDiagnosis.ClinicalNotes" placeholder="Additional clinical observations..." rows="2"></textarea>
-            </div>
+            <FormItem Label="Case Type" Required>
+                <Select TItemValue="string" TItem="string" @bind-Value="@CurrentDiagnosis.CaseType" Placeholder="Select case type">
+                    <SelectOption TItemValue="string" TItem="string" Value="@("New")" Label="New" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Existing")" Label="Existing" />
+                </Select>
+            </FormItem>
 
-            <div style="margin-bottom: 16px;">
-                <label class="ant-form-item-label">Description</label>
-                <textarea class="ant-input" style="resize: vertical;" @bind="CurrentDiagnosis.Description" placeholder="General description..." rows="2"></textarea>
-            </div>
-        </div>
+            <FormItem Label="Clinical Notes">
+                <TextArea @bind-Value="@CurrentDiagnosis.ClinicalNotes"
+                    Placeholder="Additional clinical observations..." Rows="2" />
+            </FormItem>
+        </Form>
     </Modal>
 }
-
-<style>
-    .diagnosis-container {
-        padding: 24px;
-    }
-
-    .diagnosis-card {
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
-    }
-
-    .diagnosis-table {
-        font-size: 13px;
-    }
-
-    .recommendations-list {
-        max-height: 400px;
-        overflow-y: auto;
-    }
-
-    .recommendation-card {
-        border-left: 3px solid #1890ff;
-    }
-
-    :deep(.ant-progress-circle-text) {
-        font-size: 11px !important;
-    }
-
-    :deep(.ant-table-cell) {
-        padding: 8px 12px !important;
-    }
-
-    :deep(.ant-form-item-label > label) {
-        height: auto;
-        margin-bottom: 4px;
-    }
-</style>
 
 @code {
     [Parameter]
     public Guid AppointmentId { get; set; }
 
     private List<DiagnosisDetailResponse> Diagnoses = new();
-    private List<DiagnosisRecommendation> AIRecommendations = new();
     private DiagnosisFormModel CurrentDiagnosis = new();
 
     private bool IsLoading = false;
     private bool IsSaving = false;
     private bool IsGeneratingRecommendations = false;
     private bool ShowDiagnosisForm = false;
-    private bool ShowAIRecommendations = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -308,13 +159,25 @@
         try
         {
             IsLoading = true;
-            // TODO: Call API endpoint to fetch diagnoses
-            // Diagnoses = await ApiClient.Appointments[AppointmentId].Diagnoses.GetAsync();
-            await Task.Delay(500);
+            var response = await ApiClient.Api.V1.Diagnosis.Appointment[AppointmentId].GetAsync();
+
+            if (response?.Items != null)
+            {
+                Diagnoses = response.Items.ToList();
+            }
+            else
+            {
+                Diagnoses = new List<DiagnosisDetailResponse>();
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            MessageService.Error("Error loading diagnoses");
+            _logger.LogError(ex, "Error loading diagnoses");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Error loading diagnoses",
+                NotificationType = NotificationType.Error
+            });
         }
         finally
         {
@@ -339,7 +202,6 @@
             CaseType = diagnosis.CaseType,
             ConfidencePercentage = diagnosis.ConfidencePercentage,
             ClinicalNotes = diagnosis.ClinicalNotes,
-            Description = diagnosis.Description
         };
         ShowDiagnosisForm = true;
     }
@@ -355,22 +217,49 @@
         try
         {
             IsSaving = true;
-            // TODO: Call API endpoint to save diagnosis
-            // if (CurrentDiagnosis.Id == Guid.Empty)
-            // {
-            //     await ApiClient.Appointments[AppointmentId].Diagnoses.PostAsync(new CreateDiagnosisRequest { ... });
-            // }
-            // else
-            // {
-            //     await ApiClient.Appointments.Diagnoses[CurrentDiagnosis.Id].PatchAsync(...);
-            // }
+
+            var request = new CreateDiagnosisRequest
+            {
+                AppointmentId = AppointmentId,
+                IcD10Code = CurrentDiagnosis.Icd10Code,
+                ScientificDescription = CurrentDiagnosis.ScientificDescription,
+                DiagnosisType = CurrentDiagnosis.DiagnosisType,
+                CaseType = CurrentDiagnosis.CaseType,
+                ClinicalNotes = CurrentDiagnosis.ClinicalNotes,
+            };
+
+            if (CurrentDiagnosis.Id == null || CurrentDiagnosis.Id == Guid.Empty)
+            {
+                // Create new diagnosis
+                await ApiClient.Api.V1.Diagnosis.PostAsync(request);
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Diagnosis created successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+            else
+            {
+                // Update existing diagnosis - clear AI recommendation and confidence
+                request.ConfidencePercentage = 0;
+                await ApiClient.Api.V1.Diagnosis[CurrentDiagnosis.Id.Value].PutAsync(request);
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Diagnosis updated successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
 
             await LoadDiagnoses();
-            MessageService.Success("Diagnosis saved successfully");
         }
-        catch
+        catch (Exception ex)
         {
-            MessageService.Error("Error saving diagnosis");
+            _logger.LogError(ex, "Error saving diagnosis");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error saving diagnosis: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
         }
         finally
         {
@@ -385,15 +274,22 @@
 
         try
         {
-            // TODO: Call API endpoint to delete diagnosis
-            // await ApiClient.Appointments.Diagnoses[diagnosisId.Value].DeleteAsync();
-
+            await ApiClient.Api.V1.Diagnosis[diagnosisId.Value].DeleteAsync();
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Diagnosis deleted successfully",
+                NotificationType = NotificationType.Success
+            });
             await LoadDiagnoses();
-            MessageService.Success("Diagnosis deleted successfully");
         }
-        catch
+        catch (Exception ex)
         {
-            MessageService.Error("Error deleting diagnosis");
+            _logger.LogError(ex, "Error deleting diagnosis");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error deleting diagnosis: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
         }
     }
 
@@ -402,22 +298,49 @@
         try
         {
             IsGeneratingRecommendations = true;
-            // TODO: Call API endpoint to generate recommendations
-            // var response = await ApiClient.Appointments[AppointmentId].Diagnoses["generate-recommendations"].PostAsync(...);
-            // AIRecommendations = response.Recommendations;
-
-            AIRecommendations = new List<DiagnosisRecommendation>();
-            ShowAIRecommendations = true;
-            MessageService.Info("AI recommendations generated");
+            Diagnoses = await ApiClient.Api.V1.Diagnosis[AppointmentId].AiRecommendations.PostAsync() ?? new
+            List<DiagnosisDetailResponse>();
         }
-        catch
+        catch (Exception ex)
         {
-            MessageService.Error("Error generating AI recommendations");
+            _logger.LogError(ex, "Error generating AI recommendations");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Error generating AI recommendations",
+                NotificationType = NotificationType.Error
+            });
         }
         finally
         {
             IsGeneratingRecommendations = false;
         }
+
+        @* try
+        {
+            IsGeneratingRecommendations = true;
+            // TODO: Implement AI recommendation generation endpoint in API
+            // For now, show empty recommendations
+            AIRecommendations = new List<DiagnosisRecommendation>();
+            ShowAIRecommendations = true;
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "AI recommendations feature coming soon",
+                NotificationType = NotificationType.Info
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating AI recommendations");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error generating AI recommendations: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsGeneratingRecommendations = false;
+        } *@
     }
 
     private async Task AcceptRecommendation(DiagnosisRecommendation rec)
@@ -430,7 +353,6 @@
             DiagnosisType = "Primary",
             CaseType = "New"
         };
-        ShowAIRecommendations = false;
         ShowDiagnosisForm = true;
         await Task.CompletedTask;
     }
@@ -439,12 +361,6 @@
     {
         ShowDiagnosisForm = false;
         CurrentDiagnosis = new DiagnosisFormModel();
-    }
-
-    private async Task OnCloseAIModal()
-    {
-        ShowAIRecommendations = false;
-        await Task.CompletedTask;
     }
 
     private string GetTypeLabel(string type) => type switch
@@ -499,6 +415,5 @@
         public string CaseType { get; set; } = "New";
         public int? ConfidencePercentage { get; set; }
         public string ClinicalNotes { get; set; }
-        public string Description { get; set; }
     }
 }

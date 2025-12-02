@@ -474,7 +474,6 @@ public class AppointmentsController : ControllerBase
                     CaseType = d.CaseType.ToString(),
                     ConfidencePercentage = d.ConfidencePercentage,
                     ClinicalNotes = d.ClinicalNotes,
-                    Description = d.Description,
                     IsRecommendedByAI = d.IsRecommendedByAI,
                     AIRecommendationConfidence = d.AIRecommendationConfidence,
                     AppointmentId = d.AppointmentId,
@@ -538,7 +537,6 @@ public class AppointmentsController : ControllerBase
                 CaseType = caseType,
                 ConfidencePercentage = request.ConfidencePercentage,
                 ClinicalNotes = request.ClinicalNotes,
-                Description = request.Description,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -554,7 +552,6 @@ public class AppointmentsController : ControllerBase
                 CaseType = diagnosis.CaseType.ToString(),
                 ConfidencePercentage = diagnosis.ConfidencePercentage,
                 ClinicalNotes = diagnosis.ClinicalNotes,
-                Description = diagnosis.Description,
                 IsRecommendedByAI = diagnosis.IsRecommendedByAI,
                 AIRecommendationConfidence = diagnosis.AIRecommendationConfidence,
                 AppointmentId = diagnosis.AppointmentId,
@@ -612,7 +609,6 @@ public class AppointmentsController : ControllerBase
             diagnosis.CaseType = caseType;
             diagnosis.ConfidencePercentage = request.ConfidencePercentage;
             diagnosis.ClinicalNotes = request.ClinicalNotes;
-            diagnosis.Description = request.Description;
             diagnosis.UpdatedAt = DateTime.UtcNow;
 
             _context.Diagnoses.Update(diagnosis);
@@ -627,7 +623,6 @@ public class AppointmentsController : ControllerBase
                 CaseType = diagnosis.CaseType.ToString(),
                 ConfidencePercentage = diagnosis.ConfidencePercentage,
                 ClinicalNotes = diagnosis.ClinicalNotes,
-                Description = diagnosis.Description,
                 IsRecommendedByAI = diagnosis.IsRecommendedByAI,
                 AIRecommendationConfidence = diagnosis.AIRecommendationConfidence,
                 AppointmentId = diagnosis.AppointmentId,

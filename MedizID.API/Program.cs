@@ -36,7 +36,9 @@ var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSetting
 
 var openAISettings = builder.Configuration.GetSection("OpenAISettings").Get<OpenAISettings>() ?? new OpenAISettings
 {
-    ApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? ""
+    ApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? "",
+    ApiBaseUrl = Environment.GetEnvironmentVariable("OPENAI_API_BASE_URL") ?? "https://api.openai.com/v1/",
+    ModelName = Environment.GetEnvironmentVariable("OPENAI_MODEL_NAME") ?? "gpt-4.1-mini"
 };
 
 var databaseSettings = builder.Configuration.GetSection("DatabaseSettings").Get<DatabaseSettings>() ?? new DatabaseSettings
