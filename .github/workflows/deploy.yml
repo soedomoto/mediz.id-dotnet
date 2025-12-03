@@ -93,9 +93,11 @@ jobs:
           - os: macos-latest
             framework: net8.0-maccatalyst
             artifact-name: medizid-maui-maccatalyst
+            artifact-file: MedizID.dmg
           - os: windows-latest
             framework: net8.0-windows10.0.19041.0
             artifact-name: medizid-maui-windows
+            artifact-file: MedizID.exe
     
     runs-on: ${{ matrix.os }}
     
@@ -117,22 +119,96 @@ jobs:
       - name: Build MedizID.MAUI
         run: dotnet build MedizID.MAUI/MedizID.MAUI.csproj -f ${{ matrix.framework }} -c Release
 
-      - name: Publish MedizID.MAUI
+      - name: Publish MedizID.MAUI (macOS)
+        if: matrix.os == 'macos-latest'
         run: dotnet publish MedizID.MAUI/MedizID.MAUI.csproj -f ${{ matrix.framework }} -c Release -o ./publish-maui
 
-      - name: Compress artifact
-        shell: bash
-        run: tar -czf ${{ matrix.artifact-name }}-release.tar.gz -C ./publish-maui . && ls -lh ${{ matrix.artifact-name }}-release.tar.gz
+      - name: Publish MedizID.MAUI (Windows)
+        if: matrix.os == 'windows-latest'
+        run: dotnet publish MedizID.MAUI/MedizID.MAUI.csproj -f ${{ matrix.framework }} -c Release -o ./publish-maui
+
+      - name: Create macOS DMG
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd ./publish-maui
+          hdiutil create -volname "MedizID" -srcfolder . -ov -format UDZO "../MedizID.dmg"
+          ls -lh ../MedizID.dmg
+
+      - name: Create Windows Executable
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $publishDir = "./publish-maui"
+          $exe = Get-ChildItem -Path $publishDir -Filter "MedizID.exe" -Recurse | Select-Object -First 1
+          
+          if ($exe) {
+            Copy-Item -Path $exe.FullName -Destination "./MedizID.exe"
+            Write-Host "Executable prepared: MedizID.exe"
+            Get-Item "./MedizID.exe" | ForEach-Object { Write-Host $_.Length " bytes" }
+          } else {
+            Write-Host "Warning: MedizID.exe not found in publish directory"
+            Get-ChildItem -Path $publishDir -Recurse | Where-Object { $_.Extension -eq ".exe" }
+          }
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}-release
-          path: ${{ matrix.artifact-name }}-release.tar.gz
+          path: ${{ matrix.artifact-file }}
           retention-days: 7
 
+  create-release:
+    needs: [build-maui]
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./release-artifacts
+
+      - name: Prepare release files
+        run: |
+          mkdir -p ./release-files
+          
+          # Copy Windows executable
+          if [ -f ./release-artifacts/medizid-maui-windows-release/MedizID.exe ]; then
+            cp ./release-artifacts/medizid-maui-windows-release/MedizID.exe ./release-files/MedizID-Windows.exe
+          fi
+          
+          # Copy macOS DMG
+          if [ -f ./release-artifacts/medizid-maui-maccatalyst-release/MedizID.dmg ]; then
+            cp ./release-artifacts/medizid-maui-maccatalyst-release/MedizID.dmg ./release-files/MedizID-macOS.dmg
+          fi
+          
+          ls -lh ./release-files/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./release-files/*
+          tag_name: v${{ github.run_number }}
+          body: |
+            ## MedizID Release v${{ github.run_number }}
+            
+            Automated release build - MAUI Desktop Apps
+            
+            ### Desktop Applications:
+            - **Windows Desktop App**: MedizID-Windows.exe
+            - **macOS Desktop App**: MedizID-macOS.dmg
+            
+            Built at: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   deploy:
-    needs: [build-api, build-web]
+    needs: [build-api, build-web, create-release]
     runs-on: ubuntu-latest
     if: success()
     
@@ -409,9 +485,10 @@ jobs:
             echo "Web application is running on http://${{ secrets.EC2_HOST }}/"
             echo "Swagger documentation at http://${{ secrets.EC2_HOST }}/swagger/"
             echo ""
-            echo "MAUI apps available as GitHub artifacts:"
-            echo "  - macCatalyst: medizid-maui-maccatalyst-release"
-            echo "  - Windows: medizid-maui-windows-release"
+            echo "Desktop apps available in GitHub Release v${{ github.run_number }}:"
+            echo "  - Windows: MedizID-Windows.exe"
+            echo "  - macOS: MedizID-macOS.dmg"
+            echo "Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ github.run_number }}"
           else
             echo "❌ Deployment failed!"
           fi
