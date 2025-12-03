@@ -96,9 +96,6 @@ jobs:
           - os: windows-latest
             framework: net8.0-windows10.0.19041.0
             artifact-name: medizid-maui-windows
-          - os: ubuntu-latest
-            framework: net8.0-android
-            artifact-name: medizid-maui-android
     
     runs-on: ${{ matrix.os }}
     
@@ -415,7 +412,6 @@ jobs:
             echo "MAUI apps available as GitHub artifacts:"
             echo "  - macCatalyst: medizid-maui-maccatalyst-release"
             echo "  - Windows: medizid-maui-windows-release"
-            echo "  - Android: medizid-maui-android-release"
           else
             echo "❌ Deployment failed!"
           fi
