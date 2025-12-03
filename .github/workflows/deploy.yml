@@ -208,7 +208,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
-    needs: [build-api, build-web, create-release]
+    needs: [build-api, build-web]
     runs-on: ubuntu-latest
     if: success()
     
