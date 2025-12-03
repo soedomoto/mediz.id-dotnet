@@ -2,6 +2,7 @@ using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Blazored.LocalStorage;
 using System.Text.Json;
+using MedizID.Web.Services.Generated.Models;
 
 namespace MedizID.Web.Services;
 
@@ -42,10 +43,4 @@ public class BearerTokenAuthenticationProvider : IAuthenticationProvider
         // Allow all hosts for development
         return Task.FromResult(new AllowedHostsValidator());
     }
-}
-
-public class LoginResponse
-{
-    public string? Token { get; set; }
-    public string? User { get; set; }
 }

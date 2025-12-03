@@ -120,6 +120,7 @@ builder.Services.AddScoped<IDrugService, DrugService>();
 builder.Services.AddScoped<IFacilityService, FacilityService>();
 builder.Services.AddScoped<IAnamnesisService, AnamnesisService>();
 builder.Services.AddScoped<IAIRecommendationService, AIRecommendationService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // Validation
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();

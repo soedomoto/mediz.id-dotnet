@@ -4,6 +4,7 @@ using MedizID.Web.Services.Generated.Api.V1.AdolescentHealth;
 using MedizID.Web.Services.Generated.Api.V1.Anamnesis;
 using MedizID.Web.Services.Generated.Api.V1.Appointments;
 using MedizID.Web.Services.Generated.Api.V1.Auth;
+using MedizID.Web.Services.Generated.Api.V1.Dashboard;
 using MedizID.Web.Services.Generated.Api.V1.Departments;
 using MedizID.Web.Services.Generated.Api.V1.Diagnosis;
 using MedizID.Web.Services.Generated.Api.V1.Facilities;
@@ -44,6 +45,11 @@ namespace MedizID.Web.Services.Generated.Api.V1
         public global::MedizID.Web.Services.Generated.Api.V1.Auth.AuthRequestBuilder Auth
         {
             get => new global::MedizID.Web.Services.Generated.Api.V1.Auth.AuthRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The Dashboard property</summary>
+        public global::MedizID.Web.Services.Generated.Api.V1.Dashboard.DashboardRequestBuilder Dashboard
+        {
+            get => new global::MedizID.Web.Services.Generated.Api.V1.Dashboard.DashboardRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The Departments property</summary>
         public global::MedizID.Web.Services.Generated.Api.V1.Departments.DepartmentsRequestBuilder Departments
