@@ -1,0 +1,17 @@
+﻿@using System.Reflection
+
+@{
+    var additionalAssemblies = new[] { typeof(MedizID.UI._Imports).Assembly };
+}
+
+<Router AppAssembly="@typeof(MauiProgram).Assembly" AdditionalAssemblies="@additionalAssemblies">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MedizID.UI.Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(MedizID.UI.Layout.MainLayout)">
+            <p>Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>

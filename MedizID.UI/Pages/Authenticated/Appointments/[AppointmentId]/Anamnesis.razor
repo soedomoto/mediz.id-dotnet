@@ -1,0 +1,422 @@
+@page "/appointments/{AppointmentId:guid}/anamnesis"
+@layout AppointmentLayout
+@using System.Threading.Tasks
+@using System.ComponentModel.DataAnnotations
+@using System.Net.Http
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using MedizID.UI.Services.Generated.Models
+@inject ILocalStorageService LocalStorage
+@inject MedizIdApiClient ApiClient
+@inject AppointmentLayoutState LayoutState
+@inject INotificationService _notice
+@inject ILogger<Anamnesis> _logger
+@inject HttpClient HttpClient
+@implements IAsyncDisposable
+
+<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Anamnesis" : "MedizID")</PageTitle>
+
+<div style="padding: 24px; background-color: white; border-radius: 8px;">
+    @if (LayoutState.Appointment != null)
+    {
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2>Anamnesis Form</h2>
+            @if (isSaving)
+            {
+                <span style="color: #1890ff;">Saving...</span>
+            }
+        </div>
+
+        <Form Layout="@FormLayout.Vertical" Model="formModel">
+            <!-- Chief Complaint Section -->
+            <Divider>Chief Complaint and Presenting Illness</Divider>
+
+            <FormItem Label="Chief Complaint" Required>
+                <TextArea @bind-Value="chiefComplaint" Rows="3" Placeholder="Enter chief complaint" />
+            </FormItem>
+
+            <FormItem Label="Additional Complaints">
+                <TextArea @bind-Value="additionalComplaints" Rows="2" Placeholder="Enter additional complaints" />
+            </FormItem>
+
+            <!-- Duration -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                <FormItem Label="Duration (Years)">
+                    <AntDesign.InputNumber @bind-Value="durationYears" Placeholder="0" Min="0" />
+                </FormItem>
+                <FormItem Label="Duration (Months)">
+                    <AntDesign.InputNumber @bind-Value="durationMonths" Placeholder="0" Min="0" Max="12" />
+                </FormItem>
+                <FormItem Label="Duration (Days)">
+                    <AntDesign.InputNumber @bind-Value="durationDays" Placeholder="0" Min="0" Max="31" />
+                </FormItem>
+            </div>
+
+            <FormItem Label="Present Illness Details">
+                <TextArea @bind-Value="presentIllness" Rows="3" Placeholder="Describe presenting illness" />
+            </FormItem>
+
+            <!-- Medical History Section -->
+            <Divider>Medical History</Divider>
+
+            <FormItem Label="Past Medical History">
+                <TextArea @bind-Value="medicalHistory" Rows="2" Placeholder="Enter medical history" />
+            </FormItem>
+
+            <FormItem Label="Family History">
+                <TextArea @bind-Value="familyHistory" Rows="2" Placeholder="Enter family history" />
+            </FormItem>
+
+            <FormItem Label="Allergies History">
+                <TextArea @bind-Value="allergiesHistory" Rows="2" Placeholder="Enter allergies" />
+            </FormItem>
+
+            <FormItem Label="Medications History">
+                <TextArea @bind-Value="medicationHistory" Rows="2" Placeholder="Enter current/past medications" />
+            </FormItem>
+
+            <FormItem Label="Social History">
+                <TextArea @bind-Value="socialHistory" Rows="2" Placeholder="Smoking, alcohol, lifestyle, etc." />
+            </FormItem>
+
+            <FormItem Label="Surgical History">
+                <TextArea @bind-Value="surgicalHistory" Rows="2" Placeholder="Previous surgeries and procedures" />
+            </FormItem>
+
+            <!-- Vital Signs Section -->
+            <Divider>Vital Signs</Divider>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <FormItem Label="Body Temperature (°C)">
+                    <AntDesign.InputNumber TValue="double?" @bind-Value="bodyTemperature" Placeholder="37.0" Step="0.1" Min="35" Max="43" />
+                </FormItem>
+                <FormItem Label="Respiratory Rate (/min)">
+                    <AntDesign.InputNumber @bind-Value="respiratoryRate" Placeholder="16" Min="8" Max="60" />
+                </FormItem>
+                <FormItem Label="Pulse Rate (/min)">
+                    <AntDesign.InputNumber @bind-Value="pulseRate" Placeholder="80" Min="40" Max="180" />
+                </FormItem>
+                <FormItem Label="O₂ Saturation (%)">
+                    <AntDesign.InputNumber TValue="double?" @bind-Value="oxygenSaturation" Placeholder="98" Min="0" Max="100" />
+                </FormItem>
+                <FormItem Label="Systolic BP (mmHg)">
+                    <AntDesign.InputNumber @bind-Value="systolicBloodPressure" Placeholder="120" Min="60" Max="250" />
+                </FormItem>
+                <FormItem Label="Diastolic BP (mmHg)">
+                    <AntDesign.InputNumber @bind-Value="diastolicBloodPressure" Placeholder="80" Min="30" Max="150" />
+                </FormItem>
+                <FormItem Label="Weight (kg)">
+                    <AntDesign.InputNumber TValue="double?" @bind-Value="bodyWeight" Placeholder="70" Step="0.1" Min="1" Max="300" />
+                </FormItem>
+                <FormItem Label="Height (cm)">
+                    <AntDesign.InputNumber TValue="double?" @bind-Value="height" Placeholder="170" Min="50" Max="250" />
+                </FormItem>
+            </div>
+
+            <!-- Physical Examination Section -->
+            <Divider>Physical Examination</Divider>
+
+            <FormItem Label="General Appearance">
+                <TextArea @bind-Value="generalAppearance" Rows="2" Placeholder="Describe general appearance and condition" />
+            </FormItem>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <FormItem Label="Head Examination">
+                    <TextArea @bind-Value="headExamination" Rows="2" Placeholder="Head examination findings" />
+                </FormItem>
+                <FormItem Label="Chest/Lung Examination">
+                    <TextArea @bind-Value="lungExamination" Rows="2" Placeholder="Chest and lung findings" />
+                </FormItem>
+                <FormItem Label="Cardiovascular Examination">
+                    <TextArea @bind-Value="cardiovascularExamination" Rows="2" Placeholder="Heart and circulatory findings" />
+                </FormItem>
+                <FormItem Label="Abdominal Examination">
+                    <TextArea @bind-Value="abdominalExamination" Rows="2" Placeholder="Abdominal findings" />
+                </FormItem>
+            </div>
+
+            <!-- Clinical Assessment Section (SOAP) -->
+            <Divider>Clinical Assessment (SOAP)</Divider>
+
+            <FormItem Label="Subjective (S) - Patient's Complaints">
+                <TextArea @bind-Value="subjectiveAssessment" Rows="2" Placeholder="Patient's subjective complaints" />
+            </FormItem>
+
+            <FormItem Label="Objective (O) - Clinical Findings">
+                <TextArea @bind-Value="objectiveFindings" Rows="2" Placeholder="Objective clinical findings and measurements" />
+            </FormItem>
+
+            <FormItem Label="Assessment (A) - Diagnosis">
+                <TextArea @bind-Value="assessment" Rows="2" Placeholder="Assessment and diagnosis" />
+            </FormItem>
+
+            <FormItem Label="Plan (P) - Treatment Plan">
+                <TextArea @bind-Value="planOfCare" Rows="2" Placeholder="Treatment and management plan" />
+            </FormItem>
+
+            <!-- Action Buttons -->
+            <FormItem>
+                <Space>
+                    <SpaceItem>
+                        <Button Type="@ButtonType.Primary" 
+                                Loading="isSaving"
+                                @onclick="SaveAnamnesis">
+                            Save Anamnesis
+                        </Button>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <Button @onclick="ResetForm">
+                            Clear Form
+                        </Button>
+                    </SpaceItem>
+                </Space>
+            </FormItem>
+        </Form>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 48px 0;">
+            <p>Loading appointment details...</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Guid AppointmentId { get; set; }
+    private Guid? id;
+
+    // Chief Complaint
+    private string? chiefComplaint;
+    private string? additionalComplaints;
+    private int? durationYears;
+    private int? durationMonths;
+    private int? durationDays;
+    private string? presentIllness;
+
+    // Medical History
+    private string? medicalHistory;
+    private string? familyHistory;
+    private string? allergiesHistory;
+    private string? medicationHistory;
+    private string? socialHistory;
+    private string? surgicalHistory;
+
+    // Vital Signs
+    private double? bodyTemperature;
+    private int? respiratoryRate;
+    private int? pulseRate;
+    private double? oxygenSaturation;
+    private int? systolicBloodPressure;
+    private int? diastolicBloodPressure;
+    private double? bodyWeight;
+    private double? height;
+
+    // Physical Examination
+    private string? generalAppearance;
+    private string? headExamination;
+    private string? lungExamination;
+    private string? cardiovascularExamination;
+    private string? abdominalExamination;
+
+    // Clinical Assessment (SOAP) - unused in save but kept for future
+    private string? subjectiveAssessment;
+    private string? objectiveFindings;
+    private string? assessment;
+    private string? planOfCare;
+
+    private bool isSaving = false;
+    private object formModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
+        LayoutState.ActiveTabKey = "anamnesis";
+        
+        if (AppointmentId != Guid.Empty)
+        {
+            await LoadAnamnesisData();
+        }
+    }
+
+    private async void OnAuthenticationChanged(bool isAuthenticated)
+    {
+        if (isAuthenticated && AppointmentId != Guid.Empty)
+        {
+            await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadAnamnesisData();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadAnamnesisData()
+    {
+        try
+        {
+            var response = await ApiClient.Api.V1.Anamnesis.Appointment[AppointmentId].GetAsync();
+            
+            if (response != null)
+            {
+                // Populate form fields from loaded data
+                id = response.Id;
+                chiefComplaint = response.ChiefComplaint;
+                additionalComplaints = response.AdditionalComplaints;
+                durationYears = response.DurationYears;
+                durationMonths = response.DurationMonths;
+                durationDays = response.DurationDays;
+                presentIllness = response.PresentingIllness;
+                medicalHistory = response.MedicalHistory;
+                familyHistory = response.FamilyHistory;
+                allergiesHistory = response.DrugAllergies;
+                medicationHistory = response.CurrentMedications;
+                socialHistory = response.SocialHistory;
+                bodyTemperature = response.BodyTemperature.HasValue ? (double?)response.BodyTemperature : null;
+                respiratoryRate = response.RespiratoryRate;
+                pulseRate = response.PulseRate;
+                oxygenSaturation = response.OxygenSaturation.HasValue ? (double?)response.OxygenSaturation : null;
+                systolicBloodPressure = response.SystolicBloodPressure;
+                diastolicBloodPressure = response.DiastolicBloodPressure;
+                bodyWeight = response.BodyWeight.HasValue ? (double?)response.BodyWeight : null;
+                height = response.Height.HasValue ? (double?)response.Height : null;
+                generalAppearance = response.GeneralAppearance;
+                headExamination = response.HeadExamination;
+                lungExamination = response.LungExamination;
+                cardiovascularExamination = response.CardiovascularExamination;
+                abdominalExamination = response.AbdominalExamination;
+                subjectiveAssessment = response.SubjectiveAssessment;
+                objectiveFindings = response.ObjectiveFindings;
+                assessment = response.Assessment;
+                planOfCare = response.PlanOfCare;
+                
+                StateHasChanged();
+            }
+        }
+        catch (Exception)
+        {
+            // Anamnesis not found - this is normal for new appointments
+            _logger.LogInformation($"No existing anamnesis found for appointment {AppointmentId}");
+        }
+    }
+
+    private async Task SaveAnamnesis()
+    {
+        try
+        {
+            isSaving = true;
+
+            var request = new CreateAnamnesisRequest
+            {
+                AppointmentId = AppointmentId,
+                // Chief Complaint and Presenting Illness
+                ChiefComplaint = chiefComplaint,
+                AdditionalComplaints = additionalComplaints,
+                DurationYears = durationYears,
+                DurationMonths = durationMonths,
+                DurationDays = durationDays,
+                PresentIllness = presentIllness,
+                // Medical History
+                MedicalHistory = medicalHistory,
+                FamilyHistory = familyHistory,
+                // Allergies
+                AllergiesHistory = allergiesHistory,
+                // Medications and Social History
+                MedicationHistory = medicationHistory,
+                SocialHistory = socialHistory,
+                SurgicalHistory = surgicalHistory,
+                // Vital Signs
+                GeneralAppearance = generalAppearance,
+                BodyTemperature = bodyTemperature,
+                RespiratoryRate = respiratoryRate,
+                PulseRate = pulseRate,
+                OxygenSaturation = oxygenSaturation,
+                SystolicBloodPressure = systolicBloodPressure,
+                DiastolicBloodPressure = diastolicBloodPressure,
+                BodyWeight = bodyWeight,
+                Height = height,
+                // Physical Examination
+                HeadExamination = headExamination,
+                LungExamination = lungExamination,
+                CardiovascularExamination = cardiovascularExamination,
+                AbdominalExamination = abdominalExamination,
+                // Clinical Assessment (SOAP)
+                SubjectiveAssessment = subjectiveAssessment,
+                ObjectiveFindings = objectiveFindings,
+                Assessment = assessment,
+                PlanOfCare = planOfCare
+            };
+
+            if (id.HasValue)
+            {
+                // Update existing anamnesis
+                await ApiClient.Api.V1.Anamnesis[id.Value].PutAsync(request);
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Anamnesis updated successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+            else
+            {
+                // Create new anamnesis
+                var response = await ApiClient.Api.V1.Anamnesis.PostAsync(request);
+                id = response.Id;
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Anamnesis created successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error saving anamnesis: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        chiefComplaint = null;
+        additionalComplaints = null;
+        durationYears = null;
+        durationMonths = null;
+        durationDays = null;
+        presentIllness = null;
+        medicalHistory = null;
+        familyHistory = null;
+        allergiesHistory = null;
+        medicationHistory = null;
+        socialHistory = null;
+        surgicalHistory = null;
+        bodyTemperature = null;
+        respiratoryRate = null;
+        pulseRate = null;
+        oxygenSaturation = null;
+        systolicBloodPressure = null;
+        diastolicBloodPressure = null;
+        bodyWeight = null;
+        height = null;
+        generalAppearance = null;
+        headExamination = null;
+        lungExamination = null;
+        cardiovascularExamination = null;
+        abdominalExamination = null;
+        subjectiveAssessment = null;
+        objectiveFindings = null;
+        assessment = null;
+        planOfCare = null;
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        LayoutState.OnAuthenticationChanged -= OnAuthenticationChanged;
+        await Task.CompletedTask;
+    }
+}

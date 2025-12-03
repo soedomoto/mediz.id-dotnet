@@ -1,0 +1,419 @@
+@page "/appointments/{AppointmentId:guid}/diagnosis"
+@layout AppointmentLayout
+@using System.Threading.Tasks
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using MedizID.UI.Services.Generated.Models
+@using AntDesign
+@inject ILocalStorageService LocalStorage
+@inject MedizIdApiClient ApiClient
+@inject AppointmentLayoutState LayoutState
+@inject INotificationService _notice
+@inject ILogger<Diagnosis> _logger
+@implements IAsyncDisposable
+
+<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Diagnosis" : "MedizID")
+</PageTitle>
+
+<div style="padding: 24px; background-color: white; border-radius: 8px;">
+    <Space Direction="SpaceDirection.Vertical" Style="width: 100%;">
+        <SpaceItem>
+            <Flex Justify="FlexJustify.SpaceBetween" Align="FlexAlign.Center" Gap="@("16px")">
+                <div></div>
+                <Flex Gap="@("8px")">
+                    <Button Type="@ButtonType.Primary" Icon="plus" @onclick="OpenNewDiagnosisForm">
+                        Add Diagnosis
+                    </Button>
+                    <Button Icon="brain" Loading="@IsGeneratingRecommendations" @onclick="GenerateAIRecommendations">
+                        AI Recommendations
+                    </Button>
+                </Flex>
+            </Flex>
+        </SpaceItem>
+        <SpaceItem>
+            <Table TItem="DiagnosisDetailResponse" DataSource="@Diagnoses" Loading=@(IsLoading ||
+                                                                                           IsGeneratingRecommendations) Size="TableSize.Small">
+                <Column TData="DiagnosisDetailResponse" Title="ICD-10 Code">
+                    <strong>@context.IcD10Code</strong>
+                </Column>
+                <Column TData="DiagnosisDetailResponse" Title="Scientific Description">
+                    <Tooltip Title="@context.ScientificDescription">
+                        @TruncateText(context.ScientificDescription, 50)
+                    </Tooltip>
+                </Column>
+                <Column TData="DiagnosisDetailResponse" Title="Type">
+                    <Tag Color="@GetTypeColor(context.DiagnosisType)">@GetTypeLabel(context.DiagnosisType)</Tag>
+                </Column>
+                <Column TData="DiagnosisDetailResponse" Title="Case">
+                    <Tag Color="@GetCaseColor(context.CaseType)">@GetCaseLabel(context.CaseType)</Tag>
+                </Column>
+                <Column TData="DiagnosisDetailResponse" Title="AI" Align="ColumnAlign.Center">
+                    @if (context.IsRecommendedByAI == true)
+                    {
+                        <Tooltip Title="@($"AI Confidence: {context.AiRecommendationConfidence}%")">
+                            <Icon Type="check-circle" Style="color: #52c41a; font-size: 16px; cursor: pointer;" />
+                        </Tooltip>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </Column>
+                <Column TData="DiagnosisDetailResponse" Title="Notes">
+                    <Tooltip Title="@(context.ClinicalNotes ?? "")">
+                        @TruncateText(context.ClinicalNotes ?? "", 30)
+                    </Tooltip>
+                </Column>
+                <Column TData="DiagnosisDetailResponse" Title="Actions" Fixed="ColumnFixPlacement.Right"
+                    Align="ColumnAlign.Center">
+                    <Space>
+                        <Button Type="@ButtonType.Text" @onclick="() => EditDiagnosis(context)">
+                            <Icon Type="edit" />
+                        </Button>
+                        <Popconfirm Title="Delete this diagnosis?" OnConfirm="() => OnDeleteConfirm(context.Id)">
+                            <Button Type="@ButtonType.Text" Danger>
+                                <Icon Type="delete" />
+                            </Button>
+                        </Popconfirm>
+                    </Space>
+                </Column>
+            </Table>
+        </SpaceItem>
+    </Space>
+</div>
+
+<!-- New/Edit Diagnosis Modal -->
+@if (ShowDiagnosisForm)
+{
+    <Modal Title="@(CurrentDiagnosis.Id == Guid.Empty ? "Add New Diagnosis" : "Edit Diagnosis")"
+        Visible="@ShowDiagnosisForm" OnOk="@OnSaveModalAsync" OnCancel="@CloseDiagnosisForm" OkText=@("Save")
+        CancelText=@("Cancel") Width="700" ConfirmLoading="@IsSaving">
+        <Form TModel="DiagnosisFormModel" Model="@CurrentDiagnosis" Layout="@FormLayout.Vertical">
+            <FormItem Label="ICD-10 Code" Required>
+                <Input @bind-Value="@CurrentDiagnosis.Icd10Code" Placeholder="e.g., J00" />
+            </FormItem>
+
+            <FormItem Label="Diagnosis Type" Required>
+                <Select TItemValue="string" TItem="string" @bind-Value="@CurrentDiagnosis.DiagnosisType" Placeholder="Select diagnosis type">
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Primary")" Label="Primary" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Secondary")" Label="Secondary" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Complication")" Label="Complication" />
+                </Select>
+            </FormItem>
+
+            <FormItem Label="Scientific Description" Required>
+                <TextArea @bind-Value="@CurrentDiagnosis.ScientificDescription"
+                    Placeholder="Medical/scientific terminology" Rows="3" />
+            </FormItem>
+
+            <FormItem Label="Case Type" Required>
+                <Select TItemValue="string" TItem="string" @bind-Value="@CurrentDiagnosis.CaseType" Placeholder="Select case type">
+                    <SelectOption TItemValue="string" TItem="string" Value="@("New")" Label="New" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Existing")" Label="Existing" />
+                </Select>
+            </FormItem>
+
+            <FormItem Label="Clinical Notes">
+                <TextArea @bind-Value="@CurrentDiagnosis.ClinicalNotes"
+                    Placeholder="Additional clinical observations..." Rows="2" />
+            </FormItem>
+        </Form>
+    </Modal>
+}
+
+@code {
+    [Parameter]
+    public Guid AppointmentId { get; set; }
+
+    private List<DiagnosisDetailResponse> Diagnoses = new();
+    private DiagnosisFormModel CurrentDiagnosis = new();
+
+    private bool IsLoading = false;
+    private bool IsSaving = false;
+    private bool IsGeneratingRecommendations = false;
+    private bool ShowDiagnosisForm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
+        LayoutState.ActiveTabKey = "diagnosis";
+
+        if (LayoutState.IsAuthenticated)
+        {
+            await LoadDiagnoses();
+        }
+    }
+
+    private async void OnAuthenticationChanged(bool isAuthenticated)
+    {
+        if (isAuthenticated && AppointmentId != Guid.Empty)
+        {
+            await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadDiagnoses();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadDiagnoses()
+    {
+        try
+        {
+            IsLoading = true;
+            var response = await ApiClient.Api.V1.Diagnosis.Appointment[AppointmentId].GetAsync();
+
+            if (response?.Items != null)
+            {
+                Diagnoses = response.Items.ToList();
+            }
+            else
+            {
+                Diagnoses = new List<DiagnosisDetailResponse>();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading diagnoses");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Error loading diagnoses",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void OpenNewDiagnosisForm()
+    {
+        CurrentDiagnosis = new DiagnosisFormModel { DiagnosisType = "Primary", CaseType = "New" };
+        ShowDiagnosisForm = true;
+    }
+
+    private void EditDiagnosis(DiagnosisDetailResponse diagnosis)
+    {
+        CurrentDiagnosis = new DiagnosisFormModel
+        {
+            Id = diagnosis.Id,
+            Icd10Code = diagnosis.IcD10Code,
+            ScientificDescription = diagnosis.ScientificDescription,
+            DiagnosisType = diagnosis.DiagnosisType,
+            CaseType = diagnosis.CaseType,
+            ConfidencePercentage = diagnosis.ConfidencePercentage,
+            ClinicalNotes = diagnosis.ClinicalNotes,
+        };
+        ShowDiagnosisForm = true;
+    }
+
+    private async Task OnSaveModalAsync()
+    {
+        await SaveDiagnosis();
+        CloseDiagnosisForm();
+    }
+
+    private async Task SaveDiagnosis()
+    {
+        try
+        {
+            IsSaving = true;
+
+            var request = new CreateDiagnosisRequest
+            {
+                AppointmentId = AppointmentId,
+                IcD10Code = CurrentDiagnosis.Icd10Code,
+                ScientificDescription = CurrentDiagnosis.ScientificDescription,
+                DiagnosisType = CurrentDiagnosis.DiagnosisType,
+                CaseType = CurrentDiagnosis.CaseType,
+                ClinicalNotes = CurrentDiagnosis.ClinicalNotes,
+            };
+
+            if (CurrentDiagnosis.Id == null || CurrentDiagnosis.Id == Guid.Empty)
+            {
+                // Create new diagnosis
+                await ApiClient.Api.V1.Diagnosis.PostAsync(request);
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Diagnosis created successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+            else
+            {
+                // Update existing diagnosis - clear AI recommendation and confidence
+                request.ConfidencePercentage = 0;
+                await ApiClient.Api.V1.Diagnosis[CurrentDiagnosis.Id.Value].PutAsync(request);
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Diagnosis updated successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+
+            await LoadDiagnoses();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving diagnosis");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error saving diagnosis: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private async Task OnDeleteConfirm(Guid? diagnosisId)
+    {
+        if (!diagnosisId.HasValue)
+            return;
+
+        try
+        {
+            await ApiClient.Api.V1.Diagnosis[diagnosisId.Value].DeleteAsync();
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Diagnosis deleted successfully",
+                NotificationType = NotificationType.Success
+            });
+            await LoadDiagnoses();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting diagnosis");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error deleting diagnosis: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+    }
+
+    private async Task GenerateAIRecommendations()
+    {
+        try
+        {
+            IsGeneratingRecommendations = true;
+            Diagnoses = await ApiClient.Api.V1.Diagnosis[AppointmentId].AiRecommendations.PostAsync() ?? new
+            List<DiagnosisDetailResponse>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating AI recommendations");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Error generating AI recommendations",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsGeneratingRecommendations = false;
+        }
+
+        @* try
+        {
+            IsGeneratingRecommendations = true;
+            // TODO: Implement AI recommendation generation endpoint in API
+            // For now, show empty recommendations
+            AIRecommendations = new List<DiagnosisRecommendation>();
+            ShowAIRecommendations = true;
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "AI recommendations feature coming soon",
+                NotificationType = NotificationType.Info
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating AI recommendations");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error generating AI recommendations: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsGeneratingRecommendations = false;
+        } *@
+    }
+
+    private async Task AcceptRecommendation(DiagnosisRecommendation rec)
+    {
+        CurrentDiagnosis = new DiagnosisFormModel
+        {
+            Icd10Code = rec.IcD10Code,
+            ScientificDescription = rec.ScientificDescription,
+            ConfidencePercentage = rec.ConfidenceScore,
+            DiagnosisType = "Primary",
+            CaseType = "New"
+        };
+        ShowDiagnosisForm = true;
+        await Task.CompletedTask;
+    }
+
+    private void CloseDiagnosisForm()
+    {
+        ShowDiagnosisForm = false;
+        CurrentDiagnosis = new DiagnosisFormModel();
+    }
+
+    private string GetTypeLabel(string type) => type switch
+    {
+        "Primary" => "Primary",
+        "Secondary" => "Secondary",
+        "Complication" => "Complication",
+        _ => type
+    };
+
+    private string GetTypeColor(string type) => type switch
+    {
+        "Primary" => "red",
+        "Secondary" => "orange",
+        "Complication" => "blue",
+        _ => "default"
+    };
+
+    private string GetCaseLabel(string caseType) => caseType switch
+    {
+        "New" => "New",
+        "Existing" => "Existing",
+        _ => caseType
+    };
+
+    private string GetCaseColor(string caseType) => caseType switch
+    {
+        "New" => "green",
+        "Existing" => "cyan",
+        _ => "default"
+    };
+
+    private string TruncateText(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text))
+            return "-";
+        return text.Length > maxLength ? text.Substring(0, maxLength) + "..." : text;
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        LayoutState.OnAuthenticationChanged -= OnAuthenticationChanged;
+        await Task.CompletedTask;
+    }
+
+    private class DiagnosisFormModel
+    {
+        public Guid? Id { get; set; }
+        public string Icd10Code { get; set; }
+        public string ScientificDescription { get; set; }
+        public string DiagnosisType { get; set; } = "Primary";
+        public string CaseType { get; set; } = "New";
+        public int? ConfidencePercentage { get; set; }
+        public string ClinicalNotes { get; set; }
+    }
+}

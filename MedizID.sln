@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MedizID.API", "MedizID.API\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MedizID.Web", "MedizID.Web\MedizID.Web.csproj", "{70B82743-9324-4879-8491-E8258DCAA3AA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MedizID.UI", "MedizID.UI\MedizID.UI.csproj", "{9A1B2C3D-4E5F-6G7H-8I9J-0K1L2M3N4O5P}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MedizID.MAUI", "MedizID.MAUI\MedizID.MAUI.csproj", "{4B5C6D7E-8F9A-0B1C-2D3E-4F5A6B7C8D9E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,13 @@ Global
 		{70B82743-9324-4879-8491-E8258DCAA3AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70B82743-9324-4879-8491-E8258DCAA3AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70B82743-9324-4879-8491-E8258DCAA3AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A1B2C3D-4E5F-6G7H-8I9J-0K1L2M3N4O5P}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A1B2C3D-4E5F-6G7H-8I9J-0K1L2M3N4O5P}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A1B2C3D-4E5F-6G7H-8I9J-0K1L2M3N4O5P}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A1B2C3D-4E5F-6G7H-8I9J-0K1L2M3N4O5P}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B5C6D7E-8F9A-0B1C-2D3E-4F5A6B7C8D9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B5C6D7E-8F9A-0B1C-2D3E-4F5A6B7C8D9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B5C6D7E-8F9A-0B1C-2D3E-4F5A6B7C8D9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B5C6D7E-8F9A-0B1C-2D3E-4F5A6B7C8D9E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

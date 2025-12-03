@@ -1,0 +1,44 @@
+@page "/debug"
+@using System.Diagnostics
+
+<h1>Debugging Information</h1>
+
+<h2>Assembly Loaded</h2>
+<ul>
+    <li>Current Assembly: @typeof(Debug).Assembly.GetName().Name v@typeof(Debug).Assembly.GetName().Version</li>
+    <li>MedizID.UI Assembly: @(typeof(MedizID.UI._Imports).Assembly?.GetName().Name ?? "NOT FOUND")</li>
+</ul>
+
+<h2>Service Resolution Test</h2>
+<p>Check if services are resolving correctly...</p>
+@if (_services != null)
+{
+    <ul>
+        @foreach (var service in _services)
+        {
+            <li>@service</li>
+        }
+    </ul>
+}
+else
+{
+    <p>Loading services...</p>
+}
+
+@code {
+    private List<string>? _services = null;
+
+    protected override Task OnInitializedAsync()
+    {
+        _services = new List<string>();
+        try
+        {
+            _services.Add("✓ Debug page loaded successfully");
+        }
+        catch (Exception ex)
+        {
+            _services.Add($"✗ Error: {ex.Message}");
+        }
+        return Task.CompletedTask;
+    }
+}

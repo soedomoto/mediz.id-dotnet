@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MedizID.Web;
-using MedizID.Web.Services;
-using MedizID.Web.Services.Generated;
+using MedizID.UI.Services;
+using MedizID.UI.Services.Generated;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 using Microsoft.Kiota.Serialization.Json;

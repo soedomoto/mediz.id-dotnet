@@ -1,0 +1,438 @@
+@page "/facilities/{FacilityId:guid}/polyclinic"
+@using System.Threading.Tasks
+@using MedizID.UI.Services.Generated.Models
+@layout FacilityLayout
+@inject ILocalStorageService LocalStorage
+@inject MedizIdApiClient ApiClient
+@inject FacilityLayoutState LayoutState
+@inject INotificationService _notice
+@inject ModalService _modalService
+@implements IAsyncDisposable
+
+<PageTitle>@(LayoutState.Facility != null ? LayoutState.Facility.Name + " - Polyclinic" : "MedizID")</PageTitle>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h2>Polyclinics</h2>
+    <Button Type="ButtonType.Primary" @onclick="OpenAddPoliModal">
+        + Add Polyclinic
+    </Button>
+</div>
+
+<Table @ref="poliTable" TItem="PoliResponse" DataSource="poliTableDS" PageSize="10"
+    Total="poliTableTotal" OnChange="OnPoliTableChange" ScrollX="1500">
+    <ColumnDefinitions Context="row">
+        <Column Title="Name" DataIndex="@nameof(PoliResponse.Name)" TData="string" />
+        <Column Title="Description" DataIndex="@nameof(PoliResponse.Description)" TData="string" />
+        <Column Title="Active" DataIndex="@nameof(PoliResponse.IsActive)" TData="bool?" />
+        <Column Title="Actions" TData="PoliResponse">
+            <Space>
+                <SpaceItem>
+                    <Button Type="ButtonType.Primary" Size="ButtonSize.Small"
+                        @onclick="@((MouseEventArgs e) => OpenUpdatePoliModal(row))">
+                        Edit
+                    </Button>
+                </SpaceItem>
+                <SpaceItem>
+                    <Button Danger Size="ButtonSize.Small"
+                        @onclick="@((MouseEventArgs e) => OpenDeletePoliModal(row))">
+                        Delete
+                    </Button>
+                </SpaceItem>
+            </Space>
+        </Column>
+    </ColumnDefinitions>
+</Table>
+
+<Modal Title="Add New Polyclinic" Visible="isAddPoliModalVisible" OnOk="OnAddPoliSaveClick"
+    OnCancel="CloseAddPoliModal" BodyStyle="max-height: 60vh; overflow-y: auto;">
+    @if (!string.IsNullOrEmpty(addPoliErrorMessage))
+    {
+        <Alert Message="Error" Description="@addPoliErrorMessage" Type="AlertType.Error" ShowIcon="true"
+            Style="margin-bottom: 16px;" />
+    }
+
+    <Form Model="newPoli" Layout="FormLayout.Vertical">
+        <FormItem Label="Installation" Required>
+            <Select TItemValue="Guid?" TItem="InstallationResponse" 
+                Placeholder="Select an installation"
+                Value="newPoli.InstallationId"
+                ValueChanged="@(value => newPoli.InstallationId = value)">
+                <SelectOptions>
+                    @foreach (var installation in installations)
+                    {
+                        <SelectOption TItemValue="Guid?" TItem="InstallationResponse" Value="@installation.Id"
+                            Label="@installation.Name" />
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem>
+
+        <FormItem Label="Name" Required>
+            <Input Value="newPoli.Name" ValueChanged="@((string value) => newPoli.Name = value)"
+                Placeholder="Enter polyclinic name" />
+        </FormItem>
+
+        <FormItem Label="Description">
+            <TextArea Value="newPoli.Description" ValueChanged="@((string value) => newPoli.Description = value)"
+                Placeholder="Enter description" Rows="4" />
+        </FormItem>
+    </Form>
+</Modal>
+
+<Modal Title="Update Polyclinic" Visible="isUpdatePoliModalVisible" OnOk="OnUpdatePoliSaveClick"
+    OnCancel="CloseUpdatePoliModal" BodyStyle="max-height: 60vh; overflow-y: auto;">
+    @if (!string.IsNullOrEmpty(updatePoliErrorMessage))
+    {
+        <Alert Message="Error" Description="@updatePoliErrorMessage" Type="AlertType.Error" ShowIcon="true"
+            Style="margin-bottom: 16px;" />
+    }
+
+    <Form Model="updatePoli" Layout="FormLayout.Vertical">
+        <FormItem Label="Installation" Required>
+            <Select TItemValue="Guid?" TItem="InstallationResponse" 
+                Placeholder="Select an installation"
+                Value="updatePoli.InstallationId"
+                ValueChanged="@((Guid? value) => updatePoli.InstallationId = value)">
+                <SelectOptions>
+                    @foreach (var installation in installations)
+                    {
+                        <SelectOption TItemValue="Guid?" TItem="InstallationResponse" Value="@installation.Id"
+                            Label="@installation.Name" />
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem>
+
+        <FormItem Label="Name" Required>
+            <Input Value="@(updatePoli.Name ?? "")" ValueChanged="@((string value) => updatePoli.Name = value)"
+                Placeholder="Enter polyclinic name" />
+        </FormItem>
+
+        <FormItem Label="Description">
+            <TextArea Value="@(updatePoli.Description ?? "")" ValueChanged="@((string value) => updatePoli.Description = value)"
+                Placeholder="Enter description" Rows="4" />
+        </FormItem>
+
+        <FormItem Label="Active">
+            <Checkbox Checked="@(updatePoli.IsActive ?? false)"
+                CheckedChanged="@((bool value) => updatePoli.IsActive = value)" />
+        </FormItem>
+    </Form>
+</Modal>
+
+<Modal Title="Delete Polyclinic" Visible="isDeletePoliModalVisible" OnOk="OnDeletePoliConfirm"
+    OnCancel="CloseDeletePoliModal" OkButtonProps="new ButtonProps { Danger = true }" OkText="@("Delete")"
+    CancelText="@("Cancel")" BodyStyle="max-height: 60vh; overflow-y: auto;">
+    <div>
+        <p>Are you sure you want to delete the polyclinic <strong>@deletePoliName</strong>?</p>
+        <p style="color: #ff4d4f; font-weight: bold;">This action cannot be undone.</p>
+    </div>
+</Modal>
+
+@code {
+    [Parameter]
+    public Guid FacilityId { get; set; }
+
+    // Table-related fields
+    ITable? poliTable;
+    List<PoliResponse> poliTableDS = [];
+    int poliTableTotal = 0;
+    List<InstallationResponse> installations = [];
+
+    // Add new poli modal and form-related fields
+    bool isAddPoliModalVisible = false;
+    bool isAddPoliSaving = false;
+    CreatePoliRequest newPoli = new CreatePoliRequest();
+    string? addPoliErrorMessage;
+
+    // Update poli modal and form-related fields
+    bool isUpdatePoliModalVisible = false;
+    bool isUpdatePoliSaving = false;
+    Guid? selectedPoliId;
+    UpdatePoliRequest updatePoli = new UpdatePoliRequest();
+    string? updatePoliErrorMessage;
+
+    // Delete poli modal and form-related fields
+    bool isDeletePoliSaving = false;
+    bool isDeletePoliModalVisible = false;
+    Guid? poliIdToDelete;
+    string? deletePoliName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
+        LayoutState.ActiveTabKey = "polyclinic";
+        if (LayoutState.IsAuthenticated)
+        {
+            await LoadInstallations();
+        }
+    }
+
+    private async void OnAuthenticationChanged(bool isAuthenticated)
+    {
+        if (isAuthenticated && FacilityId != Guid.Empty)
+        {
+            await LayoutState.FetchFacilityAsync(ApiClient, FacilityId);
+            await LoadInstallations();
+            StateHasChanged();
+        }
+    }
+
+    async Task LoadInstallations()
+    {
+        try
+        {
+            var response = await ApiClient.Api.V1.Facilities[FacilityId].Installations.GetAsync(config =>
+            {
+                config.QueryParameters.PageSize = 1000;
+            });
+            installations = response?.Items ?? [];
+        }
+        catch (Exception)
+        {
+            // Handle error silently or log
+            installations = [];
+        }
+    }
+
+    async Task OnPoliTableChange(QueryModel<PoliResponse> query)
+    {
+        var response = await ApiClient.Api.V1.Facilities[FacilityId].Polis.GetAsync(config =>
+        {
+            config.QueryParameters.Page = query.PageIndex;
+            config.QueryParameters.PageSize = query.PageSize;
+        });
+        poliTableTotal = response?.Total ?? 0;
+        poliTableDS = response?.Items ?? [];
+    }
+
+    void OpenAddPoliModal()
+    {
+        newPoli = new CreatePoliRequest();
+        addPoliErrorMessage = null;
+        if (installations.Count > 0)
+        {
+            newPoli.InstallationId = installations[0].Id;
+        }
+        isAddPoliModalVisible = true;
+    }
+
+    void CloseAddPoliModal()
+    {
+        isAddPoliModalVisible = false;
+        newPoli = new CreatePoliRequest();
+        addPoliErrorMessage = null;
+    }
+
+    async Task OpenUpdatePoliModal(PoliResponse poli)
+    {
+        selectedPoliId = poli.Id;
+        updatePoli = new UpdatePoliRequest
+        {
+            InstallationId = poli.InstallationId,
+            Name = poli.Name,
+            Description = poli.Description,
+            IsActive = poli.IsActive
+        };
+        updatePoliErrorMessage = null;
+        isUpdatePoliModalVisible = true;
+    }
+
+    void CloseUpdatePoliModal()
+    {
+        isUpdatePoliModalVisible = false;
+        updatePoli = new UpdatePoliRequest();
+        updatePoliErrorMessage = null;
+        selectedPoliId = null;
+    }
+
+    void OpenDeletePoliModal(PoliResponse poli)
+    {
+        poliIdToDelete = poli.Id;
+        deletePoliName = poli.Name;
+        isDeletePoliModalVisible = true;
+    }
+
+    void CloseDeletePoliModal()
+    {
+        isDeletePoliModalVisible = false;
+        poliIdToDelete = null;
+        deletePoliName = null;
+    }
+
+    async Task OnAddPoliSaveClick()
+    {
+        // Validation
+        if (newPoli.InstallationId == Guid.Empty)
+        {
+            addPoliErrorMessage = "Installation is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newPoli.Name))
+        {
+            addPoliErrorMessage = "Polyclinic name is required.";
+            return;
+        }
+
+        try
+        {
+            isAddPoliSaving = true;
+            addPoliErrorMessage = null;
+
+            var response = await ApiClient.Api.V1.Facilities[FacilityId].Polis.PostAsync(newPoli);
+
+            if (response != null)
+            {
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Polyclinic created successfully!",
+                    NotificationType = NotificationType.Success
+                });
+
+                isAddPoliModalVisible = false;
+                newPoli = new CreatePoliRequest();
+
+                // Refresh the table by reloading initial data
+                var queryResponse = await ApiClient.Api.V1.Facilities[FacilityId].Polis.GetAsync(config =>
+                {
+                    config.QueryParameters.Page = 1;
+                    config.QueryParameters.PageSize = 10;
+                });
+                poliTableTotal = queryResponse?.Total ?? 0;
+                poliTableDS = queryResponse?.Items ?? [];
+            }
+            else
+            {
+                addPoliErrorMessage = "Failed to create polyclinic. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            addPoliErrorMessage = $"Error creating polyclinic: {ex.Message}";
+        }
+        finally
+        {
+            isAddPoliSaving = false;
+        }
+    }
+
+    async Task OnUpdatePoliSaveClick()
+    {
+        // Validation
+        if (updatePoli.InstallationId == null || updatePoli.InstallationId == Guid.Empty)
+        {
+            updatePoliErrorMessage = "Installation is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(updatePoli.Name))
+        {
+            updatePoliErrorMessage = "Polyclinic name is required.";
+            return;
+        }
+
+        try
+        {
+            isUpdatePoliSaving = true;
+            updatePoliErrorMessage = null;
+
+            if (selectedPoliId == null || selectedPoliId == Guid.Empty)
+            {
+                updatePoliErrorMessage = "No polyclinic selected.";
+                return;
+            }
+
+            var response = await ApiClient.Api.V1.Facilities[FacilityId].Polis[selectedPoliId.Value].PutAsync(updatePoli);
+
+            if (response != null)
+            {
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Polyclinic updated successfully!",
+                    NotificationType = NotificationType.Success
+                });
+
+                isUpdatePoliModalVisible = false;
+                updatePoli = new UpdatePoliRequest();
+
+                // Refresh the table by reloading initial data
+                var queryResponse = await ApiClient.Api.V1.Facilities[FacilityId].Polis.GetAsync(config =>
+                {
+                    config.QueryParameters.Page = 1;
+                    config.QueryParameters.PageSize = 10;
+                });
+                poliTableTotal = queryResponse?.Total ?? 0;
+                poliTableDS = queryResponse?.Items ?? [];
+            }
+            else
+            {
+                updatePoliErrorMessage = "Failed to update polyclinic. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            updatePoliErrorMessage = $"Error updating polyclinic: {ex.Message}";
+        }
+        finally
+        {
+            isUpdatePoliSaving = false;
+        }
+    }
+
+    async Task OnDeletePoliConfirm()
+    {
+        try
+        {
+            isDeletePoliSaving = true;
+
+            if (poliIdToDelete == null || poliIdToDelete == Guid.Empty)
+            {
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Error: No polyclinic selected for deletion.",
+                    NotificationType = NotificationType.Error
+                });
+                return;
+            }
+
+            await ApiClient.Api.V1.Facilities[FacilityId].Polis[poliIdToDelete.Value].DeleteAsync();
+
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Polyclinic deleted successfully!",
+                NotificationType = NotificationType.Success
+            });
+
+            poliIdToDelete = null;
+            isDeletePoliModalVisible = false;
+
+            // Refresh the table by reloading initial data
+            var queryResponse = await ApiClient.Api.V1.Facilities[FacilityId].Polis.GetAsync(config =>
+            {
+                config.QueryParameters.Page = 1;
+                config.QueryParameters.PageSize = 10;
+            });
+            poliTableTotal = queryResponse?.Total ?? 0;
+            poliTableDS = queryResponse?.Items ?? [];
+        }
+        catch (Exception ex)
+        {
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error deleting polyclinic: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            isDeletePoliSaving = false;
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        LayoutState.OnAuthenticationChanged -= OnAuthenticationChanged;
+        await Task.CompletedTask;
+    }
+}

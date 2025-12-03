@@ -1,0 +1,16 @@
+@page "/test"
+@using System.Reflection
+
+<h1>MAUI Test Page</h1>
+
+<p>If you see this, the routing is working!</p>
+
+<h2>Assembly Information</h2>
+<ul>
+    <li>Current Assembly: @typeof(Test).Assembly.GetName().Name</li>
+    <li>MedizID.UI Assembly: @(typeof(MedizID.UI._Imports).Assembly?.GetName().Name ?? "Not found")</li>
+</ul>
+
+<h2>Try Navigation</h2>
+<a href="/">Go to Index</a>
+<a href="/home">Go to Home</a>

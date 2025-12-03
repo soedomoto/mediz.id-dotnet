@@ -1,0 +1,441 @@
+@page "/appointments/{AppointmentId:guid}/prescription"
+@layout AppointmentLayout
+@using System.Threading.Tasks
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using MedizID.UI.Services.Generated.Models
+@using AntDesign
+@inject ILocalStorageService LocalStorage
+@inject MedizIdApiClient ApiClient
+@inject AppointmentLayoutState LayoutState
+@inject INotificationService _notice
+@inject ILogger<Prescription> _logger
+@implements IAsyncDisposable
+
+<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Prescription" : "MedizID")</PageTitle>
+
+<div style="padding: 24px; background-color: white; border-radius: 8px;">
+    <Space Direction="SpaceDirection.Vertical" Style="width: 100%;">
+        <SpaceItem>
+            <Flex Justify="FlexJustify.SpaceBetween" Align="FlexAlign.Center" Gap="@("16px")">
+                <div></div>
+                <Flex Gap="@("8px")">
+                    <Button Type="@ButtonType.Primary" Icon="plus" @onclick="OpenNewPrescriptionForm">
+                        Add Prescription
+                    </Button>
+                    <Button Icon="brain" Loading="@IsGeneratingRecommendations" @onclick="GenerateAIRecommendations">
+                        AI Recommendations
+                    </Button>
+                </Flex>
+            </Flex>
+        </SpaceItem>
+        <SpaceItem>
+            <Table TItem="PrescriptionDetailResponse" DataSource="@PrescriptionDetails" Loading=@(IsLoading ||
+                                                                                                     IsGeneratingRecommendations) Size="TableSize.Small">
+                <Column TData="PrescriptionDetailResponse" Title="Medication Name">
+                    <strong>@context.MedicationName</strong>
+                </Column>
+                <Column TData="PrescriptionDetailResponse" Title="Dosage">
+                    @context.Dosage
+                </Column>
+                <Column TData="PrescriptionDetailResponse" Title="Signa">
+                    @context.Signa
+                </Column>
+                <Column TData="PrescriptionDetailResponse" Title="Quantity">
+                    @context.Quantity
+                </Column>
+                <Column TData="PrescriptionDetailResponse" Title="Recipe Type">
+                    <Tag Color="@GetRecipeTypeColor(context.RecipeType)">@context.RecipeType</Tag>
+                </Column>
+                <Column TData="PrescriptionDetailResponse" Title="AI" Align="ColumnAlign.Center">
+                    @if (context.IsRecommendedByAI == true)
+                    {
+                        <Tooltip Title="@($"AI Confidence: {context.AiRecommendationConfidence}%")">
+                            <Icon Type="check-circle" Style="color: #52c41a; font-size: 16px; cursor: pointer;" />
+                        </Tooltip>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </Column>
+                <Column TData="PrescriptionDetailResponse" Title="Notes">
+                    <Tooltip Title="@(context.Notes ?? "")">
+                        @TruncateText(context.Notes ?? "", 30)
+                    </Tooltip>
+                </Column>
+                <Column TData="PrescriptionDetailResponse" Title="Actions" Fixed="ColumnFixPlacement.Right"
+                    Align="ColumnAlign.Center">
+                    <Space>
+                        <Button Type="@ButtonType.Text" @onclick="() => EditPrescriptionDetail(context)">
+                            <Icon Type="edit" />
+                        </Button>
+                        @if (context.Id != null && context.Id != Guid.Empty)
+                        {
+                            <Popconfirm Title="Delete this prescription item?" OnConfirm="async () => await OnDeleteDetailConfirm(context.Id.Value)">
+                                <Button Type="@ButtonType.Text" Danger>
+                                    <Icon Type="delete" />
+                                </Button>
+                            </Popconfirm>
+                        }
+                    </Space>
+                </Column>
+            </Table>
+        </SpaceItem>
+    </Space>
+</div>
+
+<!-- New/Edit Prescription Modal -->
+@if (ShowPrescriptionForm)
+{
+    <Modal Title="@(CurrentDetail.Id == Guid.Empty ? "Add New Prescription" : "Edit Prescription")" Visible="@ShowPrescriptionForm" OnOk="@OnSaveModalAsync" OnCancel="@ClosePrescriptionForm" OkText="@("Save")" CancelText="@("Cancel")" Width="800" ConfirmLoading="@IsSaving">
+        <Form TModel="PrescriptionFormModel" Model="@CurrentDetail" Layout="@FormLayout.Vertical">
+            <FormItem Label="Medication Name" Required>
+                <Input @bind-Value="@CurrentDetail.MedicationName" Placeholder="e.g., Paracetamol" />
+            </FormItem>
+            <FormItem Label="Dosage" Required>
+                <Input @bind-Value="@CurrentDetail.Dosage" Placeholder="e.g., 500mg" />
+            </FormItem>
+            <FormItem Label="Signa" Required>
+                <Input @bind-Value="@CurrentDetail.Signa" Placeholder="e.g., p.o." />
+            </FormItem>
+            <FormItem Label="Frequency" Required>
+                <Input @bind-Value="@CurrentDetail.Frequency" Placeholder="e.g., 3x per day" />
+            </FormItem>
+            <FormItem Label="Quantity" Required>
+                <AntDesign.InputNumber @bind-Value="@CurrentDetail.Quantity" Placeholder="e.g., 10" Min="1" />
+            </FormItem>
+            <FormItem Label="Recipe Type">
+                <Select TItemValue="string?" TItem="string" @bind-Value="@CurrentDetail.RecipeType" Placeholder="Select recipe type" AllowClear>
+                    <SelectOption TItemValue="string?" TItem="string" Value="@("Standard")" Label="Standard" />
+                    <SelectOption TItemValue="string?" TItem="string" Value="@("Repeat")" Label="Repeat" />
+                    <SelectOption TItemValue="string?" TItem="string" Value="@("Urgent")" Label="Urgent" />
+                </Select>
+            </FormItem>
+            <FormItem Label="Price">
+                <AntDesign.InputNumber @bind-Value="@CurrentDetail.Price" Placeholder="0.00" Min="0" />
+            </FormItem>
+            <FormItem Label="Instructions">
+                <TextArea @bind-Value="@CurrentDetail.Instructions" Placeholder="Special instructions for patient..." Rows="2" />
+            </FormItem>
+            <FormItem Label="Notes">
+                <TextArea @bind-Value="@CurrentDetail.Notes" Placeholder="Additional notes..." Rows="2" />
+            </FormItem>
+        </Form>
+    </Modal>
+}
+
+@code {
+    [Parameter]
+    public Guid AppointmentId { get; set; }
+
+    private List<PrescriptionDetailResponse> PrescriptionDetails = new();
+    private PrescriptionResponse? CurrentPrescription = null;
+    private PrescriptionFormModel CurrentDetail = new();
+
+    private bool IsLoading = false;
+    private bool IsSaving = false;
+    private bool IsGeneratingRecommendations = false;
+    private bool ShowPrescriptionForm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
+        LayoutState.ActiveTabKey = "prescription";
+
+        if (LayoutState.IsAuthenticated)
+        {
+            await LoadPrescriptions();
+        }
+    }
+
+    private async void OnAuthenticationChanged(bool isAuthenticated)
+    {
+        if (isAuthenticated && AppointmentId != Guid.Empty)
+        {
+            await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadPrescriptions();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadPrescriptions()
+    {
+        try
+        {
+            IsLoading = true;
+            var response = await ApiClient.Api.V1.Prescriptions.Appointment[AppointmentId].GetAsync();
+
+            if (response?.Items != null && response.Items.Count > 0)
+            {
+                CurrentPrescription = response.Items.First();
+                PrescriptionDetails = CurrentPrescription.Details ?? new List<PrescriptionDetailResponse>();
+            }
+            else
+            {
+                PrescriptionDetails = new List<PrescriptionDetailResponse>();
+                CurrentPrescription = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading prescriptions");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Error loading prescriptions",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void OpenNewPrescriptionForm()
+    {
+        CurrentDetail = new PrescriptionFormModel();
+        ShowPrescriptionForm = true;
+    }
+
+    private void EditPrescriptionDetail(PrescriptionDetailResponse detail)
+    {
+        CurrentDetail = new PrescriptionFormModel
+        {
+            Id = detail.Id ?? Guid.Empty,
+            MedicationName = detail.MedicationName,
+            Dosage = detail.Dosage,
+            Signa = detail.Signa,
+            Frequency = detail.Frequency,
+            Quantity = detail.Quantity,
+            Instructions = detail.Instructions,
+            Notes = detail.Notes,
+            Price = detail.Price,
+            RecipeType = detail.RecipeType,
+        };
+        ShowPrescriptionForm = true;
+    }
+
+    private async Task OnSaveModalAsync()
+    {
+        await SavePrescription();
+        ClosePrescriptionForm();
+    }
+
+    private async Task SavePrescription()
+    {
+        try
+        {
+            IsSaving = true;
+
+            var request = new CreatePrescriptionRequest
+            {
+                AppointmentId = AppointmentId,
+                Details = new List<CreatePrescriptionDetailRequest>
+                {
+                    new CreatePrescriptionDetailRequest
+                    {
+                        MedicationName = CurrentDetail.MedicationName,
+                        Dosage = CurrentDetail.Dosage,
+                        Signa = CurrentDetail.Signa,
+                        Frequency = CurrentDetail.Frequency,
+                        Quantity = CurrentDetail.Quantity,
+                        Instructions = CurrentDetail.Instructions,
+                        Notes = CurrentDetail.Notes,
+                        Price = CurrentDetail.Price,
+                        RecipeType = CurrentDetail.RecipeType,
+                    }
+                }
+            };
+
+            if (CurrentDetail.Id == Guid.Empty)
+            {
+                // Create new prescription if one doesn't exist
+                if (CurrentPrescription == null)
+                {
+                    CurrentPrescription = await ApiClient.Api.V1.Prescriptions.PostAsync(request);
+                    await _notice.Open(new NotificationConfig()
+                    {
+                        Message = "Prescription created successfully",
+                        NotificationType = NotificationType.Success
+                    });
+                }
+                else
+                {
+                    // Add new detail to existing prescription
+                    await ApiClient.Api.V1.Prescriptions[CurrentPrescription.Id.Value].PutAsync(request);
+                    await _notice.Open(new NotificationConfig()
+                    {
+                        Message = "Prescription detail added successfully",
+                        NotificationType = NotificationType.Success
+                    });
+                }
+            }
+            else
+            {
+                // Update existing prescription detail
+                if (CurrentPrescription != null)
+                {
+                    await ApiClient.Api.V1.Prescriptions[CurrentPrescription.Id.Value].PutAsync(request);
+                    await _notice.Open(new NotificationConfig()
+                    {
+                        Message = "Prescription updated successfully",
+                        NotificationType = NotificationType.Success
+                    });
+                }
+            }
+
+            await LoadPrescriptions();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving prescription");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error saving prescription: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private async Task OnDeleteDetailConfirm(Guid detailId)
+    {
+        if (CurrentPrescription == null)
+            return;
+
+        try
+        {
+            // Remove the detail and update the prescription
+            var remainingDetails = PrescriptionDetails
+                .Where(d => d.Id != detailId)
+                .ToList();
+
+            if (remainingDetails.Count == 0)
+            {
+                // Delete entire prescription if no details remain
+                await ApiClient.Api.V1.Prescriptions[CurrentPrescription.Id.Value].DeleteAsync();
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Prescription deleted successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+            else
+            {
+                // Update prescription with remaining details
+                var request = new CreatePrescriptionRequest
+                {
+                    AppointmentId = AppointmentId,
+                    Details = remainingDetails.Select(d => new CreatePrescriptionDetailRequest
+                    {
+                        MedicationName = d.MedicationName,
+                        Dosage = d.Dosage,
+                        Signa = d.Signa,
+                        Frequency = d.Frequency,
+                        Quantity = d.Quantity,
+                        Instructions = d.Instructions,
+                        Notes = d.Notes,
+                        Price = d.Price,
+                        RecipeType = d.RecipeType,
+                    }).ToList()
+                };
+
+                await ApiClient.Api.V1.Prescriptions[CurrentPrescription.Id.Value].PutAsync(request);
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Prescription detail deleted successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+
+            await LoadPrescriptions();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting prescription detail");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error deleting prescription: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+    }
+
+    private async Task GenerateAIRecommendations()
+    {
+        try
+        {
+            IsGeneratingRecommendations = true;
+            var prescription = await ApiClient.Api.V1.Prescriptions[AppointmentId].AiRecommendations.PostAsync();
+            
+            if (prescription != null)
+            {
+                CurrentPrescription = prescription;
+                PrescriptionDetails = prescription.Details ?? new List<PrescriptionDetailResponse>();
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "AI recommendations generated successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating AI recommendations");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Error generating AI recommendations",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsGeneratingRecommendations = false;
+        }
+    }
+
+    private void ClosePrescriptionForm()
+    {
+        ShowPrescriptionForm = false;
+        CurrentDetail = new PrescriptionFormModel();
+    }
+
+    private string GetRecipeTypeColor(string? type) => type switch
+    {
+        "Standard" => "blue",
+        "Repeat" => "cyan",
+        "Urgent" => "red",
+        _ => "default"
+    };
+
+    private string TruncateText(string? text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text))
+            return "-";
+        return text.Length > maxLength ? text.Substring(0, maxLength) + "..." : text;
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        LayoutState.OnAuthenticationChanged -= OnAuthenticationChanged;
+        await Task.CompletedTask;
+    }
+
+    private class PrescriptionFormModel
+    {
+        public Guid Id { get; set; } = Guid.Empty;
+        public string? MedicationName { get; set; }
+        public string? Dosage { get; set; }
+        public string? Signa { get; set; }
+        public string? Frequency { get; set; }
+        public int? Quantity { get; set; }
+        public string? Instructions { get; set; }
+        public string? Notes { get; set; }
+        public double? Price { get; set; }
+        public string? RecipeType { get; set; }
+    }
+}
