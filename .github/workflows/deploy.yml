@@ -26,7 +26,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore MedizID.sln
+        run: dotnet restore MedizID.API/MedizID.API.csproj
 
       - name: Build MedizID.API
         run: dotnet build MedizID.API/MedizID.API.csproj -c Release --no-restore
@@ -64,7 +64,7 @@ jobs:
         run: dotnet workload install wasm-tools
 
       - name: Restore dependencies
-        run: dotnet restore MedizID.sln
+        run: dotnet restore MedizID.Web/MedizID.Web.csproj
 
       - name: Build MedizID.Web
         run: dotnet build MedizID.Web/MedizID.Web.csproj -c Release --no-restore
