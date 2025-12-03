@@ -7,6 +7,8 @@ on:
     paths:
       - 'MedizID.API/**'
       - 'MedizID.Web/**'
+      - 'MedizID.UI/**'
+      - 'MedizID.MAUI/**'
       - 'MedizID.sln'
       - '.github/workflows/deploy.yml'
 
@@ -83,6 +85,54 @@ jobs:
           name: medizid-web-release
           path: medizid-web-release.tar.gz
           retention-days: 1
+
+  build-maui:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            framework: net8.0-maccatalyst
+            artifact-name: medizid-maui-maccatalyst
+          - os: windows-latest
+            framework: net8.0-windows10.0.19041.0
+            artifact-name: medizid-maui-windows
+          - os: ubuntu-latest
+            framework: net8.0-android
+            artifact-name: medizid-maui-android
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install MAUI workload
+        run: dotnet workload install maui
+
+      - name: Restore dependencies
+        run: dotnet workload restore
+
+      - name: Build MedizID.MAUI
+        run: dotnet build MedizID.MAUI/MedizID.MAUI.csproj -f ${{ matrix.framework }} -c Release
+
+      - name: Publish MedizID.MAUI
+        run: dotnet publish MedizID.MAUI/MedizID.MAUI.csproj -f ${{ matrix.framework }} -c Release -o ./publish-maui
+
+      - name: Compress artifact
+        shell: bash
+        run: tar -czf ${{ matrix.artifact-name }}-release.tar.gz -C ./publish-maui . && ls -lh ${{ matrix.artifact-name }}-release.tar.gz
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}-release
+          path: ${{ matrix.artifact-name }}-release.tar.gz
+          retention-days: 7
 
   deploy:
     needs: [build-api, build-web]
@@ -361,6 +411,11 @@ jobs:
             echo "API is running on http://${{ secrets.EC2_HOST }}/api"
             echo "Web application is running on http://${{ secrets.EC2_HOST }}/"
             echo "Swagger documentation at http://${{ secrets.EC2_HOST }}/swagger/"
+            echo ""
+            echo "MAUI apps available as GitHub artifacts:"
+            echo "  - macCatalyst: medizid-maui-maccatalyst-release"
+            echo "  - Windows: medizid-maui-windows-release"
+            echo "  - Android: medizid-maui-android-release"
           else
             echo "❌ Deployment failed!"
           fi
