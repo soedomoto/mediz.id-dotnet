@@ -139,15 +139,16 @@ jobs:
         shell: pwsh
         run: |
           $publishDir = "./publish-maui"
-          $exe = Get-ChildItem -Path $publishDir -Filter "MedizID.exe" -Recurse | Select-Object -First 1
+          $exe = Get-ChildItem -Path $publishDir -Filter "*.exe" -Recurse | Select-Object -First 1
           
           if ($exe) {
             Copy-Item -Path $exe.FullName -Destination "./MedizID.exe"
-            Write-Host "Executable prepared: MedizID.exe"
-            Get-Item "./MedizID.exe" | ForEach-Object { Write-Host $_.Length " bytes" }
+            Write-Host "Executable prepared: MedizID.exe (from $($exe.Name))"
+            Get-Item "./MedizID.exe" | ForEach-Object { Write-Host "Size: $($_.Length) bytes" }
           } else {
-            Write-Host "Warning: MedizID.exe not found in publish directory"
-            Get-ChildItem -Path $publishDir -Recurse | Where-Object { $_.Extension -eq ".exe" }
+            Write-Host "Error: No .exe file found in publish directory"
+            Get-ChildItem -Path $publishDir -Recurse
+            exit 1
           }
 
       - name: Upload artifact
