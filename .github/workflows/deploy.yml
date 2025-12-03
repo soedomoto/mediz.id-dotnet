@@ -125,7 +125,7 @@ jobs:
 
       - name: Publish MedizID.MAUI (Windows)
         if: matrix.os == 'windows-latest'
-        run: dotnet publish MedizID.MAUI/MedizID.MAUI.csproj -f ${{ matrix.framework }} -c Release -o ./publish-maui -p:WindowsPackageType=None -p:GenerateAppxPackageOnBuild=false
+        run: dotnet publish MedizID.MAUI/MedizID.MAUI.csproj -f ${{ matrix.framework }} -c Release -o ./publish-maui --self-contained -p:WindowsPackageType=None -p:GenerateAppxPackageOnBuild=false
 
       - name: Create macOS DMG
         if: matrix.os == 'macos-latest'
