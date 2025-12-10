@@ -6,7 +6,7 @@ set -e
 
 SWAGGER_URL="http://localhost:5053/swagger/v1/swagger.json"
 OUTPUT_DIR="Services/Generated"
-CLIENT_NAMESPACE="MedizID.Web.Services.Generated"
+CLIENT_NAMESPACE="MedizID.UI.Services.Generated"
 CLIENT_CLASS_NAME="MedizIdApiClient"
 
 echo "🔄 Generating C# API client from Kiota..."

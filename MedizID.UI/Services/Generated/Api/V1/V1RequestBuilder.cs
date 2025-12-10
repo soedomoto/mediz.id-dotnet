@@ -10,6 +10,7 @@ using MedizID.UI.Services.Generated.Api.V1.Diagnosis;
 using MedizID.UI.Services.Generated.Api.V1.Facilities;
 using MedizID.UI.Services.Generated.Api.V1.Odontogram;
 using MedizID.UI.Services.Generated.Api.V1.Prescriptions;
+using MedizID.UI.Services.Generated.Api.V1.Procedure;
 using MedizID.UI.Services.Generated.Api.V1.STI;
 using MedizID.UI.Services.Generated.Api.V1.Users;
 using Microsoft.Kiota.Abstractions.Extensions;
@@ -75,6 +76,11 @@ namespace MedizID.UI.Services.Generated.Api.V1
         public global::MedizID.UI.Services.Generated.Api.V1.Prescriptions.PrescriptionsRequestBuilder Prescriptions
         {
             get => new global::MedizID.UI.Services.Generated.Api.V1.Prescriptions.PrescriptionsRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The Procedure property</summary>
+        public global::MedizID.UI.Services.Generated.Api.V1.Procedure.ProcedureRequestBuilder Procedure
+        {
+            get => new global::MedizID.UI.Services.Generated.Api.V1.Procedure.ProcedureRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The STI property</summary>
         public global::MedizID.UI.Services.Generated.Api.V1.STI.STIRequestBuilder STI

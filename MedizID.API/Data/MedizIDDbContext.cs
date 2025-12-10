@@ -47,11 +47,13 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     // AI Recommendations
     public DbSet<AIRecommendation> AIRecommendations { get; set; }
 
+    // Medical procedures (ICD-10-PCS standard)
+    public DbSet<Procedure> Procedures { get; set; }
+
     // Specialized medical services
     public DbSet<FamilyPlanning> FamilyPlannings { get; set; }
     public DbSet<MaternalChildHealth> MaternalChildHealths { get; set; }
     public DbSet<Immunization> Immunizations { get; set; }
-    public DbSet<MedicalProcedure> MedicalProcedures { get; set; }
     public DbSet<Odontogram> Odontograms { get; set; }
     public DbSet<AdolescentHealth> AdolescentHealths { get; set; }
     public DbSet<HIVCounseling> HIVCounselings { get; set; }
@@ -267,10 +269,10 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .HasForeignKey(i => i.AppointmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<MedicalProcedure>()
-            .HasOne(m => m.Appointment)
+        modelBuilder.Entity<Procedure>()
+            .HasOne(p => p.Appointment)
             .WithMany()
-            .HasForeignKey(m => m.AppointmentId)
+            .HasForeignKey(p => p.AppointmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<HIVCounseling>()

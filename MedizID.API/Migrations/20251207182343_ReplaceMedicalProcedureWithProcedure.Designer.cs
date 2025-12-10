@@ -3,6 +3,7 @@ using System;
 using MedizID.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedizID.API.Migrations
 {
     [DbContext(typeof(MedizIDDbContext))]
-    partial class MedizIDDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251207182343_ReplaceMedicalProcedureWithProcedure")]
+    partial class ReplaceMedicalProcedureWithProcedure
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1407,11 +1410,11 @@ namespace MedizID.API.Migrations
                     b.Property<DateTime?>("FinishedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("ICD10PCSCode")
+                    b.Property<string>("ICD9Code")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ICD10PCSDescription")
+                    b.Property<string>("ICD9Description")
                         .IsRequired()
                         .HasColumnType("text");
 

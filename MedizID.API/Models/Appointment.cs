@@ -23,5 +23,6 @@ public class Appointment
     public ICollection<Anamnesis> Anamnesis { get; set; } = new List<Anamnesis>();
     public ICollection<Diagnosis> Diagnoses { get; set; } = new List<Diagnosis>();
     public ICollection<Prescription> Prescriptions { get; set; } = new List<Prescription>();
+    public ICollection<Procedure> Procedures { get; set; } = new List<Procedure>();
     public ICollection<Laboratorium> LaboratoriumTests { get; set; } = new List<Laboratorium>();
 }

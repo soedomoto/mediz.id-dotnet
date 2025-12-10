@@ -1,11 +1,11 @@
 {
-  "descriptionHash": "8530EF04329739535D3CCEE6C0FEBB196DC307809F604A0DBA2E35F51F3D6C45A5CB12AAF1AA0408E4A8F4440662C3081C5512F04323E2C0CEB98A1FA063775C",
+  "descriptionHash": "01BB862FE8B61CAC835E98D01D709E4471CD44D2C675E558036E8975936CDEEE6A1B4CA396FE91DD1132AF59354E9BAF5A8ACC14ED85F94E1990E82D18932503",
   "descriptionLocation": "http://localhost:5053/swagger/v1/swagger.json",
   "lockFileVersion": "1.0.0",
   "kiotaVersion": "1.29.0",
   "clientClassName": "MedizIdApiClient",
   "typeAccessModifier": "Public",
-  "clientNamespaceName": "MedizID.Web.Services.Generated",
+  "clientNamespaceName": "MedizID.UI.Services.Generated",
   "language": "CSharp",
   "usesBackingStore": false,
   "excludeBackwardCompatible": false,

@@ -4,23 +4,142 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 @using MedizID.UI.Services.Generated.Models
+@using AntDesign
 @inject ILocalStorageService LocalStorage
 @inject MedizIdApiClient ApiClient
 @inject AppointmentLayoutState LayoutState
 @inject INotificationService _notice
+@inject ILogger<Procedure> _logger
 @implements IAsyncDisposable
 
 <PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Procedure" : "MedizID")
 </PageTitle>
 
+<div style="padding: 24px; background-color: white; border-radius: 8px;">
+    <Space Direction="SpaceDirection.Vertical" Style="width: 100%;">
+        <SpaceItem>
+            <Flex Justify="FlexJustify.SpaceBetween" Align="FlexAlign.Center" Gap="@("16px")">
+                <div></div>
+                <Flex Gap="@("8px")">
+                    <Button Type="@ButtonType.Primary" Icon="plus" @onclick="OpenNewProcedureForm">
+                        Add Procedure
+                    </Button>
+                    <Button Icon="brain" Loading="@IsGeneratingRecommendations" @onclick="GenerateAIRecommendations">
+                        AI Recommendations
+                    </Button>
+                </Flex>
+            </Flex>
+        </SpaceItem>
+        <SpaceItem>
+            <Table TItem="ProcedureDetailResponse" DataSource="@Procedures" Loading=@(IsLoading ||
+                                                                                           IsGeneratingRecommendations) Size="TableSize.Small">
+                <Column TData="ProcedureDetailResponse" Title="ICD-10-PCS Code">
+                    <strong>@context.IcD10PCSCode</strong>
+                </Column>
+                <Column TData="ProcedureDetailResponse" Title="Description">
+                    <Tooltip Title="@context.IcD10PCSDescription">
+                        @TruncateText(context.IcD10PCSDescription, 50)
+                    </Tooltip>
+                </Column>
+                <Column TData="ProcedureDetailResponse" Title="Type">
+                    <Tag Color="@GetTypeColor(context.ProcedureType)">@GetTypeLabel(context.ProcedureType)</Tag>
+                </Column>
+                <Column TData="ProcedureDetailResponse" Title="Planned Date">
+                    @(context.PlannedAt?.ToString("dd MMM yyyy HH:mm") ?? "-")
+                </Column>
+                <Column TData="ProcedureDetailResponse" Title="AI" Align="ColumnAlign.Center">
+                    @if (context.IsRecommendedByAI == true)
+                    {
+                        <Tooltip Title="@($"AI Confidence: {context.AiRecommendationConfidence}%")">
+                            <Icon Type="check-circle" Style="color: #52c41a; font-size: 16px; cursor: pointer;" />
+                        </Tooltip>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </Column>
+                <Column TData="ProcedureDetailResponse" Title="Notes">
+                    <Tooltip Title="@(context.Notes ?? "")">
+                        @TruncateText(context.Notes ?? "", 30)
+                    </Tooltip>
+                </Column>
+                <Column TData="ProcedureDetailResponse" Title="Actions" Fixed="ColumnFixPlacement.Right"
+                    Align="ColumnAlign.Center">
+                    <Space>
+                        <Button Type="@ButtonType.Text" @onclick="() => EditProcedure(context)">
+                            <Icon Type="edit" />
+                        </Button>
+                        <Popconfirm Title="Delete this procedure?" OnConfirm="() => OnDeleteConfirm(context.Id)">
+                            <Button Type="@ButtonType.Text" Danger>
+                                <Icon Type="delete" />
+                            </Button>
+                        </Popconfirm>
+                    </Space>
+                </Column>
+            </Table>
+        </SpaceItem>
+    </Space>
+</div>
+
+<!-- New/Edit Procedure Modal -->
+@if (ShowProcedureForm)
+{
+    <Modal Title="@(CurrentProcedure.Id == Guid.Empty ? "Add New Procedure" : "Edit Procedure")"
+        Visible="@ShowProcedureForm" OnOk="@OnSaveModalAsync" OnCancel="@CloseProcedureForm" OkText=@("Save")
+        CancelText=@("Cancel") Width="700" ConfirmLoading="@IsSaving">
+        <Form TModel="ProcedureFormModel" Model="@CurrentProcedure" Layout="@FormLayout.Vertical">
+            <FormItem Label="ICD-10-PCS Code" Required>
+                <Input @bind-Value="@CurrentProcedure.IcD10PCSCode" Placeholder="e.g., 0DT13ZZ" />
+            </FormItem>
+
+            <FormItem Label="ICD-10-PCS Description" Required>
+                <TextArea @bind-Value="@CurrentProcedure.IcD10PCSDescription"
+                    Placeholder="Procedure description (e.g., routine chest x-ray)" Rows="3" />
+            </FormItem>
+
+            <FormItem Label="Procedure Type" Required>
+                <Select TItemValue="string" TItem="string" @bind-Value="@CurrentProcedure.ProcedureType" Placeholder="Select procedure type">
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Regular")" Label="Regular" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Diagnostic")" Label="Diagnostic" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Irregular")" Label="Irregular" />
+                </Select>
+            </FormItem>
+
+            <FormItem Label="Planned Date & Time">
+                <DatePicker TValue="DateTime?" @bind-Value="@PlannedDate" ShowTime="true" Format="yyyy-MM-dd HH:mm" />
+            </FormItem>
+
+            <FormItem Label="Notes">
+                <TextArea @bind-Value="@CurrentProcedure.Notes"
+                    Placeholder="Additional clinical observations..." Rows="2" />
+            </FormItem>
+        </Form>
+    </Modal>
+}
+
 @code {
     [Parameter]
     public Guid AppointmentId { get; set; }
+
+    private List<ProcedureDetailResponse> Procedures = new();
+    private ProcedureFormModel CurrentProcedure = new();
+    private DateTime? PlannedDate;
+
+    private bool IsLoading = false;
+    private bool IsSaving = false;
+    private bool IsGeneratingRecommendations = false;
+    private bool ShowProcedureForm = false;
 
     protected override async Task OnInitializedAsync()
     {
         LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
         LayoutState.ActiveTabKey = "procedure";
+
+        if (LayoutState.IsAuthenticated)
+        {
+            await LoadProcedures();
+        }
     }
 
     private async void OnAuthenticationChanged(bool isAuthenticated)
@@ -28,8 +147,224 @@
         if (isAuthenticated && AppointmentId != Guid.Empty)
         {
             await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadProcedures();
             StateHasChanged();
         }
+    }
+
+    private async Task LoadProcedures()
+    {
+        try
+        {
+            IsLoading = true;
+            var response = await ApiClient.Api.V1.Procedure.Appointment[AppointmentId].GetAsync();
+
+            if (response?.Items != null)
+            {
+                Procedures = response.Items.ToList();
+            }
+            else
+            {
+                Procedures = new List<ProcedureDetailResponse>();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading procedures");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Error loading procedures",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void OpenNewProcedureForm()
+    {
+        CurrentProcedure = new ProcedureFormModel { ProcedureType = "Regular" };
+        PlannedDate = DateTime.Now.AddHours(1);
+        ShowProcedureForm = true;
+    }
+
+    private void EditProcedure(ProcedureDetailResponse procedure)
+    {
+        CurrentProcedure = new ProcedureFormModel
+        {
+            Id = procedure.Id,
+            IcD10PCSCode = procedure.IcD10PCSCode,
+            IcD10PCSDescription = procedure.IcD10PCSDescription,
+            ProcedureType = procedure.ProcedureType,
+            Notes = procedure.Notes,
+        };
+        PlannedDate = procedure.PlannedAt?.DateTime;
+        ShowProcedureForm = true;
+    }
+
+    private async Task OnSaveModalAsync()
+    {
+        await SaveProcedure();
+        CloseProcedureForm();
+    }
+
+    private async Task SaveProcedure()
+    {
+        try
+        {
+            IsSaving = true;
+
+            if (CurrentProcedure.Id == null || CurrentProcedure.Id == Guid.Empty)
+            {
+                // Create new procedure
+                var createRequest = new CreateProcedureRequest
+                {
+                    AppointmentId = AppointmentId,
+                    IcD10PCSCode = CurrentProcedure.IcD10PCSCode,
+                    IcD10PCSDescription = CurrentProcedure.IcD10PCSDescription,
+                    ProcedureType = CurrentProcedure.ProcedureType,
+                    Notes = CurrentProcedure.Notes,
+                    PlannedAt = PlannedDate.HasValue ? new DateTimeOffset(PlannedDate.Value) : null,
+                };
+                await ApiClient.Api.V1.Procedure.PostAsync(createRequest);
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Procedure created successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+            else
+            {
+                // Update existing procedure
+                var updateRequest = new UpdateProcedureRequest
+                {
+                    IcD10PCSCode = CurrentProcedure.IcD10PCSCode,
+                    IcD10PCSDescription = CurrentProcedure.IcD10PCSDescription,
+                    ProcedureType = CurrentProcedure.ProcedureType,
+                    Notes = CurrentProcedure.Notes,
+                    PlannedAt = PlannedDate.HasValue ? new DateTimeOffset(PlannedDate.Value) : null,
+                };
+                await ApiClient.Api.V1.Procedure[CurrentProcedure.Id.Value].PutAsync(updateRequest);
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Procedure updated successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+
+            await LoadProcedures();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving procedure");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error saving procedure: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private async Task OnDeleteConfirm(Guid? procedureId)
+    {
+        if (!procedureId.HasValue)
+            return;
+
+        try
+        {
+            await ApiClient.Api.V1.Procedure[procedureId.Value].DeleteAsync();
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Procedure deleted successfully",
+                NotificationType = NotificationType.Success
+            });
+            await LoadProcedures();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting procedure");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error deleting procedure: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+    }
+
+    private async Task GenerateAIRecommendations()
+    {
+        try
+        {
+            IsGeneratingRecommendations = true;
+            var recommendations = await ApiClient.Api.V1.Procedure[AppointmentId].AiRecommendations.PostAsync();
+
+            if (recommendations != null && recommendations.Any())
+            {
+                await LoadProcedures();
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = $"Generated {recommendations.Count} AI recommendations",
+                    NotificationType = NotificationType.Success
+                });
+            }
+            else
+            {
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "No recommendations generated",
+                    NotificationType = NotificationType.Info
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating AI recommendations");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error generating AI recommendations: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsGeneratingRecommendations = false;
+        }
+    }
+
+    private void CloseProcedureForm()
+    {
+        ShowProcedureForm = false;
+        CurrentProcedure = new ProcedureFormModel();
+        PlannedDate = null;
+    }
+
+    private string GetTypeLabel(string type) => type switch
+    {
+        "Regular" => "Regular",
+        "Diagnostic" => "Diagnostic",
+        "Irregular" => "Irregular",
+        _ => type
+    };
+
+    private string GetTypeColor(string type) => type switch
+    {
+        "Regular" => "blue",
+        "Diagnostic" => "green",
+        "Irregular" => "orange",
+        _ => "default"
+    };
+
+    private string TruncateText(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text))
+            return "-";
+        return text.Length > maxLength ? text.Substring(0, maxLength) + "..." : text;
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
@@ -38,4 +373,12 @@
         await Task.CompletedTask;
     }
 
+    private class ProcedureFormModel
+    {
+        public Guid? Id { get; set; }
+        public string IcD10PCSCode { get; set; }
+        public string IcD10PCSDescription { get; set; }
+        public string ProcedureType { get; set; } = "Regular";
+        public string Notes { get; set; }
+    }
 }
