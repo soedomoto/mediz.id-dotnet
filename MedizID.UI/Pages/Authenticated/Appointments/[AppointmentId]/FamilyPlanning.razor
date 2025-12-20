@@ -537,7 +537,14 @@
                 ServiceDate = form.ServiceDate,
                 FollowUpDate = form.FollowUpDate,
                 RemovalDate = form.RemovalDate,
-                ObservationNotes = form.ObservationNotes
+                ObservationNotes = form.ObservationNotes,
+                ContraceptiveMethods = form.ContraceptiveMethods?.Select(cm => new CreateFamilyPlanningContraceptiveMethodRequest
+                {
+                    MethodName = cm.MethodName,
+                    ServiceDate = cm.ServiceDate,
+                    Quantity = cm.Quantity,
+                    Notes = cm.Notes
+                }).ToList()
             };
 
             if (form.Id != Guid.Empty)

@@ -160,6 +160,7 @@ public class FamilyPlanningController : ControllerBase
         {
             var record = await _context.FamilyPlannings
                 .Include(fp => fp.Appointment)
+                .Include(fp => fp.ContraceptiveMethods)
                 .FirstOrDefaultAsync(fp => fp.Id == id);
 
             if (record == null)
@@ -205,7 +206,18 @@ public class FamilyPlanningController : ControllerBase
                 RemovalDate = record.RemovalDate,
                 ObservationNotes = record.ObservationNotes,
                 CreatedAt = record.CreatedAt,
-                UpdatedAt = record.UpdatedAt
+                UpdatedAt = record.UpdatedAt,
+                ContraceptiveMethods = record.ContraceptiveMethods.Select(cm => new FamilyPlanningContraceptiveMethodDto
+                {
+                    Id = cm.Id,
+                    FamilyPlanningId = cm.FamilyPlanningId,
+                    MethodName = cm.MethodName,
+                    ServiceDate = cm.ServiceDate,
+                    Quantity = cm.Quantity,
+                    Notes = cm.Notes,
+                    CreatedAt = cm.CreatedAt,
+                    UpdatedAt = cm.UpdatedAt
+                }).ToList()
             };
 
             return Ok(response);
@@ -241,6 +253,7 @@ public class FamilyPlanningController : ControllerBase
         {
             var record = await _context.FamilyPlannings
                 .Include(fp => fp.Appointment)
+                .Include(fp => fp.ContraceptiveMethods)
                 .FirstOrDefaultAsync(fp => fp.AppointmentId == appointmentId);
 
             if (record == null)
@@ -286,7 +299,18 @@ public class FamilyPlanningController : ControllerBase
                 RemovalDate = record.RemovalDate,
                 ObservationNotes = record.ObservationNotes,
                 CreatedAt = record.CreatedAt,
-                UpdatedAt = record.UpdatedAt
+                UpdatedAt = record.UpdatedAt,
+                ContraceptiveMethods = record.ContraceptiveMethods.Select(cm => new FamilyPlanningContraceptiveMethodDto
+                {
+                    Id = cm.Id,
+                    FamilyPlanningId = cm.FamilyPlanningId,
+                    MethodName = cm.MethodName,
+                    ServiceDate = cm.ServiceDate,
+                    Quantity = cm.Quantity,
+                    Notes = cm.Notes,
+                    CreatedAt = cm.CreatedAt,
+                    UpdatedAt = cm.UpdatedAt
+                }).ToList()
             };
 
             return Ok(response);
@@ -375,6 +399,25 @@ public class FamilyPlanningController : ControllerBase
             _context.FamilyPlannings.Add(familyPlanning);
             await _context.SaveChangesAsync();
 
+            // Add contraceptive methods if provided
+            if (request.ContraceptiveMethods != null && request.ContraceptiveMethods.Count > 0)
+            {
+                var contraceptiveMethods = request.ContraceptiveMethods.Select(cm => new FamilyPlanningContraceptiveMethod
+                {
+                    Id = Guid.NewGuid(),
+                    FamilyPlanningId = familyPlanning.Id,
+                    MethodName = cm.MethodName,
+                    ServiceDate = cm.ServiceDate,
+                    Quantity = cm.Quantity,
+                    Notes = cm.Notes,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                }).ToList();
+
+                _context.FamilyPlanningContraceptiveMethods.AddRange(contraceptiveMethods);
+                await _context.SaveChangesAsync();
+            }
+
             _logger.LogInformation($"Family planning record created: {familyPlanning.Id}");
 
             var response = new FamilyPlanningResponse
@@ -414,7 +457,14 @@ public class FamilyPlanningController : ControllerBase
                 RemovalDate = familyPlanning.RemovalDate,
                 ObservationNotes = familyPlanning.ObservationNotes,
                 CreatedAt = familyPlanning.CreatedAt,
-                UpdatedAt = familyPlanning.UpdatedAt
+                UpdatedAt = familyPlanning.UpdatedAt,
+                ContraceptiveMethods = request.ContraceptiveMethods?.Select(cm => new FamilyPlanningContraceptiveMethodDto
+                {
+                    MethodName = cm.MethodName,
+                    ServiceDate = cm.ServiceDate,
+                    Quantity = cm.Quantity,
+                    Notes = cm.Notes
+                }).ToList() ?? new()
             };
 
             return CreatedAtAction(nameof(GetFamilyPlanningRecord), new { id = familyPlanning.Id }, response);
@@ -548,10 +598,42 @@ public class FamilyPlanningController : ControllerBase
             if (!string.IsNullOrEmpty(request.ObservationNotes))
                 familyPlanning.ObservationNotes = request.ObservationNotes;
 
+            // Handle contraceptive methods update
+            if (request.ContraceptiveMethods != null)
+            {
+                // Remove existing contraceptive methods
+                var existingMethods = _context.FamilyPlanningContraceptiveMethods
+                    .Where(cm => cm.FamilyPlanningId == familyPlanning.Id);
+                _context.FamilyPlanningContraceptiveMethods.RemoveRange(existingMethods);
+
+                // Add new contraceptive methods
+                if (request.ContraceptiveMethods.Count > 0)
+                {
+                    var contraceptiveMethods = request.ContraceptiveMethods.Select(cm => new FamilyPlanningContraceptiveMethod
+                    {
+                        Id = Guid.NewGuid(),
+                        FamilyPlanningId = familyPlanning.Id,
+                        MethodName = cm.MethodName,
+                        ServiceDate = cm.ServiceDate,
+                        Quantity = cm.Quantity,
+                        Notes = cm.Notes,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    }).ToList();
+
+                    _context.FamilyPlanningContraceptiveMethods.AddRange(contraceptiveMethods);
+                }
+            }
+
             familyPlanning.UpdatedAt = DateTime.UtcNow;
 
             _context.FamilyPlannings.Update(familyPlanning);
             await _context.SaveChangesAsync();
+
+            // Reload contraceptive methods after save
+            var savedContraceptiveMethods = await _context.FamilyPlanningContraceptiveMethods
+                .Where(cm => cm.FamilyPlanningId == familyPlanning.Id)
+                .ToListAsync();
 
             _logger.LogInformation($"Family planning record updated: {familyPlanning.Id}");
 
@@ -592,7 +674,18 @@ public class FamilyPlanningController : ControllerBase
                 RemovalDate = familyPlanning.RemovalDate,
                 ObservationNotes = familyPlanning.ObservationNotes,
                 CreatedAt = familyPlanning.CreatedAt,
-                UpdatedAt = familyPlanning.UpdatedAt
+                UpdatedAt = familyPlanning.UpdatedAt,
+                ContraceptiveMethods = savedContraceptiveMethods.Select(cm => new FamilyPlanningContraceptiveMethodDto
+                {
+                    Id = cm.Id,
+                    FamilyPlanningId = cm.FamilyPlanningId,
+                    MethodName = cm.MethodName,
+                    ServiceDate = cm.ServiceDate,
+                    Quantity = cm.Quantity,
+                    Notes = cm.Notes,
+                    CreatedAt = cm.CreatedAt,
+                    UpdatedAt = cm.UpdatedAt
+                }).ToList()
             };
 
             return Ok(response);

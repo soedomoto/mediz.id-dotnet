@@ -60,6 +60,9 @@ public class CreateFamilyPlanningRequest
     
     // Observation/Monitoring
     public string? ObservationNotes { get; set; }
+    
+    // Collections
+    public List<CreateFamilyPlanningContraceptiveMethodRequest>? ContraceptiveMethods { get; set; }
 }
 
 /// <summary>
