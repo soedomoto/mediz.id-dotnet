@@ -8,6 +8,7 @@ using MedizID.UI.Services.Generated.Api.V1.Dashboard;
 using MedizID.UI.Services.Generated.Api.V1.Departments;
 using MedizID.UI.Services.Generated.Api.V1.Diagnosis;
 using MedizID.UI.Services.Generated.Api.V1.Facilities;
+using MedizID.UI.Services.Generated.Api.V1.FamilyPlanning;
 using MedizID.UI.Services.Generated.Api.V1.Laboratorium;
 using MedizID.UI.Services.Generated.Api.V1.LaboratoriumTestMaster;
 using MedizID.UI.Services.Generated.Api.V1.Odontogram;
@@ -68,6 +69,11 @@ namespace MedizID.UI.Services.Generated.Api.V1
         public global::MedizID.UI.Services.Generated.Api.V1.Facilities.FacilitiesRequestBuilder Facilities
         {
             get => new global::MedizID.UI.Services.Generated.Api.V1.Facilities.FacilitiesRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The FamilyPlanning property</summary>
+        public global::MedizID.UI.Services.Generated.Api.V1.FamilyPlanning.FamilyPlanningRequestBuilder FamilyPlanning
+        {
+            get => new global::MedizID.UI.Services.Generated.Api.V1.FamilyPlanning.FamilyPlanningRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The Laboratorium property</summary>
         public global::MedizID.UI.Services.Generated.Api.V1.Laboratorium.LaboratoriumRequestBuilder Laboratorium

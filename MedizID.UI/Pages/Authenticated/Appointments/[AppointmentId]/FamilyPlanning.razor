@@ -1,26 +1,428 @@
 @page "/appointments/{AppointmentId:guid}/family-planning"
 @layout AppointmentLayout
 @using System.Threading.Tasks
-@using System.ComponentModel.DataAnnotations
-@using Microsoft.AspNetCore.Components.Forms
 @using MedizID.UI.Services.Generated.Models
 @inject ILocalStorageService LocalStorage
 @inject MedizIdApiClient ApiClient
 @inject AppointmentLayoutState LayoutState
 @inject INotificationService _notice
+@inject ILogger<FamilyPlanning> _logger
 @implements IAsyncDisposable
 
-<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Family Planning" : "MedizID")
-</PageTitle>
+<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Family Planning" : "MedizID")</PageTitle>
+
+<div style="padding: 24px; background-color: white; border-radius: 8px;">
+    @if (LayoutState.Appointment != null)
+    {
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2>Family Planning Assessment Form</h2>
+            @if (isSaving)
+            {
+                <span style="color: #1890ff;">Saving...</span>
+            }
+        </div>
+
+        <div>
+            <!-- Spouse Information Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Spouse Information</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label>Spouse Name *</label>
+                        <Input @bind-Value="form.SpouseName" Placeholder="Nama Suami/Istri" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label>Husband Education</label>
+                        <Select TItemValue="int?" TItem="OptionItem"
+                                DataSource="@educationOptions"
+                                @bind-Value="form.HusbandEducationId"
+                                LabelName="@nameof(OptionItem.Label)"
+                                ValueName="@nameof(OptionItem.Value)"
+                                Placeholder="- Select -"
+                                Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label>Wife Education</label>
+                        <Select TItemValue="int?" TItem="OptionItem"
+                                DataSource="@educationOptions"
+                                @bind-Value="form.WifeEducationId"
+                                LabelName="@nameof(OptionItem.Label)"
+                                ValueName="@nameof(OptionItem.Value)"
+                                Placeholder="- Select -"
+                                Style="width: 100%;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employment Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Employment</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label>Husband Occupation</label>
+                        <Input @bind-Value="form.HusbandOccupation" Placeholder="Pekerjaan" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label>Wife Occupation</label>
+                        <Input @bind-Value="form.WifeOccupation" Placeholder="Pekerjaan" Style="width: 100%;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Family Planning Status Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Family Planning Status</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label>FP Stage</label>
+                        <Select TItemValue="int?" TItem="OptionItem"
+                                DataSource="@stageOptions"
+                                @bind-Value="form.FamilyPlanningStageId"
+                                LabelName="@nameof(OptionItem.Label)"
+                                ValueName="@nameof(OptionItem.Value)"
+                                Placeholder="- Select -"
+                                Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label>Number of Living Children</label>
+                        <Input @bind-Value="@numChildrenStr" Type="InputType.Number" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label>Last Contraceptive Method</label>
+                        <Select TItemValue="int?" TItem="OptionItem"
+                                DataSource="@contraceptiveOptions"
+                                @bind-Value="form.LastContraceptiveMethodId"
+                                LabelName="@nameof(OptionItem.Label)"
+                                ValueName="@nameof(OptionItem.Value)"
+                                Placeholder="- Select -"
+                                Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div>
+                    <label>KB Participant Status</label>
+                    <RadioGroup TValue="int?" @bind-Value="form.KBParticipantStatusId" Style="width: 100%;">
+                        @foreach (var option in kbStatusOptions)
+                        {
+                            <Radio TValue="int?" Value="option.Value">@option.Label</Radio>
+                        }
+                    </RadioGroup>
+                </div>
+            </div>
+
+            <!-- Youngest Child Age -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Youngest Child Age</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label>Years</label>
+                        <Input @bind-Value="@youngYearsStr" Type="InputType.Number" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label>Months</label>
+                        <Input @bind-Value="@youngMonthsStr" Type="InputType.Number" Style="width: 100%;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pre-Insertion Examination -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Pre-Insertion Examinations</h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">
+                    <div>
+                        <Checkbox @bind-Checked="@pregSigns">Pregnancy Signs</Checkbox>
+                    </div>
+                    <div>
+                        <Checkbox @bind-Checked="@abnormalDischarge">Abnormal Vaginal Discharge</Checkbox>
+                    </div>
+                    <div>
+                        <Checkbox @bind-Checked="@abdominalPain">Abdominal Pain</Checkbox>
+                    </div>
+                    <div>
+                        <Checkbox @bind-Checked="@ectopicHistory">Ectopic Pregnancy History</Checkbox>
+                    </div>
+                    <div>
+                        <Checkbox @bind-Checked="@abnormalBleeding">Abnormal Uterine Bleeding</Checkbox>
+                    </div>
+                    <div>
+                        <Checkbox @bind-Checked="@iudInPlace">IUD Still In Place</Checkbox>
+                    </div>
+                    <div>
+                        <Checkbox @bind-Checked="@pelvicPain">Pelvic Pain</Checkbox>
+                    </div>
+                    <div>
+                        <Checkbox @bind-Checked="@dysmenorrhea">Dysmenorrhea</Checkbox>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Internal Examination -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Internal Examination</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <Checkbox @bind-Checked="@inflammationSigns">Inflammation Signs</Checkbox>
+                    </div>
+                    <div>
+                        <Checkbox @bind-Checked="@tumor">Tumor/Malignancy</Checkbox>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Uterine Position -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Uterine Position</h4>
+                
+                <RadioGroup TValue="int?" @bind-Value="form.UterinePositionId">
+                    @foreach (var option in uterinePositionOptions)
+                    {
+                        <Radio TValue="int?" Value="option.Value">@option.Label</Radio>
+                    }
+                </RadioGroup>
+            </div>
+
+            <!-- Additional Examination -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Additional Examination (MOP/MOW Candidates)</h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">
+                    <div>
+                        <Checkbox @bind-Checked="@diabetesSigns">Diabetes Signs</Checkbox>
+                    </div>
+                    <div>
+                        <Checkbox @bind-Checked="@bloodClottingDisorder">Blood Clotting Disorder</Checkbox>
+                    </div>
+                    <div>
+                        <Checkbox @bind-Checked="@orchitis">Orchitis/Epididymitis</Checkbox>
+                    </div>
+                    <div>
+                        <Checkbox @bind-Checked="@tumorMOP">Tumor/Malignancy</Checkbox>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Allowed Contraceptive Methods -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Allowed Contraceptive Methods</h4>
+                
+                <TextArea @bind-Value="form.AllowedContraceptiveMethods" Rows="3" Placeholder="List of allowed methods" Style="width: 100%;" />
+            </div>
+
+            <!-- Contraceptive Methods -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h4 style="margin: 0;">Selected Contraceptive Methods</h4>
+                    <Button Type="@ButtonType.Primary" OnClick="ShowContraceptiveModal">+ Add Method</Button>
+                </div>
+
+                @if (form.ContraceptiveMethods != null && form.ContraceptiveMethods.Count > 0)
+                {
+                    <Table TItem="ContraceptiveMethodItem" DataSource="@form.ContraceptiveMethods" Size="@TableSize.Small" Bordered>
+                        <Column @bind-Field="@context.MethodName" Title="Method" />
+                        <Column @bind-Field="@context.ServiceDate" Title="Service Date" Format="dd-MM-yyyy" />
+                        <Column @bind-Field="@context.Quantity" Title="Qty" />
+                        <ActionColumn Title="Action">
+                            <Space Size="@SpaceSize.Small">
+                                <SpaceItem>
+                                    <Button Type="@ButtonType.Text" OnClick="@(() => EditContraceptiveMethod(context))">Edit</Button>
+                                </SpaceItem>
+                                <SpaceItem>
+                                    <Button Type="@ButtonType.Text" Danger OnClick="@(() => DeleteContraceptiveMethod(context.Id))">Delete</Button>
+                                </SpaceItem>
+                            </Space>
+                        </ActionColumn>
+                    </Table>
+                }
+            </div>
+
+            <!-- Service Dates -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Service Dates</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label>Service Date</label>
+                        <DatePicker @bind-Value="form.ServiceDate" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label>Follow-up Date</label>
+                        <DatePicker @bind-Value="form.FollowUpDate" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label>Removal Date</label>
+                        <DatePicker @bind-Value="form.RemovalDate" Style="width: 100%;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observations -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Observations</h4>
+                
+                <TextArea @bind-Value="form.ObservationNotes" Rows="4" Placeholder="Additional observations or notes" Style="width: 100%;" />
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="margin: 24px 0; display: flex; gap: 12px;">
+                <Button Type="@ButtonType.Primary" OnClick="SaveFamilyPlanning" Loading="isSaving">Save</Button>
+                <Button OnClick="ResetForm">Reset</Button>
+                <Button Danger OnClick="PrintForm">Print</Button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 48px 0;">
+            <p>Loading appointment details...</p>
+        </div>
+    }
+</div>
+
+<!-- Contraceptive Method Modal -->
+<Modal
+    Title="@(editingMethodId == null ? "Add Contraceptive Method" : "Edit Contraceptive Method")"
+    @bind-Visible="isMethodModalVisible"
+    OnOk="SaveContraceptiveMethod"
+    OnCancel="CloseMethodModal">
+    
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+            <label style="display: block; margin-bottom: 8px;">Method Type *</label>
+            <Select TItemValue="int?" TItem="OptionItem"
+                    DataSource="@contraceptiveOptions"
+                    @bind-Value="currentMethod.MethodId"
+                    LabelName="@nameof(OptionItem.Label)"
+                    ValueName="@nameof(OptionItem.Value)"
+                    Placeholder="- Select -"
+                    Style="width: 100%;" />
+        </div>
+        <div>
+            <label style="display: block; margin-bottom: 8px;">Service Date</label>
+            <DatePicker @bind-Value="currentMethod.ServiceDate" Style="width: 100%;" />
+        </div>
+        <div>
+            <label style="display: block; margin-bottom: 8px;">Quantity</label>
+            <Input @bind-Value="@qtyStr" Type="InputType.Number" Style="width: 100%;" />
+        </div>
+        <div>
+            <label style="display: block; margin-bottom: 8px;">Notes</label>
+            <TextArea @bind-Value="currentMethod.Notes" Rows="3" Style="width: 100%;" />
+        </div>
+    </div>
+</Modal>
 
 @code {
     [Parameter]
     public Guid AppointmentId { get; set; }
 
+    private bool isSaving = false;
+    private bool isMethodModalVisible = false;
+    private Guid? editingMethodId = null;
+
+    private FamilyPlanningFormModel form = new();
+    private ContraceptiveMethodItem currentMethod = new();
+
+    // String helpers for number inputs
+    private string numChildrenStr = "";
+    private string youngYearsStr = "";
+    private string youngMonthsStr = "";
+    private string qtyStr = "";
+
+    // Boolean properties for checkboxes
+    private bool pregSigns = false;
+    private bool abnormalDischarge = false;
+    private bool abdominalPain = false;
+    private bool ectopicHistory = false;
+    private bool abnormalBleeding = false;
+    private bool iudInPlace = false;
+    private bool pelvicPain = false;
+    private bool dysmenorrhea = false;
+    private bool inflammationSigns = false;
+    private bool tumor = false;
+    private bool diabetesSigns = false;
+    private bool bloodClottingDisorder = false;
+    private bool orchitis = false;
+    private bool tumorMOP = false;
+
+    // Options
+    private List<OptionItem> educationOptions = new();
+    private List<OptionItem> stageOptions = new();
+    private List<OptionItem> kbStatusOptions = new();
+    private List<OptionItem> contraceptiveOptions = new();
+    private List<OptionItem> uterinePositionOptions = new();
+
     protected override async Task OnInitializedAsync()
     {
         LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
         LayoutState.ActiveTabKey = "family-planning";
+        
+        InitializeOptions();
+        
+        if (AppointmentId != Guid.Empty)
+        {
+            await LoadFamilyPlanningData();
+        }
+    }
+
+    private void InitializeOptions()
+    {
+        educationOptions = new()
+        {
+            new() { Value = 1, Label = "No School" },
+            new() { Value = 2, Label = "Primary" },
+            new() { Value = 3, Label = "Junior High" },
+            new() { Value = 4, Label = "High School" },
+            new() { Value = 5, Label = "Diploma" },
+            new() { Value = 6, Label = "Bachelor's" },
+            new() { Value = 7, Label = "Master's" },
+            new() { Value = 8, Label = "PhD" }
+        };
+
+        stageOptions = new()
+        {
+            new() { Value = 1, Label = "Pre-reproductive Age" },
+            new() { Value = 2, Label = "Reproductive Age" },
+            new() { Value = 3, Label = "Post-reproductive Age" }
+        };
+
+        kbStatusOptions = new()
+        {
+            new() { Value = 1, Label = "New User" },
+            new() { Value = 2, Label = "Existing User" },
+            new() { Value = 3, Label = "Previously Used" },
+            new() { Value = 4, Label = "Switching Methods" },
+            new() { Value = 5, Label = "Current User" }
+        };
+
+        contraceptiveOptions = new()
+        {
+            new() { Value = 1, Label = "IUD" },
+            new() { Value = 2, Label = "Implant" },
+            new() { Value = 3, Label = "Pill" },
+            new() { Value = 4, Label = "Injection" },
+            new() { Value = 5, Label = "Condom" },
+            new() { Value = 6, Label = "MOP (Vasectomy)" },
+            new() { Value = 7, Label = "MOW (Tubal Ligation)" },
+            new() { Value = 8, Label = "Calendar Method" },
+            new() { Value = 9, Label = "Withdrawal" },
+            new() { Value = 10, Label = "Other" }
+        };
+
+        uterinePositionOptions = new()
+        {
+            new() { Value = 1, Label = "Retroflexion" },
+            new() { Value = 2, Label = "Anteflexion" },
+            new() { Value = 3, Label = "Other" }
+        };
     }
 
     private async void OnAuthenticationChanged(bool isAuthenticated)
@@ -28,8 +430,242 @@
         if (isAuthenticated && AppointmentId != Guid.Empty)
         {
             await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadFamilyPlanningData();
             StateHasChanged();
         }
+    }
+
+    private async Task LoadFamilyPlanningData()
+    {
+        try
+        {
+            var response = await ApiClient.Api.V1.FamilyPlanning.Appointment[AppointmentId].GetAsync();
+            
+            if (response != null)
+            {
+                form.Id = response.Id ?? Guid.Empty;
+                form.AppointmentId = response.AppointmentId ?? Guid.Empty;
+                form.SpouseName = response.SpouseName;
+                form.HusbandEducationId = 1;
+                form.WifeEducationId = 1;
+                form.HusbandOccupation = response.HusbandOccupation;
+                form.WifeOccupation = response.WifeOccupation;
+                form.FamilyPlanningStageId = 2;
+                form.NumberOfLivingChildren = response.NumberOfLivingChildren ?? 0;
+                form.YoungestChildYears = response.YoungestChildYears ?? 0;
+                form.YoungestChildMonths = response.YoungestChildMonths ?? 0;
+                form.KBParticipantStatusId = 5;
+                form.LastContraceptiveMethodId = 1;
+                form.AllowedContraceptiveMethods = response.AllowedContraceptiveMethods;
+                form.ServiceDate = response.ServiceDate?.DateTime;
+                form.FollowUpDate = response.FollowUpDate?.DateTime;
+                form.RemovalDate = response.RemovalDate?.DateTime;
+                form.ObservationNotes = response.ObservationNotes;
+
+                // Load checkboxes
+                pregSigns = response.PregnancySigns ?? false;
+                abnormalDischarge = response.AbnormalVaginalDischarge ?? false;
+                abdominalPain = response.AbdominalPain ?? false;
+                ectopicHistory = response.EctopicPregnancyHistory ?? false;
+                abnormalBleeding = response.AbnormalUterinebleeding ?? false;
+                iudInPlace = response.IudStillInPlace ?? false;
+                pelvicPain = response.PelvicPain ?? false;
+                dysmenorrhea = response.Dysmenorrhea ?? false;
+                inflammationSigns = response.InflammationSigns ?? false;
+                tumor = response.TumorOrMalignancy ?? false;
+                diabetesSigns = response.DiabetesSigns ?? false;
+                bloodClottingDisorder = response.BloodClottingDisorder ?? false;
+                orchitis = response.OrchitisEpididymitis ?? false;
+                tumorMOP = response.TumorOrMalignancyMOP ?? false;
+
+                numChildrenStr = form.NumberOfLivingChildren.ToString();
+                youngYearsStr = form.YoungestChildYears.ToString();
+                youngMonthsStr = form.YoungestChildMonths.ToString();
+
+                form.ContraceptiveMethods = response.ContraceptiveMethods?.Select(cm => new ContraceptiveMethodItem
+                {
+                    Id = cm.Id ?? Guid.NewGuid(),
+                    MethodName = cm.MethodName,
+                    ServiceDate = cm.ServiceDate?.DateTime,
+                    Quantity = cm.Quantity ?? 0,
+                    Notes = cm.Notes
+                }).ToList() ?? new();
+                
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogInformation($"No existing family planning record found for appointment {AppointmentId}");
+        }
+    }
+
+    private async Task SaveFamilyPlanning()
+    {
+        try
+        {
+            isSaving = true;
+
+            int.TryParse(numChildrenStr, out int numChildren);
+            int.TryParse(youngYearsStr, out int youngYears);
+            int.TryParse(youngMonthsStr, out int youngMonths);
+
+            var request = new CreateFamilyPlanningRequest
+            {
+                AppointmentId = AppointmentId,
+                SpouseName = form.SpouseName,
+                HusbandOccupation = form.HusbandOccupation,
+                WifeOccupation = form.WifeOccupation,
+                NumberOfLivingChildren = numChildren,
+                YoungestChildYears = youngYears,
+                YoungestChildMonths = youngMonths,
+                PregnancySigns = pregSigns,
+                AbnormalVaginalDischarge = abnormalDischarge,
+                AbdominalPain = abdominalPain,
+                EctopicPregnancyHistory = ectopicHistory,
+                AbnormalUterinebleeding = abnormalBleeding,
+                IudStillInPlace = iudInPlace,
+                PelvicPain = pelvicPain,
+                Dysmenorrhea = dysmenorrhea,
+                InflammationSigns = inflammationSigns,
+                TumorOrMalignancy = tumor,
+                DiabetesSigns = diabetesSigns,
+                BloodClottingDisorder = bloodClottingDisorder,
+                OrchitisEpididymitis = orchitis,
+                TumorOrMalignancyMOP = tumorMOP,
+                AllowedContraceptiveMethods = form.AllowedContraceptiveMethods,
+                ServiceDate = form.ServiceDate,
+                FollowUpDate = form.FollowUpDate,
+                RemovalDate = form.RemovalDate,
+                ObservationNotes = form.ObservationNotes
+            };
+
+            if (form.Id != Guid.Empty)
+            {
+                await ApiClient.Api.V1.FamilyPlanning[form.Id].PutAsync(request);
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Family planning record updated successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+            else
+            {
+                var response = await ApiClient.Api.V1.FamilyPlanning.PostAsync(request);
+                form.Id = response?.Id ?? Guid.Empty;
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Family planning record created successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error saving family planning: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+            _logger.LogError(ex, "Error saving family planning");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ShowContraceptiveModal()
+    {
+        editingMethodId = null;
+        currentMethod = new();
+        qtyStr = "";
+        isMethodModalVisible = true;
+    }
+
+    private void EditContraceptiveMethod(ContraceptiveMethodItem method)
+    {
+        editingMethodId = method.Id;
+        currentMethod = new()
+        {
+            Id = method.Id,
+            MethodId = GetMethodId(method.MethodName),
+            ServiceDate = method.ServiceDate,
+            Quantity = method.Quantity,
+            Notes = method.Notes
+        };
+        qtyStr = method.Quantity?.ToString() ?? "";
+        isMethodModalVisible = true;
+    }
+
+    private void SaveContraceptiveMethod()
+    {
+        if (currentMethod.MethodId == null)
+            return;
+
+        int.TryParse(qtyStr, out int qty);
+        var methodName = contraceptiveOptions.FirstOrDefault(x => x.Value == currentMethod.MethodId)?.Label;
+        
+        if (editingMethodId.HasValue && editingMethodId != Guid.Empty)
+        {
+            var existing = form.ContraceptiveMethods.FirstOrDefault(m => m.Id == editingMethodId);
+            if (existing != null)
+            {
+                existing.MethodName = methodName;
+                existing.ServiceDate = currentMethod.ServiceDate;
+                existing.Quantity = qty;
+                existing.Notes = currentMethod.Notes;
+            }
+        }
+        else
+        {
+            form.ContraceptiveMethods.Add(new ContraceptiveMethodItem
+            {
+                Id = Guid.NewGuid(),
+                MethodName = methodName,
+                ServiceDate = currentMethod.ServiceDate,
+                Quantity = qty,
+                Notes = currentMethod.Notes
+            });
+        }
+
+        CloseMethodModal();
+        StateHasChanged();
+    }
+
+    private void DeleteContraceptiveMethod(Guid methodId)
+    {
+        form.ContraceptiveMethods.RemoveAll(m => m.Id == methodId);
+        StateHasChanged();
+    }
+
+    private void CloseMethodModal()
+    {
+        isMethodModalVisible = false;
+        editingMethodId = null;
+        currentMethod = new();
+        qtyStr = "";
+    }
+
+    private int? GetMethodId(string methodName)
+    {
+        return contraceptiveOptions.FirstOrDefault(x => x.Label == methodName)?.Value;
+    }
+
+    private void PrintForm()
+    {
+        // TODO: Implement print
+    }
+
+    private void ResetForm()
+    {
+        form = new FamilyPlanningFormModel();
+        pregSigns = abnormalDischarge = abdominalPain = ectopicHistory = 
+        abnormalBleeding = iudInPlace = pelvicPain = dysmenorrhea = 
+        inflammationSigns = tumor = diabetesSigns = bloodClottingDisorder = 
+        orchitis = tumorMOP = false;
+        numChildrenStr = youngYearsStr = youngMonthsStr = "";
+        StateHasChanged();
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
@@ -38,4 +674,44 @@
         await Task.CompletedTask;
     }
 
+    // Models
+    private class FamilyPlanningFormModel
+    {
+        public Guid Id { get; set; }
+        public Guid AppointmentId { get; set; }
+        public string SpouseName { get; set; }
+        public int? HusbandEducationId { get; set; }
+        public int? WifeEducationId { get; set; }
+        public string HusbandOccupation { get; set; }
+        public string WifeOccupation { get; set; }
+        public int? FamilyPlanningStageId { get; set; }
+        public int NumberOfLivingChildren { get; set; }
+        public int YoungestChildYears { get; set; }
+        public int YoungestChildMonths { get; set; }
+        public int? KBParticipantStatusId { get; set; }
+        public int? LastContraceptiveMethodId { get; set; }
+        public int? UterinePositionId { get; set; }
+        public string AllowedContraceptiveMethods { get; set; }
+        public DateTime? ServiceDate { get; set; }
+        public DateTime? FollowUpDate { get; set; }
+        public DateTime? RemovalDate { get; set; }
+        public string ObservationNotes { get; set; }
+        public List<ContraceptiveMethodItem> ContraceptiveMethods { get; set; } = new();
+    }
+
+    private class ContraceptiveMethodItem
+    {
+        public Guid Id { get; set; }
+        public int? MethodId { get; set; }
+        public string MethodName { get; set; }
+        public DateTime? ServiceDate { get; set; }
+        public int? Quantity { get; set; }
+        public string Notes { get; set; }
+    }
+
+    private class OptionItem
+    {
+        public int Value { get; set; }
+        public string Label { get; set; }
+    }
 }

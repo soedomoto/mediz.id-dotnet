@@ -3,6 +3,7 @@ using System;
 using MedizID.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedizID.API.Migrations
 {
     [DbContext(typeof(MedizIDDbContext))]
-    partial class MedizIDDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251220195631_ExpandFamilyPlanningFields")]
+    partial class ExpandFamilyPlanningFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -956,117 +959,6 @@ namespace MedizID.API.Migrations
                     b.HasIndex("AppointmentId");
 
                     b.ToTable("FamilyPlannings");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.FamilyPlanningContraceptiveMethod", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("FamilyPlanningId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("MethodName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ServiceDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FamilyPlanningId");
-
-                    b.ToTable("FamilyPlanningContraceptiveMethods");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.FamilyPlanningLaboratoryResult", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("FamilyPlanningId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ReferenceValue")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Result")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("TestDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("TestName")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FamilyPlanningId");
-
-                    b.ToTable("FamilyPlanningLaboratoryResults");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.FamilyPlanningProcedure", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Complications")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("FamilyPlanningId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Outcome")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PerformedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("ProcedureDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ProcedureName")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FamilyPlanningId");
-
-                    b.ToTable("FamilyPlanningProcedures");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.HIVCounseling", b =>
@@ -2068,39 +1960,6 @@ namespace MedizID.API.Migrations
                     b.Navigation("Appointment");
                 });
 
-            modelBuilder.Entity("MedizID.API.Models.FamilyPlanningContraceptiveMethod", b =>
-                {
-                    b.HasOne("MedizID.API.Models.FamilyPlanning", "FamilyPlanning")
-                        .WithMany("ContraceptiveMethods")
-                        .HasForeignKey("FamilyPlanningId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FamilyPlanning");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.FamilyPlanningLaboratoryResult", b =>
-                {
-                    b.HasOne("MedizID.API.Models.FamilyPlanning", "FamilyPlanning")
-                        .WithMany("LaboratoryResults")
-                        .HasForeignKey("FamilyPlanningId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FamilyPlanning");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.FamilyPlanningProcedure", b =>
-                {
-                    b.HasOne("MedizID.API.Models.FamilyPlanning", "FamilyPlanning")
-                        .WithMany("Procedures")
-                        .HasForeignKey("FamilyPlanningId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FamilyPlanning");
-                });
-
             modelBuilder.Entity("MedizID.API.Models.HIVCounseling", b =>
                 {
                     b.HasOne("MedizID.API.Models.Appointment", "Appointment")
@@ -2382,15 +2241,6 @@ namespace MedizID.API.Migrations
                     b.Navigation("FacilityPatients");
 
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.FamilyPlanning", b =>
-                {
-                    b.Navigation("ContraceptiveMethods");
-
-                    b.Navigation("LaboratoryResults");
-
-                    b.Navigation("Procedures");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.LaboratoriumTestMaster", b =>

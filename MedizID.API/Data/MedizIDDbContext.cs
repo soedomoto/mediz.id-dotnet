@@ -53,6 +53,9 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
 
     // Specialized medical services
     public DbSet<FamilyPlanning> FamilyPlannings { get; set; }
+    public DbSet<FamilyPlanningContraceptiveMethod> FamilyPlanningContraceptiveMethods { get; set; }
+    public DbSet<FamilyPlanningLaboratoryResult> FamilyPlanningLaboratoryResults { get; set; }
+    public DbSet<FamilyPlanningProcedure> FamilyPlanningProcedures { get; set; }
     public DbSet<MaternalChildHealth> MaternalChildHealths { get; set; }
     public DbSet<Immunization> Immunizations { get; set; }
     public DbSet<Odontogram> Odontograms { get; set; }
