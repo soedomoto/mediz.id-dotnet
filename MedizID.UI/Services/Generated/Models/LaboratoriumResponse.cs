@@ -12,10 +12,38 @@ namespace MedizID.UI.Services.Generated.Models
     public partial class LaboratoriumResponse : IParsable
     #pragma warning restore CS1591
     {
+        /// <summary>The appointmentId property</summary>
+        public Guid? AppointmentId { get; set; }
+        /// <summary>The category property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Category { get; set; }
+#nullable restore
+#else
+        public string Category { get; set; }
+#endif
         /// <summary>The createdAt property</summary>
         public DateTimeOffset? CreatedAt { get; set; }
         /// <summary>The id property</summary>
         public Guid? Id { get; set; }
+        /// <summary>The laboratoriumTestMasterId property</summary>
+        public Guid? LaboratoriumTestMasterId { get; set; }
+        /// <summary>The labTechnician property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? LabTechnician { get; set; }
+#nullable restore
+#else
+        public string LabTechnician { get; set; }
+#endif
+        /// <summary>The referenceRange property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ReferenceRange { get; set; }
+#nullable restore
+#else
+        public string ReferenceRange { get; set; }
+#endif
         /// <summary>The result property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -24,6 +52,24 @@ namespace MedizID.UI.Services.Generated.Models
 #else
         public string Result { get; set; }
 #endif
+        /// <summary>The sampleCollectionDate property</summary>
+        public DateTimeOffset? SampleCollectionDate { get; set; }
+        /// <summary>The sampleCollectionLocation property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SampleCollectionLocation { get; set; }
+#nullable restore
+#else
+        public string SampleCollectionLocation { get; set; }
+#endif
+        /// <summary>The sampleType property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SampleType { get; set; }
+#nullable restore
+#else
+        public string SampleType { get; set; }
+#endif
         /// <summary>The status property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -31,6 +77,14 @@ namespace MedizID.UI.Services.Generated.Models
 #nullable restore
 #else
         public string Status { get; set; }
+#endif
+        /// <summary>The testCode property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? TestCode { get; set; }
+#nullable restore
+#else
+        public string TestCode { get; set; }
 #endif
         /// <summary>The testDate property</summary>
         public DateTimeOffset? TestDate { get; set; }
@@ -42,6 +96,14 @@ namespace MedizID.UI.Services.Generated.Models
 #else
         public string TestName { get; set; }
 #endif
+        /// <summary>The testNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? TestNotes { get; set; }
+#nullable restore
+#else
+        public string TestNotes { get; set; }
+#endif
         /// <summary>The unit property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -50,6 +112,8 @@ namespace MedizID.UI.Services.Generated.Models
 #else
         public string Unit { get; set; }
 #endif
+        /// <summary>The updatedAt property</summary>
+        public DateTimeOffset? UpdatedAt { get; set; }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
@@ -68,13 +132,24 @@ namespace MedizID.UI.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "appointmentId", n => { AppointmentId = n.GetGuidValue(); } },
+                { "category", n => { Category = n.GetStringValue(); } },
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
+                { "labTechnician", n => { LabTechnician = n.GetStringValue(); } },
+                { "laboratoriumTestMasterId", n => { LaboratoriumTestMasterId = n.GetGuidValue(); } },
+                { "referenceRange", n => { ReferenceRange = n.GetStringValue(); } },
                 { "result", n => { Result = n.GetStringValue(); } },
+                { "sampleCollectionDate", n => { SampleCollectionDate = n.GetDateTimeOffsetValue(); } },
+                { "sampleCollectionLocation", n => { SampleCollectionLocation = n.GetStringValue(); } },
+                { "sampleType", n => { SampleType = n.GetStringValue(); } },
                 { "status", n => { Status = n.GetStringValue(); } },
+                { "testCode", n => { TestCode = n.GetStringValue(); } },
                 { "testDate", n => { TestDate = n.GetDateTimeOffsetValue(); } },
                 { "testName", n => { TestName = n.GetStringValue(); } },
+                { "testNotes", n => { TestNotes = n.GetStringValue(); } },
                 { "unit", n => { Unit = n.GetStringValue(); } },
+                { "updatedAt", n => { UpdatedAt = n.GetDateTimeOffsetValue(); } },
             };
         }
         /// <summary>
@@ -84,13 +159,24 @@ namespace MedizID.UI.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteGuidValue("appointmentId", AppointmentId);
+            writer.WriteStringValue("category", Category);
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
             writer.WriteGuidValue("id", Id);
+            writer.WriteGuidValue("laboratoriumTestMasterId", LaboratoriumTestMasterId);
+            writer.WriteStringValue("labTechnician", LabTechnician);
+            writer.WriteStringValue("referenceRange", ReferenceRange);
             writer.WriteStringValue("result", Result);
+            writer.WriteDateTimeOffsetValue("sampleCollectionDate", SampleCollectionDate);
+            writer.WriteStringValue("sampleCollectionLocation", SampleCollectionLocation);
+            writer.WriteStringValue("sampleType", SampleType);
             writer.WriteStringValue("status", Status);
+            writer.WriteStringValue("testCode", TestCode);
             writer.WriteDateTimeOffsetValue("testDate", TestDate);
             writer.WriteStringValue("testName", TestName);
+            writer.WriteStringValue("testNotes", TestNotes);
             writer.WriteStringValue("unit", Unit);
+            writer.WriteDateTimeOffsetValue("updatedAt", UpdatedAt);
         }
     }
 }

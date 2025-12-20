@@ -29,6 +29,7 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<Diagnosis> Diagnoses { get; set; }
     public DbSet<Prescription> Prescriptions { get; set; }
     public DbSet<PrescriptionDetail> PrescriptionDetails { get; set; }
+    public DbSet<LaboratoriumTestMaster> LaboratoriumTestMasters { get; set; }
     public DbSet<Laboratorium> LaboratoriumTests { get; set; }
 
     // Pharmacy
@@ -55,6 +56,7 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<MaternalChildHealth> MaternalChildHealths { get; set; }
     public DbSet<Immunization> Immunizations { get; set; }
     public DbSet<Odontogram> Odontograms { get; set; }
+    public DbSet<OdontogramSurface> OdontogramSurfaces { get; set; }
     public DbSet<AdolescentHealth> AdolescentHealths { get; set; }
     public DbSet<HIVCounseling> HIVCounselings { get; set; }
     public DbSet<STI> STIs { get; set; }
@@ -317,6 +319,19 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
         modelBuilder.Entity<STI>()
             .Property(s => s.RiskGroup)
             .HasConversion<string>();
+
+        // Odontogram relationships
+        modelBuilder.Entity<Odontogram>()
+            .HasOne(o => o.Appointment)
+            .WithMany()
+            .HasForeignKey(o => o.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Odontogram>()
+            .HasMany(o => o.Surfaces)
+            .WithOne(os => os.Odontogram)
+            .HasForeignKey(os => os.OdontogramId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 

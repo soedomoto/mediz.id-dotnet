@@ -1,5 +1,42 @@
 namespace MedizID.API.Common.Enums;
 
+// Laboratory Test Enums
+public enum LaboratoriumCategoryEnum
+{
+    Diagnostik = 1,
+    Hematologi = 2,
+    KimiaKlinik = 3,
+    LainLain = 4,
+    Imunologi = 5,
+    Mikrobiologi = 6,
+    Serologi = 7,
+    Pathologi = 8
+}
+
+public enum LaboratoriumStatusEnum
+{
+    Normal = 1,
+    Abnormal = 2,
+    Critical = 3,
+    Pending = 4,
+    Inconclusive = 5,
+    NotPerformed = 6
+}
+
+public enum SampleTypeEnum
+{
+    Blood = 1,
+    Serum = 2,
+    Plasma = 3,
+    Urine = 4,
+    Saliva = 5,
+    CerebrospinalFluid = 6,
+    Sputum = 7,
+    Stool = 8,
+    Tissue = 9,
+    Other = 10
+}
+
 // HIV Counseling Enums
 public enum HIVCounselingVisitStatusEnum
 {

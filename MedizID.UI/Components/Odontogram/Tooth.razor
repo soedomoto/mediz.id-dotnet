@@ -1,0 +1,136 @@
+@namespace MedizID.UI.Components.Odontogram
+@using MedizID.UI.Components.Odontogram
+@implements IAsyncDisposable
+
+<style>
+    svg.tooth {
+        cursor: pointer;
+        fill: white;
+    }
+
+    svg.tooth .to-do {
+        fill: red;
+    }
+
+    svg.tooth .done {
+        fill: blue;
+    }
+
+    svg.tooth .active {
+        fill: gray;
+    }
+
+    svg.tooth polygon {
+        stroke: black;
+        stroke-width: 0.5;
+    }
+
+    polygon:hover {
+        fill: lightgray;
+    }
+
+    rect:hover {
+        fill: lightgray;
+    }
+
+    .tooth-wrapper {
+        margin: 0 2px;
+        position: relative;
+    }
+
+    .flex-container-justify {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .flex-container-right {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .flex-container-left {
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .tooth {
+        font-size: 6pt;
+        font-weight: normal;
+    }
+</style>
+
+<svg class="tooth">
+    <g transform="translate(@positionX, @positionY)">
+        <polygon points="0,0 20,0 15,5 5,5" style="@GetSurfaceStyle("Buccal")" @onclick="@(() => OnClick.InvokeAsync(new SurfaceEventArgs { Number = number, Surface = "Buccal" }))" />
+        <polygon points="5,15 15,15 20,20 0,20" style="@GetSurfaceStyle("Lingual")" @onclick="@(() => OnClick.InvokeAsync(new SurfaceEventArgs { Number = number, Surface = "Lingual" }))" />
+        <polygon points="15,5 20,0 20,20 15,15" style="@GetSurfaceStyle(GetMesialDistalSurface("Right"))" @onclick="@(() => OnClick.InvokeAsync(new SurfaceEventArgs { Number = number, Surface = GetMesialDistalSurface("Right") }))" />
+        <polygon points="0,0 5,5 5,15 0,20" style="@GetSurfaceStyle(GetMesialDistalSurface("Left"))" @onclick="@(() => OnClick.InvokeAsync(new SurfaceEventArgs { Number = number, Surface = GetMesialDistalSurface("Left") }))" />
+        <polygon points="5,5 15,5 15,15 5,15" style="@GetSurfaceStyle("Occlusal")" @onclick="@(() => OnClick.InvokeAsync(new SurfaceEventArgs { Number = number, Surface = "Occlusal" }))" />
+        <text x="6" y="30" stroke="navy" fill="navy" strokeWidth="0.1" class="tooth">
+            @number
+        </text>
+    </g>
+</svg>
+
+@code {
+    public class SurfaceEventArgs : EventArgs
+    {
+        public int Number { get; set; }
+        public string Surface { get; set; }
+    }
+}
+
+@code {
+    [Parameter]
+    public int number { get; set; }
+    [Parameter]
+    public int positionX { get; set; }
+    [Parameter]
+    public int positionY { get; set; }
+    [Parameter]
+    public EventCallback<SurfaceEventArgs> OnClick { get; set; }
+    [Parameter]
+    public ToothState[]? ToothStates { get; set; } = Array.Empty<ToothState>();
+    [Parameter]
+    public ToothCondition[]? AllConditions { get; set; } = Array.Empty<ToothCondition>();
+
+    protected override void OnInitialized()
+    { }
+
+    private string GetMesialDistalSurface(string side)
+    {
+        // 11-19, 41-49, 51-59, 81-89 are permanent anterior/posterior teeth with occlusal surfaces
+        if ((number >= 11 && number <= 19) || (number >= 41 && number <= 49) || 
+            (number >= 51 && number <= 59) || (number >= 81 && number <= 89))
+        {
+            return side == "Right" ? "Mesial" : "Distal";
+        }
+        else
+        {
+            return side == "Right" ? "Distal" : "Mesial";
+        }
+    }
+
+    private string GetSurfaceStyle(string surface)
+    {
+        if (ToothStates == null || AllConditions == null)
+            return "fill: white;";
+
+        var state = ToothStates.FirstOrDefault(ts => ts.Number == number && ts.Surface == surface);
+        if (state != null)
+        {
+            var condition = AllConditions.FirstOrDefault(c => c.Code == state.ConditionCode);
+            if (condition?.Color != null)
+            {
+                return $"fill: {condition.Color};";
+            }
+        }
+
+        return "fill: white;";
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await Task.CompletedTask;
+    }
+}

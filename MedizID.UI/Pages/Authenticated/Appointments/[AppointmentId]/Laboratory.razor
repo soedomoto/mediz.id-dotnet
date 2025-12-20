@@ -4,23 +4,210 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 @using MedizID.UI.Services.Generated.Models
+@using AntDesign
 @inject ILocalStorageService LocalStorage
 @inject MedizIdApiClient ApiClient
 @inject AppointmentLayoutState LayoutState
 @inject INotificationService _notice
+@inject ILogger<Laboratory> _logger
 @implements IAsyncDisposable
 
 <PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Laboratory" : "MedizID")
 </PageTitle>
 
+<div style="padding: 24px; background-color: white; border-radius: 8px;">
+    <Space Direction="SpaceDirection.Vertical" Style="width: 100%;">
+        <SpaceItem>
+            <Flex Justify="FlexJustify.SpaceBetween" Align="FlexAlign.Center" Gap="@("16px")">
+                <div></div>
+                <Flex Gap="@("8px")">
+                    <Button Type="@ButtonType.Primary" Icon="plus" @onclick="OpenNewLaboratoriumForm">
+                        Add Test
+                    </Button>
+                    <Button Icon="brain" Loading="@IsGeneratingRecommendations" @onclick="GenerateAIRecommendations">
+                        AI Recommendations
+                    </Button>
+                </Flex>
+            </Flex>
+        </SpaceItem>
+        <SpaceItem>
+            <Table TItem="LaboratoriumDetailResponse" DataSource="@LaboratoriumTests" Loading=@(IsLoading || IsGeneratingRecommendations) Size="TableSize.Small">
+                <Column TData="LaboratoriumDetailResponse" Title="Test Name">
+                    <strong>@context.TestName</strong>
+                </Column>
+                <Column TData="LaboratoriumDetailResponse" Title="Code">
+                    @context.TestCode
+                </Column>
+                <Column TData="LaboratoriumDetailResponse" Title="Category">
+                    <Tag Color="@GetCategoryColor(context.Category ?? string.Empty)">@(context.Category ?? "-")</Tag>
+                </Column>
+                <Column TData="LaboratoriumDetailResponse" Title="Result">
+                    @(string.IsNullOrEmpty(context.Result) ? "-" : context.Result)
+                </Column>
+                <Column TData="LaboratoriumDetailResponse" Title="Unit">
+                    @context.Unit
+                </Column>
+                <Column TData="LaboratoriumDetailResponse" Title="Status">
+                    <Tag Color="@GetStatusColor(context.Status ?? string.Empty)">@(context.Status ?? "-")</Tag>
+                </Column>
+                <Column TData="LaboratoriumDetailResponse" Title="Clinical Notes">
+                    @if (!string.IsNullOrEmpty(context.AiClinicalNotes))
+                    {
+                        <Tooltip Title="@context.AiClinicalNotes">
+                            <span style="cursor: help; color: #1890ff;">@TrimText(context.AiClinicalNotes, 50)</span>
+                        </Tooltip>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </Column>
+                <Column TData="LaboratoriumDetailResponse" Title="AI" Align="ColumnAlign.Center">
+                    @if (context.IsRecommendedByAI == true)
+                    {
+                        <Tooltip Title="@($"AI Confidence: {context.AiRecommendationConfidence}%")">
+                            <Icon Type="check-circle" Style="color: #52c41a; font-size: 16px; cursor: pointer;" />
+                        </Tooltip>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </Column>
+                <Column TData="LaboratoriumDetailResponse" Title="Actions" Fixed="ColumnFixPlacement.Right" Align="ColumnAlign.Center">
+                    <Space>
+                        <Button Type="@ButtonType.Text" @onclick="() => EditLaboratoriumTest(context)">
+                            <Icon Type="edit" />
+                        </Button>
+                        <Popconfirm Title="Delete this test?" OnConfirm="() => OnDeleteConfirm(context.Id)">
+                            <Button Type="@ButtonType.Text" Danger>
+                                <Icon Type="delete" />
+                            </Button>
+                        </Popconfirm>
+                    </Space>
+                </Column>
+            </Table>
+        </SpaceItem>
+    </Space>
+</div>
+
+<!-- New/Edit Laboratory Test Modal -->
+@if (ShowLaboratoriumForm)
+{
+    <Modal Title="@(CurrentLaboratoriumTest.Id == Guid.Empty ? "Add New Laboratory Test" : "Edit Laboratory Test")"
+        Visible="@ShowLaboratoriumForm" OnOk="@OnSaveModalAsync" OnCancel="@CloseLaboratoriumForm" OkText=@("Save")
+        CancelText=@("Cancel") Width="700" ConfirmLoading="@IsSaving">
+        <Form TModel="LaboratoriumFormModel" Model="@CurrentLaboratoriumTest" Layout="@FormLayout.Vertical">
+            <FormItem Label="Test Name" Required>
+                <Select TItemValue="Guid" TItem="LaboratoriumTestMasterDetailResponse" 
+                    @bind-Value="@CurrentLaboratoriumTest.LaboratoriumTestMasterId" 
+                    Placeholder="Select laboratory test"
+                    OnSelectedItemChanged="@((LaboratoriumTestMasterDetailResponse test) => OnTestMasterChanged(test))">
+                    @foreach (var test in AvailableTestMasters)
+                    {
+                        <SelectOption TItemValue="Guid" TItem="LaboratoriumTestMasterDetailResponse" Value="@(test.Id ?? Guid.Empty)" Label="@($"{test.TestName} ({test.TestCode})")" />
+                    }
+                </Select>
+            </FormItem>
+
+            @if (CurrentSelectedMaster is not null)
+            {
+                <Row Gutter="16">
+                    <AntDesign.Col Span="12">
+                        <FormItem Label="Test Code">
+                            <Input Value="@CurrentSelectedMaster.TestCode" Disabled ReadOnly />
+                        </FormItem>
+                    </AntDesign.Col>
+                    <AntDesign.Col Span="12">
+                        <FormItem Label="Category">
+                            <Input Value="@CurrentSelectedMaster.Category" Disabled ReadOnly />
+                        </FormItem>
+                    </AntDesign.Col>
+                </Row>
+
+                <Row Gutter="16">
+                    <AntDesign.Col Span="12">
+                        <FormItem Label="Unit">
+                            <Input Value="@CurrentSelectedMaster.Unit" Disabled ReadOnly />
+                        </FormItem>
+                    </AntDesign.Col>
+                    <AntDesign.Col Span="12">
+                        <FormItem Label="Sample Type">
+                            <Input Value="@CurrentSelectedMaster.SampleType" Disabled ReadOnly />
+                        </FormItem>
+                    </AntDesign.Col>
+                </Row>
+
+                <FormItem Label="Reference Range">
+                    <Input Value="@CurrentSelectedMaster.ReferenceRange" Disabled ReadOnly />
+                </FormItem>
+            }
+
+            <Divider />
+
+            <FormItem Label="Result">
+                <Input @bind-Value="@CurrentLaboratoriumTest.Result" Placeholder="Test result value" />
+            </FormItem>
+
+            <FormItem Label="Status" Required>
+                <Select TItemValue="string" TItem="string" @bind-Value="@CurrentLaboratoriumTest.Status" Placeholder="Select status">
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Pending")" Label="Pending" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Normal")" Label="Normal" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Abnormal")" Label="Abnormal" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Critical")" Label="Critical" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("Inconclusive")" Label="Inconclusive" />
+                    <SelectOption TItemValue="string" TItem="string" Value="@("NotPerformed")" Label="Not Performed" />
+                </Select>
+            </FormItem>
+
+            <Row Gutter="16">
+                <AntDesign.Col Span="12">
+                    <FormItem Label="Sample Collection Date">
+                        <DatePicker @bind-Value="@CurrentLaboratoriumTest.SampleCollectionDate" />
+                    </FormItem>
+                </AntDesign.Col>
+                <AntDesign.Col Span="12">
+                    <FormItem Label="Lab Technician">
+                        <Input @bind-Value="@CurrentLaboratoriumTest.LabTechnician" Placeholder="Name of technician" />
+                    </FormItem>
+                </AntDesign.Col>
+            </Row>
+
+            <FormItem Label="Collection Location">
+                <Input @bind-Value="@CurrentLaboratoriumTest.SampleCollectionLocation" Placeholder="e.g., Lab A, Ward 3" />
+            </FormItem>
+
+            <FormItem Label="Test Notes">
+                <TextArea @bind-Value="@CurrentLaboratoriumTest.TestNotes" Placeholder="Additional notes..." Rows="2" />
+            </FormItem>
+        </Form>
+    </Modal>
+}
+
 @code {
     [Parameter]
     public Guid AppointmentId { get; set; }
+
+    private List<LaboratoriumDetailResponse> LaboratoriumTests = new();
+    private List<LaboratoriumTestMasterDetailResponse> AvailableTestMasters = new();
+    private LaboratoriumFormModel CurrentLaboratoriumTest = new();
+    private LaboratoriumTestMasterDetailResponse? CurrentSelectedMaster = null;
+
+    private bool IsLoading = false;
+    private bool IsSaving = false;
+    private bool IsGeneratingRecommendations = false;
+    private bool ShowLaboratoriumForm = false;
 
     protected override async Task OnInitializedAsync()
     {
         LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
         LayoutState.ActiveTabKey = "laboratory";
+
+        if (LayoutState.IsAuthenticated)
+        {
+            await LoadLaboratoriumTests();
+            await LoadAvailableTestMasters();
+        }
     }
 
     private async void OnAuthenticationChanged(bool isAuthenticated)
@@ -28,8 +215,262 @@
         if (isAuthenticated && AppointmentId != Guid.Empty)
         {
             await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadLaboratoriumTests();
+            await LoadAvailableTestMasters();
             StateHasChanged();
         }
+    }
+
+    private async Task LoadLaboratoriumTests()
+    {
+        try
+        {
+            IsLoading = true;
+            var response = await ApiClient.Api.V1.Laboratorium.Appointment[AppointmentId].GetAsync();
+
+            if (response?.Items != null)
+            {
+                LaboratoriumTests = response.Items.ToList();
+            }
+            else
+            {
+                LaboratoriumTests = new List<LaboratoriumDetailResponse>();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading laboratory tests");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Error loading laboratory tests",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task LoadAvailableTestMasters()
+    {
+        try
+        {
+            var response = await ApiClient.Api.V1.LaboratoriumTestMaster.GetAsync();
+
+            if (response?.Items != null)
+            {
+                AvailableTestMasters = response.Items.ToList();
+            }
+            else
+            {
+                AvailableTestMasters = new List<LaboratoriumTestMasterDetailResponse>();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading available test masters");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Error loading available tests",
+                NotificationType = NotificationType.Error
+            });
+        }
+    }
+
+    private void OpenNewLaboratoriumForm()
+    {
+        CurrentLaboratoriumTest = new LaboratoriumFormModel { Status = "Pending" };
+        CurrentSelectedMaster = null;
+        ShowLaboratoriumForm = true;
+    }
+
+    private void EditLaboratoriumTest(LaboratoriumDetailResponse test)
+    {
+        CurrentLaboratoriumTest = new LaboratoriumFormModel
+        {
+            Id = test.Id,
+            LaboratoriumTestMasterId = test.LaboratoriumTestMasterId ?? Guid.Empty,
+            Result = test.Result ?? string.Empty,
+            Status = test.Status ?? "Pending",
+            SampleCollectionDate = test.SampleCollectionDate.HasValue ? test.SampleCollectionDate.Value.DateTime : null,
+            SampleCollectionLocation = test.SampleCollectionLocation ?? string.Empty,
+            LabTechnician = test.LabTechnician ?? string.Empty,
+            TestNotes = test.TestNotes ?? string.Empty
+        };
+        CurrentSelectedMaster = AvailableTestMasters.FirstOrDefault(m => m.Id == test.LaboratoriumTestMasterId);
+        ShowLaboratoriumForm = true;
+    }
+
+    private void OnTestMasterChanged(LaboratoriumTestMasterDetailResponse selectedMaster)
+    {
+        CurrentSelectedMaster = selectedMaster;
+    }
+
+    private async Task OnSaveModalAsync()
+    {
+        await SaveLaboratoriumTest();
+        CloseLaboratoriumForm();
+    }
+
+    private async Task SaveLaboratoriumTest()
+    {
+        try
+        {
+            IsSaving = true;
+
+            if (CurrentLaboratoriumTest.Id == null || CurrentLaboratoriumTest.Id == Guid.Empty)
+            {
+                // Create new laboratory test
+                var createRequest = new CreateLaboratoriumRequest
+                {
+                    AppointmentId = AppointmentId,
+                    LaboratoriumTestMasterId = CurrentLaboratoriumTest.LaboratoriumTestMasterId,
+                    Result = CurrentLaboratoriumTest.Result,
+                    Status = CurrentLaboratoriumTest.Status,
+                    SampleCollectionDate = CurrentLaboratoriumTest.SampleCollectionDate.HasValue 
+                        ? new DateTimeOffset(CurrentLaboratoriumTest.SampleCollectionDate.Value, TimeSpan.Zero)
+                        : null,
+                    SampleCollectionLocation = CurrentLaboratoriumTest.SampleCollectionLocation,
+                    LabTechnician = CurrentLaboratoriumTest.LabTechnician,
+                    TestNotes = CurrentLaboratoriumTest.TestNotes
+                };
+                
+                await ApiClient.Api.V1.Laboratorium.PostAsync(createRequest);
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Laboratory test created successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+            else
+            {
+                // Update existing laboratory test
+                var updateRequest = new UpdateLaboratoriumRequest
+                {
+                    Result = CurrentLaboratoriumTest.Result,
+                    Status = CurrentLaboratoriumTest.Status,
+                    SampleCollectionDate = CurrentLaboratoriumTest.SampleCollectionDate.HasValue 
+                        ? new DateTimeOffset(CurrentLaboratoriumTest.SampleCollectionDate.Value, TimeSpan.Zero)
+                        : null,
+                    SampleCollectionLocation = CurrentLaboratoriumTest.SampleCollectionLocation,
+                    LabTechnician = CurrentLaboratoriumTest.LabTechnician,
+                    TestNotes = CurrentLaboratoriumTest.TestNotes
+                };
+                
+                await ApiClient.Api.V1.Laboratorium[CurrentLaboratoriumTest.Id.Value].PutAsync(updateRequest);
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Laboratory test updated successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+
+            await LoadLaboratoriumTests();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving laboratory test");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error saving laboratory test: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private async Task OnDeleteConfirm(Guid? testId)
+    {
+        if (!testId.HasValue)
+            return;
+
+        try
+        {
+            await ApiClient.Api.V1.Laboratorium[testId.Value].DeleteAsync();
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Laboratory test deleted successfully",
+                NotificationType = NotificationType.Success
+            });
+            await LoadLaboratoriumTests();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting laboratory test");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error deleting laboratory test: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+        }
+    }
+
+    private async Task GenerateAIRecommendations()
+    {
+        try
+        {
+            IsGeneratingRecommendations = true;
+            LaboratoriumTests = await ApiClient.Api.V1.Laboratorium[AppointmentId].AiRecommendations.PostAsync() ?? new List<LaboratoriumDetailResponse>();
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "AI recommendations generated successfully",
+                NotificationType = NotificationType.Success
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating AI recommendations");
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Error generating AI recommendations",
+                NotificationType = NotificationType.Error
+            });
+        }
+        finally
+        {
+            IsGeneratingRecommendations = false;
+        }
+    }
+
+    private void CloseLaboratoriumForm()
+    {
+        ShowLaboratoriumForm = false;
+        CurrentLaboratoriumTest = new LaboratoriumFormModel();
+        CurrentSelectedMaster = null;
+    }
+
+    private string GetCategoryColor(string category) => category?.ToLower() switch
+    {
+        "diagnostik" => "blue",
+        "hematologi" => "red",
+        "kimiaklinik" => "green",
+        "imunologi" => "purple",
+        "mikrobiologi" => "cyan",
+        "serologi" => "magenta",
+        "pathologi" => "orange",
+        _ => "default"
+    };
+
+    private string GetStatusColor(string status) => status?.ToLower() switch
+    {
+        "normal" => "green",
+        "abnormal" => "orange",
+        "critical" => "red",
+        "pending" => "blue",
+        "inconclusive" => "default",
+        "notperformed" => "gray",
+        _ => "default"
+    };
+
+    private string TrimText(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text))
+            return "-";
+        return text.Length > maxLength ? text.Substring(0, maxLength) + "..." : text;
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
@@ -38,4 +479,15 @@
         await Task.CompletedTask;
     }
 
+    private class LaboratoriumFormModel
+    {
+        public Guid? Id { get; set; }
+        public Guid LaboratoriumTestMasterId { get; set; }
+        public string? Result { get; set; }
+        public string Status { get; set; } = "Pending";
+        public DateTime? SampleCollectionDate { get; set; }
+        public string? SampleCollectionLocation { get; set; }
+        public string? LabTechnician { get; set; }
+        public string? TestNotes { get; set; }
+    }
 }

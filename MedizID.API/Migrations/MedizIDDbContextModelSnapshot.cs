@@ -1041,26 +1041,89 @@ namespace MedizID.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AIClinicalNotes")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("AIRecommendationConfidence")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("AppointmentId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("ReferenceRange")
+                    b.Property<bool?>("IsRecommendedByAI")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LabTechnician")
                         .HasColumnType("text");
+
+                    b.Property<Guid>("LaboratoriumTestMasterId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Result")
                         .HasColumnType("text");
 
-                    b.Property<string>("Status")
+                    b.Property<DateTime?>("SampleCollectionDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SampleCollectionLocation")
                         .HasColumnType("text");
 
-                    b.Property<string>("TestCode")
-                        .HasColumnType("text");
+                    b.Property<int?>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("TestDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TestNotes")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("LaboratoriumTestMasterId");
+
+                    b.ToTable("LaboratoriumTests");
+                });
+
+            modelBuilder.Entity("MedizID.API.Models.LaboratoriumTestMaster", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ReferenceRange")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SamplePreparation")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SampleType")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TestCode")
+                        .HasColumnType("text");
 
                     b.Property<string>("TestName")
                         .IsRequired()
@@ -1069,11 +1132,12 @@ namespace MedizID.API.Migrations
                     b.Property<string>("Unit")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AppointmentId");
-
-                    b.ToTable("LaboratoriumTests");
+                    b.ToTable("LaboratoriumTestMasters");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.MaternalChildHealth", b =>
@@ -1192,23 +1256,47 @@ namespace MedizID.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Surface")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ToothNumber")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Treatment")
-                        .HasColumnType("text");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentId");
 
                     b.ToTable("Odontograms");
+                });
+
+            modelBuilder.Entity("MedizID.API.Models.OdontogramSurface", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConditionCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("OdontogramId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Surface")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ToothNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OdontogramId");
+
+                    b.ToTable("OdontogramSurfaces");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Poli", b =>
@@ -1823,7 +1911,15 @@ namespace MedizID.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("MedizID.API.Models.LaboratoriumTestMaster", "LaboratoriumTestMaster")
+                        .WithMany("LaboratoriumTests")
+                        .HasForeignKey("LaboratoriumTestMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Appointment");
+
+                    b.Navigation("LaboratoriumTestMaster");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.MaternalChildHealth", b =>
@@ -1865,6 +1961,17 @@ namespace MedizID.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Appointment");
+                });
+
+            modelBuilder.Entity("MedizID.API.Models.OdontogramSurface", b =>
+                {
+                    b.HasOne("MedizID.API.Models.Odontogram", "Odontogram")
+                        .WithMany("Surfaces")
+                        .HasForeignKey("OdontogramId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Odontogram");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Poli", b =>
@@ -2046,9 +2153,19 @@ namespace MedizID.API.Migrations
                     b.Navigation("Users");
                 });
 
+            modelBuilder.Entity("MedizID.API.Models.LaboratoriumTestMaster", b =>
+                {
+                    b.Navigation("LaboratoriumTests");
+                });
+
             modelBuilder.Entity("MedizID.API.Models.MedicalEquipmentType", b =>
                 {
                     b.Navigation("Equipment");
+                });
+
+            modelBuilder.Entity("MedizID.API.Models.Odontogram", b =>
+                {
+                    b.Navigation("Surfaces");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Poli", b =>

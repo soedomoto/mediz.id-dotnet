@@ -12,34 +12,22 @@ namespace MedizID.UI.Services.Generated.Models
     public partial class OdontogramResponse : IParsable
     #pragma warning restore CS1591
     {
+        /// <summary>The appointmentId property</summary>
+        public Guid? AppointmentId { get; set; }
         /// <summary>The createdAt property</summary>
         public DateTimeOffset? CreatedAt { get; set; }
         /// <summary>The id property</summary>
         public Guid? Id { get; set; }
-        /// <summary>The status property</summary>
+        /// <summary>The surfaces property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? Status { get; set; }
+        public List<global::MedizID.UI.Services.Generated.Models.OdontogramSurfaceResponse>? Surfaces { get; set; }
 #nullable restore
 #else
-        public string Status { get; set; }
+        public List<global::MedizID.UI.Services.Generated.Models.OdontogramSurfaceResponse> Surfaces { get; set; }
 #endif
-        /// <summary>The toothNumber property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? ToothNumber { get; set; }
-#nullable restore
-#else
-        public string ToothNumber { get; set; }
-#endif
-        /// <summary>The treatment property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? Treatment { get; set; }
-#nullable restore
-#else
-        public string Treatment { get; set; }
-#endif
+        /// <summary>The updatedAt property</summary>
+        public DateTimeOffset? UpdatedAt { get; set; }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
@@ -58,11 +46,11 @@ namespace MedizID.UI.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "appointmentId", n => { AppointmentId = n.GetGuidValue(); } },
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
-                { "status", n => { Status = n.GetStringValue(); } },
-                { "toothNumber", n => { ToothNumber = n.GetStringValue(); } },
-                { "treatment", n => { Treatment = n.GetStringValue(); } },
+                { "surfaces", n => { Surfaces = n.GetCollectionOfObjectValues<global::MedizID.UI.Services.Generated.Models.OdontogramSurfaceResponse>(global::MedizID.UI.Services.Generated.Models.OdontogramSurfaceResponse.CreateFromDiscriminatorValue)?.AsList(); } },
+                { "updatedAt", n => { UpdatedAt = n.GetDateTimeOffsetValue(); } },
             };
         }
         /// <summary>
@@ -72,11 +60,11 @@ namespace MedizID.UI.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteGuidValue("appointmentId", AppointmentId);
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
             writer.WriteGuidValue("id", Id);
-            writer.WriteStringValue("status", Status);
-            writer.WriteStringValue("toothNumber", ToothNumber);
-            writer.WriteStringValue("treatment", Treatment);
+            writer.WriteCollectionOfObjectValues<global::MedizID.UI.Services.Generated.Models.OdontogramSurfaceResponse>("surfaces", Surfaces);
+            writer.WriteDateTimeOffsetValue("updatedAt", UpdatedAt);
         }
     }
 }

@@ -1,0 +1,63 @@
+@namespace MedizID.UI.Components.Odontogram
+@using MedizID.UI.Components.Odontogram
+@implements IAsyncDisposable
+
+<g transform="scale(1.4)" id="gmain">
+    @{
+        foreach (var i in GetArray(start, end))
+        {
+            <Tooth OnClick="@OnSurfaceClick" number="@i" positionY="@y" positionX="@(Math.Abs((i - start) * 25) + x)" ToothStates="@ToothStates" AllConditions="@AllConditions" />
+        }
+    }
+</g>
+
+@code {
+    [Parameter]
+    public int start { get; set; }
+    [Parameter]
+    public int end { get; set; }
+    [Parameter]
+    public int x { get; set; }
+    [Parameter]
+    public int y { get; set; }
+    [Parameter]
+    public EventCallback<Tooth.SurfaceEventArgs> OnSurfaceClick { get; set; }
+    [Parameter]
+    public ToothState[]? ToothStates { get; set; } = Array.Empty<ToothState>();
+    [Parameter]
+    public ToothCondition[]? AllConditions { get; set; } = Array.Empty<ToothCondition>();
+
+    protected override void OnInitialized()
+    { }
+
+    private List<int> GetArray(int start, int end)
+    {
+        if (start > end)
+            return GetInverseArray(start, end);
+
+        var list = new List<int>();
+        for (int i = start; i <= end; i++)
+        {
+            list.Add(i);
+        }
+
+        return list;
+    }
+
+    private List<int> GetInverseArray(int start, int end)
+    {
+        var list = new List<int>();
+
+        for (int i = start; i >= end; i--)
+        {
+            list.Add(i);
+        }
+
+        return list;
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await Task.CompletedTask;
+    }
+}

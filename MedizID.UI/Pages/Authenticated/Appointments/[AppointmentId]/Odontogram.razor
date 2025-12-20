@@ -4,23 +4,298 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 @using MedizID.UI.Services.Generated.Models
+@using MedizID.UI.Components.Odontogram
+@using AntDesign
+@using MedizID.UI.Pages.Authenticated.Appointments
 @inject ILocalStorageService LocalStorage
 @inject MedizIdApiClient ApiClient
 @inject AppointmentLayoutState LayoutState
 @inject INotificationService _notice
 @implements IAsyncDisposable
 
-<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Odontogram" : "MedizID")
-</PageTitle>
+<PageTitle>@(
+    LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Odontogram" : "MedizID"
+)</PageTitle>
+
+<div style="padding: 24px; background-color: white; border-radius: 8px; overflow-x: auto;">
+    @if (IsLoading)
+    {
+        <Spin Spinning="true" Tip="Loading odontogram..."></Spin>
+    }
+    else
+    {
+        <Space Direction="SpaceDirection.Vertical" Style="width: 100%;">
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <SpaceItem>
+                    <Alert Message="Error" Description="@ErrorMessage" Type="AlertType.Error" Closable ShowIcon="true" />
+                </SpaceItem>
+            }
+            
+            @if (!string.IsNullOrEmpty(SuccessMessage))
+            {
+                <SpaceItem>
+                    <Alert Message="Success" Description="@SuccessMessage" Type="AlertType.Success" Closable ShowIcon="true" />
+                </SpaceItem>
+            }
+
+            <SpaceItem>
+                <div style="padding: 12px; background-color: #f5f5f5; border-radius: 4px;">
+                    <Flex Gap="@("16px")" Direction="FlexDirection.Vertical">
+                    <Flex Gap="@("2px")" Wrap="FlexWrap.Wrap">
+                        @foreach (var condition in ToothConditions)
+                        {
+                            <Tooltip Title="@condition.Description">
+                                <Tag Color="@condition.Color" 
+                                    Style="border: 1px solid #333; border-radius: 2px; cursor: pointer;"
+                                    Icon="@(SelectedToothFlag == condition.Code ? "check" : null)"
+                                    Checked="@(SelectedToothFlag == condition.Code)" 
+                                    OnClick="() => {
+                                        SelectedToothFlag = condition.Code;
+                                    }"
+                                >
+                                    @condition.Code?.ToUpper()
+                                </Tag>
+                            </Tooltip>
+                        }
+                    </Flex>
+                    <Flex Gap="@("2px")" Wrap="FlexWrap.Wrap">
+                        @foreach (var condition in RestorativeProcedures)
+                        {
+                            <Tooltip Title="@condition.Description">
+                                <Tag Color="@condition.Color" 
+                                    Style="border: 1px solid #333; border-radius: 2px; cursor: pointer;"
+                                    Icon="@(SelectedToothFlag == condition.Code ? "check" : null)"
+                                    Checked="@(SelectedToothFlag == condition.Code)" 
+                                    OnClick="() => {
+                                        SelectedToothFlag = condition.Code;
+                                    }"
+                                >
+                                    @condition.Code?.ToUpper()
+                                </Tag>
+                            </Tooltip>
+                        }
+                    </Flex>
+                    <Flex Gap="@("2px")" Wrap="FlexWrap.Wrap">
+                        @foreach (var condition in RestorationMaterials)
+                        {
+                            <Tooltip Title="@condition.Description">
+                                <Tag Color="@condition.Color" 
+                                    Style="border: 1px solid #333; border-radius: 2px; cursor: pointer;"
+                                    Icon="@(SelectedToothFlag == condition.Code ? "check" : null)"
+                                    Checked="@(SelectedToothFlag == condition.Code)" 
+                                    OnClick="() => {
+                                        SelectedToothFlag = condition.Code;
+                                    }"
+                                >
+                                    @condition.Code?.ToUpper()
+                                </Tag>
+                            </Tooltip>
+                        }
+                    </Flex>
+                    <Flex Gap="@("2px")" Wrap="FlexWrap.Wrap">
+                        @foreach (var condition in ProsthesisTypes)
+                        {
+                            <Tooltip Title="@condition.Description">
+                                <Tag Color="@condition.Color" 
+                                    Style="border: 1px solid #333; border-radius: 2px; cursor: pointer;"
+                                    Icon="@(SelectedToothFlag == condition.Code ? "check" : null)"
+                                    Checked="@(SelectedToothFlag == condition.Code)" 
+                                    OnClick="() => {
+                                        SelectedToothFlag = condition.Code;
+                                    }"
+                                >
+                                    @condition.Code?.ToUpper()
+                                </Tag>
+                            </Tooltip>
+                        }
+                    </Flex>
+                    <Flex Gap="@("2px")" Wrap="FlexWrap.Wrap">
+                        @foreach (var condition in OtherConditions)
+                        {
+                            <Tooltip Title="@condition.Description">
+                                <Tag Color="@condition.Color" 
+                                    Style="border: 1px solid #333; border-radius: 2px; cursor: pointer;"
+                                    Icon="@(SelectedToothFlag == condition.Code ? "check" : null)"
+                                    Checked="@(SelectedToothFlag == condition.Code)" 
+                                    OnClick="() => {
+                                        SelectedToothFlag = condition.Code;
+                                    }"
+                                >
+                                    @condition.Code?.ToUpper()
+                                </Tag>
+                            </Tooltip>
+                        }
+                    </Flex>
+                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                        <div>Click on tooth surfaces to mark @SelectedToothFlag?.ToUpper()</div>
+                    </div>
+                    </Flex>
+                </div>
+            </SpaceItem>
+            <SpaceItem>
+                <MedizID.UI.Components.Odontogram.Index OnSurfaceClick="@((args) => 
+                    {
+                        if (!string.IsNullOrEmpty(SelectedToothFlag))
+                        {
+                            // Remove existing state for the same tooth surface if any
+                            ToothStates = ToothStates?.Where(ts => !(ts.Number == args.Number && ts.Surface == args.Surface)).ToArray() ?? Array.Empty<ToothState>();
+                            ToothStates = ToothStates.Append(new ToothState
+                            {
+                                Number = args.Number,
+                                Surface = args.Surface,
+                                ConditionCode = SelectedToothFlag
+                            }).ToArray();
+                            HasChanges = true;
+                        }
+                        else
+                        {
+                            ToothStates = ToothStates?.Where(ts => !(ts.Number == args.Number && ts.Surface == args.Surface)).ToArray() ?? Array.Empty<ToothState>();
+                            HasChanges = true;
+                        }
+                    })"
+                    ToothStates="@ToothStates"
+                    AllConditions="@GetAllConditions()"
+                />
+            </SpaceItem>
+            <SpaceItem>
+                <Flex Gap="@("8px")">
+                    <Button Type="@ButtonType.Primary" 
+                        Loading="@IsSaving"
+                        Disabled="@(!HasChanges || IsSaving)"
+                        OnClick="@SaveToothStates">
+                        Save Changes
+                    </Button>
+                    <Button Disabled="@(!HasChanges || IsSaving)"
+                        OnClick="@DiscardChanges">
+                        Discard Changes
+                    </Button>
+                    @if (HasChanges)
+                    {
+                        <span style="color: #ff4d4f; font-size: 12px;">You have unsaved changes</span>
+                    }
+                </Flex>
+            </SpaceItem>
+            <SpaceItem>
+                <div style="padding: 12px; background-color: #f5f5f5; border-radius: 4px;">
+                    <div style="margin-bottom: 10px; font-weight: bold;">Tooth Status Legend:</div>
+                    <Flex Gap="@("16px")" Wrap="FlexWrap.Wrap">
+                        <Flex Gap="@("8px")" Align="FlexAlign.Center">
+                            <div
+                                style="width: 20px; height: 20px; background-color: red; border: 1px solid #333; border-radius: 2px;">
+                            </div>
+                            <span>To Do (Red)</span>
+                        </Flex>
+                        <Flex Gap="@("8px")" Align="FlexAlign.Center">
+                            <div
+                                style="width: 20px; height: 20px; background-color: blue; border: 1px solid #333; border-radius: 2px;">
+                            </div>
+                            <span>Done (Blue)</span>
+                        </Flex>
+                        <Flex Gap="@("8px")" Align="FlexAlign.Center">
+                            <div
+                                style="width: 20px; height: 20px; background-color: white; border: 1px solid #333; border-radius: 2px;">
+                            </div>
+                            <span>Normal (White)</span>
+                        </Flex>
+                    </Flex>
+                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                        <div>Right-click on tooth surfaces to mark cavities, crowns, extractions, or fractures</div>
+                        <div>Each tooth has 5 surfaces: Top, Bottom, Left, Right, Center</div>
+                    </div>
+                </div>
+            </SpaceItem>
+        </Space>
+    }
+</div>
 
 @code {
     [Parameter]
     public Guid AppointmentId { get; set; }
 
+    private ToothCondition[] ToothConditions = new ToothCondition[]
+    {
+        new ToothCondition { Code = "sou", Description = "Gigi Sehat, Normal, Tanpa Kelainan" },
+        new ToothCondition { Code = "nvt", Description = "Gigi Non Vital", Color = "gray" },
+        new ToothCondition { Code = "non", Description = "Gigi Tidak Ada/Tidak Diketahui", Color = "black" },
+        new ToothCondition { Code = "une", Description = "Un-Erupted", Color = "orange" },
+        new ToothCondition { Code = "pre", Description = "Partial Erupted", Color = "yellow" },
+        new ToothCondition { Code = "ano", Description = "Anomali", Color = "purple" },
+        new ToothCondition { Code = "cfr", Description = "Crown Facture/ Faktor Mahkota", Color = "red" },
+        new ToothCondition { Code = "rrx", Description = "Sisa Akar", Color = "brown" },
+        new ToothCondition { Code = "mis", Description = "Gigi Hilang", Color = "blue" },
+        new ToothCondition { Code = "imv", Description = "Impacted Visible", Color = "pink" },
+        new ToothCondition { Code = "dia", Description = "Diastema", Color = "cyan" },
+        new ToothCondition { Code = "att", Description = "Atrisi", Color = "lightgreen" },
+        new ToothCondition { Code = "abr", Description = "Abrasi", Color = "lightgray" },
+        new ToothCondition { Code = "car", Description = "Caries/Karies", Color = "darkgreen" }
+    };
+    private ToothCondition[] RestorationMaterials = new ToothCondition[]
+    {
+        new ToothCondition { Code = "amf", Description = "Amalgam Filling", Color = "silver" },
+        new ToothCondition { Code = "cof", Description = "Composite Filling", Color = "beige" },
+        new ToothCondition { Code = "fis", Description = "Fissure Sealant", Color = "lightyellow" },
+        new ToothCondition { Code = "gif", Description = "GIC/Silika", Color = "lightblue" },
+        new ToothCondition { Code = "inl", Description = "Inlay", Color = "gold" },
+        new ToothCondition { Code = "onl", Description = "Onlay", Color = "platinum" }
+    };
+    private ToothCondition[] ProsthesisTypes = new ToothCondition[]
+    {
+        new ToothCondition { Code = "prd_fld", Description = "Partial Denture/ Full Denture", Color = "lavender" },
+        new ToothCondition { Code = "prd", Description = "Partial Denture", Color = "thistle" },
+        new ToothCondition { Code = "fld", Description = "Full Denture", Color = "plum" },
+        new ToothCondition { Code = "acr", Description = "Acrilic", Color = "orchid" }
+    };
+    private ToothCondition[] RestorativeProcedures = new ToothCondition[]
+    {
+        new ToothCondition { Code = "rct", Description = "Root Canal Treatment/ Perawatan Saluran Akar" },
+        new ToothCondition { Code = "fmc", Description = "Full Metal Crown" },
+        new ToothCondition { Code = "fmc_rct", Description = "Full Metal Crown - Root Canal Treatment" },
+        new ToothCondition { Code = "poc", Description = "Porcelain Crown" },
+        new ToothCondition { Code = "poc_rct", Description = "Porcelain Crown - Root Canal Treatment" },
+        new ToothCondition { Code = "ipx_poc", Description = "Implan - Porcelain Crown" },
+        new ToothCondition { Code = "mpc", Description = "Metal Porcelain Crown" },
+        new ToothCondition { Code = "gmc", Description = "Gold Metal Crown" },
+        new ToothCondition { Code = "ipx", Description = "Implan" },
+        new ToothCondition { Code = "meb", Description = "Metal Bridge" },
+        new ToothCondition { Code = "pob", Description = "Porcelain Bridge" },
+        new ToothCondition { Code = "pon", Description = "Pontic" },
+        new ToothCondition { Code = "abu", Description = "Gigi Abutment" }
+    };
+    private ToothCondition[] OtherConditions = new ToothCondition[]
+    {
+        new ToothCondition { Code = "abs", Description = "Abses" },
+        new ToothCondition { Code = "cal", Description = "Kalkulus" },
+        new ToothCondition { Code = "pulp", Description = "Pulpitis" },
+        new ToothCondition { Code = "per", Description = "Periodontitis" },
+        new ToothCondition { Code = "giv", Description = "Gingivitis" },
+        new ToothCondition { Code = "avs", Description = "Alvusi" },
+        new ToothCondition { Code = "muc", Description = "Mucoccele" },
+        new ToothCondition { Code = "uls", Description = "Alcus decubitus" },
+        new ToothCondition { Code = "pst", Description = "Persistensi" },
+        new ToothCondition { Code = "sto", Description = "Stomatitis" },
+        new ToothCondition { Code = "tmj", Description = "TMJ/clicing" }
+    };
+    
+    private string? SelectedToothFlag { get; set; }
+    private ToothState[] ToothStates = Array.Empty<ToothState>();
+    private ToothState[] OriginalToothStates = Array.Empty<ToothState>();
+    
+    private bool IsLoading = false;
+    private bool IsSaving = false;
+    private bool HasChanges = false;
+    private string? ErrorMessage = null;
+    private string? SuccessMessage = null;
+
     protected override async Task OnInitializedAsync()
     {
         LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
         LayoutState.ActiveTabKey = "odontogram";
+        
+        if (AppointmentId != Guid.Empty)
+        {
+            await LoadToothStates();
+        }
     }
 
     private async void OnAuthenticationChanged(bool isAuthenticated)
@@ -28,8 +303,117 @@
         if (isAuthenticated && AppointmentId != Guid.Empty)
         {
             await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadToothStates();
             StateHasChanged();
         }
+    }
+
+    private async Task LoadToothStates()
+    {
+        try
+        {
+            IsLoading = true;
+            ErrorMessage = null;
+            SuccessMessage = null;
+            
+            var response = await ApiClient.Api.V1.Odontogram.Appointment[AppointmentId].GetAsync();
+            
+            if (response != null && response.Surfaces != null)
+            {
+                ToothStates = response.Surfaces.Select(s => new ToothState
+                {
+                    Number = (int)(s.ToothNumber ?? 0),
+                    Surface = s.Surface,
+                    ConditionCode = s.ConditionCode
+                }).ToArray();
+            }
+            else
+            {
+                ToothStates = Array.Empty<ToothState>();
+            }
+            
+            // Keep a copy of original states to detect changes
+            OriginalToothStates = ToothStates.ToArray();
+            HasChanges = false;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load tooth states: {ex.Message}";
+            ToothStates = Array.Empty<ToothState>();
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveToothStates()
+    {
+        try
+        {
+            IsSaving = true;
+            ErrorMessage = null;
+            SuccessMessage = null;
+            
+            var request = new SaveOdontogramRequest
+            {
+                AppointmentId = AppointmentId,
+                ToothStates = ToothStates.Select(ts => new ToothStateDto
+                {
+                    Number = ts.Number,
+                    Surface = ts.Surface,
+                    ConditionCode = ts.ConditionCode
+                }).ToList()
+            };
+            
+            var result = await ApiClient.Api.V1.Odontogram.SaveToothStates.PostAsync(request);
+            
+            if (result != null)
+            {
+                // Update original states to current states
+                OriginalToothStates = ToothStates.ToArray();
+                HasChanges = false;
+                SuccessMessage = "Tooth states saved successfully!";
+                
+                // Clear success message after 3 seconds
+                await Task.Delay(3000);
+                SuccessMessage = null;
+            }
+            else
+            {
+                ErrorMessage = "Failed to save tooth states: Invalid response";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to save tooth states: {ex.Message}";
+        }
+        finally
+        {
+            IsSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private void DiscardChanges()
+    {
+        ToothStates = OriginalToothStates.ToArray();
+        HasChanges = false;
+        ErrorMessage = null;
+    }
+
+    private ToothCondition[] GetAllConditions()
+    {
+        var allConditions = new List<ToothCondition>();
+        
+        allConditions.AddRange(ToothConditions);
+        allConditions.AddRange(RestorativeProcedures);
+        allConditions.AddRange(RestorationMaterials);
+        allConditions.AddRange(ProsthesisTypes);
+        allConditions.AddRange(OtherConditions);
+        
+        return allConditions.ToArray();
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
@@ -37,5 +421,4 @@
         LayoutState.OnAuthenticationChanged -= OnAuthenticationChanged;
         await Task.CompletedTask;
     }
-
 }

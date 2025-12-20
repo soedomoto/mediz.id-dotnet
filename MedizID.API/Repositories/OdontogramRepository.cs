@@ -13,13 +13,15 @@ public class OdontogramRepository : BaseRepository<Odontogram>, IOdontogramRepos
     public async Task<Odontogram?> GetByAppointmentAsync(Guid appointmentId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
+            .Include(o => o.Surfaces)
             .FirstOrDefaultAsync(o => o.AppointmentId == appointmentId, cancellationToken);
     }
 
     public async Task<IEnumerable<Odontogram>> GetByToothNumberAsync(string toothNumber, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Where(o => o.ToothNumber == toothNumber)
+            .Include(o => o.Surfaces)
+            .Where(o => o.Surfaces.Any(s => s.ToothNumber.ToString() == toothNumber))
             .ToListAsync(cancellationToken);
     }
 }

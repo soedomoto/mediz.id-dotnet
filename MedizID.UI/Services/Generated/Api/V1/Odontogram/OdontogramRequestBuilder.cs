@@ -3,6 +3,7 @@
 using MedizID.UI.Services.Generated.Api.V1.Odontogram.Appointment;
 using MedizID.UI.Services.Generated.Api.V1.Odontogram.Item;
 using MedizID.UI.Services.Generated.Api.V1.Odontogram.Options;
+using MedizID.UI.Services.Generated.Api.V1.Odontogram.SaveToothStates;
 using MedizID.UI.Services.Generated.Models;
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions.Serialization;
@@ -29,6 +30,11 @@ namespace MedizID.UI.Services.Generated.Api.V1.Odontogram
         public global::MedizID.UI.Services.Generated.Api.V1.Odontogram.Options.OptionsRequestBuilder OptionsPath
         {
             get => new global::MedizID.UI.Services.Generated.Api.V1.Odontogram.Options.OptionsRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The saveToothStates property</summary>
+        public global::MedizID.UI.Services.Generated.Api.V1.Odontogram.SaveToothStates.SaveToothStatesRequestBuilder SaveToothStates
+        {
+            get => new global::MedizID.UI.Services.Generated.Api.V1.Odontogram.SaveToothStates.SaveToothStatesRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>Gets an item from the MedizID.UI.Services.Generated.api.v1.Odontogram.item collection</summary>
         /// <param name="position">Unique identifier of the item</param>

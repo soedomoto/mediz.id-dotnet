@@ -53,17 +53,155 @@ public class OdontogramController : ControllerBase
     }
 
     /// <summary>
+    /// Save or update tooth states for an appointment
+    /// </summary>
+    [HttpPost("save-tooth-states")]
+    [ProducesResponseType(typeof(OdontogramResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OdontogramResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SaveToothStates([FromBody] SaveOdontogramRequest request)
+    {
+        try
+        {
+            if (request == null || request.AppointmentId == Guid.Empty)
+            {
+                return BadRequest(new ErrorResponse
+                {
+                    ErrorCode = "INVALID_REQUEST",
+                    Message = "Invalid appointment ID"
+                });
+            }
+
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.Id == request.AppointmentId);
+
+            if (appointment == null)
+            {
+                throw new NotFoundException($"Appointment with ID {request.AppointmentId} not found");
+            }
+
+            // Check if odontogram already exists for this appointment
+            var existingOdontogram = await _context.Odontograms
+                .Include(o => o.Surfaces)
+                .FirstOrDefaultAsync(o => o.AppointmentId == request.AppointmentId);
+
+            Odontogram odontogram;
+            bool isNew = false;
+
+            if (existingOdontogram == null)
+            {
+                // Create new odontogram
+                odontogram = new Odontogram
+                {
+                    Id = Guid.NewGuid(),
+                    AppointmentId = request.AppointmentId,
+                    CreatedAt = DateTime.UtcNow,
+                    Surfaces = new List<OdontogramSurface>()
+                };
+                _context.Odontograms.Add(odontogram);
+                isNew = true;
+            }
+            else
+            {
+                odontogram = existingOdontogram;
+                odontogram.UpdatedAt = DateTime.UtcNow;
+            }
+
+            // Remove existing surfaces that are not in the new request
+            var newSurfaceKeys = request.ToothStates
+                .Select(ts => (ts.Number, ts.Surface))
+                .ToHashSet();
+
+            var surfacesToRemove = odontogram.Surfaces
+                .Where(s => !newSurfaceKeys.Contains((s.ToothNumber, s.Surface)))
+                .ToList();
+
+            foreach (var surface in surfacesToRemove)
+            {
+                odontogram.Surfaces.Remove(surface);
+            }
+
+            // Update or add surfaces
+            foreach (var state in request.ToothStates)
+            {
+                var existingSurface = odontogram.Surfaces
+                    .FirstOrDefault(s => s.ToothNumber == state.Number && s.Surface == state.Surface);
+
+                if (existingSurface != null)
+                {
+                    existingSurface.ConditionCode = state.ConditionCode;
+                    existingSurface.UpdatedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    var newSurface = new OdontogramSurface
+                    {
+                        Id = Guid.NewGuid(),
+                        OdontogramId = odontogram.Id,
+                        ToothNumber = state.Number,
+                        Surface = state.Surface,
+                        ConditionCode = state.ConditionCode,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    odontogram.Surfaces.Add(newSurface);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Odontogram {(isNew ? "created" : "updated")}: {odontogram.Id}");
+
+            var response = new OdontogramResponse
+            {
+                Id = odontogram.Id,
+                AppointmentId = odontogram.AppointmentId,
+                Surfaces = odontogram.Surfaces.Select(s => new OdontogramSurfaceResponse
+                {
+                    Id = s.Id,
+                    ToothNumber = s.ToothNumber,
+                    Surface = s.Surface,
+                    ConditionCode = s.ConditionCode,
+                    CreatedAt = s.CreatedAt,
+                    UpdatedAt = s.UpdatedAt
+                }).ToList(),
+                CreatedAt = odontogram.CreatedAt,
+                UpdatedAt = odontogram.UpdatedAt
+            };
+
+            return isNew ? CreatedAtAction(nameof(GetOdontogramByAppointment), 
+                new { appointmentId = odontogram.AppointmentId }, response) : Ok(response);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new ErrorResponse
+            {
+                ErrorCode = ex.ErrorCode,
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving tooth states");
+            return StatusCode(500, new ErrorResponse
+            {
+                ErrorCode = "INTERNAL_SERVER_ERROR",
+                Message = "An error occurred while saving tooth states"
+            });
+        }
+    }
+
+    /// <summary>
     /// Get odontogram by appointment
     /// </summary>
     [HttpGet("appointment/{appointmentId}")]
-    [ProducesResponseType(typeof(List<OdontogramResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OdontogramResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetOdontogramByAppointment(Guid appointmentId)
     {
         try
         {
             var appointment = await _context.Appointments
-                .Include(a => a.Anamnesis)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
 
             if (appointment == null)
@@ -71,21 +209,41 @@ public class OdontogramController : ControllerBase
                 throw new NotFoundException($"Appointment with ID {appointmentId} not found");
             }
 
-            var odontogramRecordIds = appointment.Anamnesis.Select(m => m.AppointmentId).Distinct().ToList();
-            var odontograms = await _context.Odontograms
-                .Where(o => odontogramRecordIds.Contains(o.AppointmentId))
-                .ToListAsync();
+            var odontogram = await _context.Odontograms
+                .Include(o => o.Surfaces)
+                .FirstOrDefaultAsync(o => o.AppointmentId == appointmentId);
 
-            var responses = odontograms.Select(o => new OdontogramResponse
+            if (odontogram == null)
             {
-                Id = o.Id,
-                ToothNumber = o.ToothNumber,
-                Status = o.Status,
-                Treatment = o.Treatment,
-                CreatedAt = o.CreatedAt
-            }).ToList();
+                // Return empty odontogram structure
+                return Ok(new OdontogramResponse
+                {
+                    Id = Guid.Empty,
+                    AppointmentId = appointmentId,
+                    Surfaces = new List<OdontogramSurfaceResponse>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null
+                });
+            }
 
-            return Ok(responses);
+            var response = new OdontogramResponse
+            {
+                Id = odontogram.Id,
+                AppointmentId = odontogram.AppointmentId,
+                Surfaces = odontogram.Surfaces.Select(s => new OdontogramSurfaceResponse
+                {
+                    Id = s.Id,
+                    ToothNumber = s.ToothNumber,
+                    Surface = s.Surface,
+                    ConditionCode = s.ConditionCode,
+                    CreatedAt = s.CreatedAt,
+                    UpdatedAt = s.UpdatedAt
+                }).ToList(),
+                CreatedAt = odontogram.CreatedAt,
+                UpdatedAt = odontogram.UpdatedAt
+            };
+
+            return Ok(response);
         }
         catch (NotFoundException ex)
         {
@@ -101,13 +259,13 @@ public class OdontogramController : ControllerBase
             return StatusCode(500, new ErrorResponse
             {
                 ErrorCode = "INTERNAL_SERVER_ERROR",
-                Message = "An error occurred while fetching odontograms"
+                Message = "An error occurred while fetching odontogram"
             });
         }
     }
 
     /// <summary>
-    /// Create odontogram
+    /// Create odontogram (legacy endpoint)
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(OdontogramResponse), StatusCodes.Status201Created)]
@@ -128,11 +286,8 @@ public class OdontogramController : ControllerBase
             {
                 Id = Guid.NewGuid(),
                 AppointmentId = request.AppointmentId,
-                ToothNumber = request.ToothNumber,
-                Surface = request.Surface,
-                Status = request.Status,
-                Treatment = request.Treatment,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Surfaces = new List<OdontogramSurface>()
             };
 
             _context.Odontograms.Add(odontogram);
@@ -143,13 +298,14 @@ public class OdontogramController : ControllerBase
             var response = new OdontogramResponse
             {
                 Id = odontogram.Id,
-                ToothNumber = odontogram.ToothNumber,
-                Status = odontogram.Status,
-                Treatment = odontogram.Treatment,
-                CreatedAt = odontogram.CreatedAt
+                AppointmentId = odontogram.AppointmentId,
+                Surfaces = new List<OdontogramSurfaceResponse>(),
+                CreatedAt = odontogram.CreatedAt,
+                UpdatedAt = odontogram.UpdatedAt
             };
 
-            return CreatedAtAction(nameof(GetOdontogram), new { id = odontogram.Id }, response);
+            return CreatedAtAction(nameof(GetOdontogramByAppointment), 
+                new { appointmentId = odontogram.AppointmentId }, response);
         }
         catch (NotFoundException ex)
         {
@@ -171,70 +327,6 @@ public class OdontogramController : ControllerBase
     }
 
     /// <summary>
-    /// Update odontogram
-    /// </summary>
-    [HttpPut("{id}")]
-    [ProducesResponseType(typeof(OdontogramResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateOdontogram(Guid id, [FromBody] CreateOdontogramRequest request)
-    {
-        try
-        {
-            var odontogram = await _context.Odontograms.FirstOrDefaultAsync(o => o.Id == id);
-
-            if (odontogram == null)
-            {
-                throw new NotFoundException($"Odontogram with ID {id} not found");
-            }
-
-            if (!string.IsNullOrEmpty(request.ToothNumber))
-                odontogram.ToothNumber = request.ToothNumber;
-
-            if (!string.IsNullOrEmpty(request.Surface))
-                odontogram.Surface = request.Surface;
-
-            if (!string.IsNullOrEmpty(request.Status))
-                odontogram.Status = request.Status;
-
-            if (!string.IsNullOrEmpty(request.Treatment))
-                odontogram.Treatment = request.Treatment;
-
-            _context.Odontograms.Update(odontogram);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation($"Odontogram updated: {odontogram.Id}");
-
-            var response = new OdontogramResponse
-            {
-                Id = odontogram.Id,
-                ToothNumber = odontogram.ToothNumber,
-                Status = odontogram.Status,
-                Treatment = odontogram.Treatment,
-                CreatedAt = odontogram.CreatedAt
-            };
-
-            return Ok(response);
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new ErrorResponse
-            {
-                ErrorCode = ex.ErrorCode,
-                Message = ex.Message
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error updating odontogram {id}");
-            return StatusCode(500, new ErrorResponse
-            {
-                ErrorCode = "INTERNAL_SERVER_ERROR",
-                Message = "An error occurred while updating odontogram"
-            });
-        }
-    }
-
-    /// <summary>
     /// Get odontogram by ID
     /// </summary>
     [HttpGet("{id}")]
@@ -244,7 +336,9 @@ public class OdontogramController : ControllerBase
     {
         try
         {
-            var odontogram = await _context.Odontograms.FirstOrDefaultAsync(o => o.Id == id);
+            var odontogram = await _context.Odontograms
+                .Include(o => o.Surfaces)
+                .FirstOrDefaultAsync(o => o.Id == id);
 
             if (odontogram == null)
             {
@@ -254,10 +348,18 @@ public class OdontogramController : ControllerBase
             var response = new OdontogramResponse
             {
                 Id = odontogram.Id,
-                ToothNumber = odontogram.ToothNumber,
-                Status = odontogram.Status,
-                Treatment = odontogram.Treatment,
-                CreatedAt = odontogram.CreatedAt
+                AppointmentId = odontogram.AppointmentId,
+                Surfaces = odontogram.Surfaces.Select(s => new OdontogramSurfaceResponse
+                {
+                    Id = s.Id,
+                    ToothNumber = s.ToothNumber,
+                    Surface = s.Surface,
+                    ConditionCode = s.ConditionCode,
+                    CreatedAt = s.CreatedAt,
+                    UpdatedAt = s.UpdatedAt
+                }).ToList(),
+                CreatedAt = odontogram.CreatedAt,
+                UpdatedAt = odontogram.UpdatedAt
             };
 
             return Ok(response);
@@ -291,7 +393,9 @@ public class OdontogramController : ControllerBase
     {
         try
         {
-            var odontogram = await _context.Odontograms.FirstOrDefaultAsync(o => o.Id == id);
+            var odontogram = await _context.Odontograms
+                .Include(o => o.Surfaces)
+                .FirstOrDefaultAsync(o => o.Id == id);
 
             if (odontogram == null)
             {
@@ -336,7 +440,9 @@ public class OdontogramController : ControllerBase
             if (page < 1) page = 1;
             if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
-            var query = _context.Odontograms.AsQueryable();
+            var query = _context.Odontograms
+                .Include(o => o.Surfaces)
+                .AsQueryable();
             var total = await query.CountAsync();
 
             var odontograms = await query
@@ -345,10 +451,18 @@ public class OdontogramController : ControllerBase
                 .Select(o => new OdontogramResponse
                 {
                     Id = o.Id,
-                    ToothNumber = o.ToothNumber,
-                    Status = o.Status,
-                    Treatment = o.Treatment,
-                    CreatedAt = o.CreatedAt
+                    AppointmentId = o.AppointmentId,
+                    Surfaces = o.Surfaces.Select(s => new OdontogramSurfaceResponse
+                    {
+                        Id = s.Id,
+                        ToothNumber = s.ToothNumber,
+                        Surface = s.Surface,
+                        ConditionCode = s.ConditionCode,
+                        CreatedAt = s.CreatedAt,
+                        UpdatedAt = s.UpdatedAt
+                    }).ToList(),
+                    CreatedAt = o.CreatedAt,
+                    UpdatedAt = o.UpdatedAt
                 })
                 .ToListAsync();
 

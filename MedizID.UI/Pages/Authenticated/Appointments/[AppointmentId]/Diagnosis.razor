@@ -409,11 +409,11 @@
     private class DiagnosisFormModel
     {
         public Guid? Id { get; set; }
-        public string Icd10Code { get; set; }
-        public string ScientificDescription { get; set; }
+        public string? Icd10Code { get; set; }
+        public string? ScientificDescription { get; set; }
         public string DiagnosisType { get; set; } = "Primary";
         public string CaseType { get; set; } = "New";
         public int? ConfidencePercentage { get; set; }
-        public string ClinicalNotes { get; set; }
+        public string? ClinicalNotes { get; set; }
     }
 }

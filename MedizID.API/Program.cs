@@ -104,6 +104,7 @@ builder.Services.AddCors(options =>
 // Services
 builder.Services.AddScoped<IAuthService, JwtAuthService>();
 builder.Services.AddScoped<IAIService, AIService>();
+builder.Services.AddScoped<LaboratoriumTestMasterSeeder>();
 builder.Services.AddHttpClient();
 
 // Repositories
@@ -178,6 +179,10 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MedizIDDbContext>();
     db.Database.Migrate();
+    
+    // Seed laboratory test master data
+    var seeder = scope.ServiceProvider.GetRequiredService<LaboratoriumTestMasterSeeder>();
+    await seeder.SeedAsync();
 }
 
 // Middleware

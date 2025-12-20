@@ -359,7 +359,7 @@
             {
                 // Create new anamnesis
                 var response = await ApiClient.Api.V1.Anamnesis.PostAsync(request);
-                id = response.Id;
+                id = response?.Id ?? Guid.Empty;
                 await _notice.Open(new NotificationConfig()
                 {
                     Message = "Anamnesis created successfully",
