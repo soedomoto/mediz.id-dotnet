@@ -10,17 +10,288 @@
 @inject INotificationService _notice
 @implements IAsyncDisposable
 
-<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Immunization" : "MedizID")
-</PageTitle>
+<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Immunization" : "MedizID")</PageTitle>
+
+<div style="padding: 24px; background-color: white; border-radius: 8px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Immunization Record</h2>
+        <button class="ant-btn ant-btn-primary" @onclick="SaveImmunization" disabled="@isSaving">
+            @if (isSaving)
+            {
+                <span>Saving...</span>
+            }
+            else
+            {
+                <span>Save</span>
+            }
+        </button>
+    </div>
+
+    <!-- Child Demographics Section -->
+    <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+        <h3 style="margin-top: 0;">Child Demographics</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label>Date of Birth</label>
+                <DatePicker TValue="DateTime?" @bind-Value="form.DateOfBirth" Placeholder="@("Select Date")" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Birth Place</label>
+                <Input @bind-Value="form.BirthPlace" Placeholder="Tempat Lahir" Style="width: 100%;" />
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0;">
+            <div>
+                <label>Birth Weight (kg)</label>
+                <AntDesign.InputNumber TValue="double?" @bind-Value="form.BirthWeight" Placeholder="0.0" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Birth Length (cm)</label>
+                <AntDesign.InputNumber TValue="double?" @bind-Value="form.BirthLength" Placeholder="0.0" Style="width: 100%;" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Father Information Section -->
+    <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+        <h3 style="margin-top: 0;">Father Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0;">
+            <div>
+                <label>Father Name</label>
+                <Input @bind-Value="form.FatherName" Placeholder="Nama Ayah" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Father Occupation</label>
+                <Input @bind-Value="form.FatherOccupation" Placeholder="Pekerjaan Ayah" Style="width: 100%;" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Mother Information Section -->
+    <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+        <h3 style="margin-top: 0;">Mother Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0;">
+            <div>
+                <label>Mother Name</label>
+                <Input @bind-Value="form.MotherName" Placeholder="Nama Ibu" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Mother Occupation</label>
+                <Input @bind-Value="form.MotherOccupation" Placeholder="Pekerjaan Ibu" Style="width: 100%;" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Information Section -->
+    <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+        <h3 style="margin-top: 0;">Delivery Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label>Child Number</label>
+                <AntDesign.InputNumber TValue="int?" @bind-Value="form.ChildNumber" Placeholder="1" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Delivery Type</label>
+                <Select TItemValue="int?" TItem="EnumOption" 
+                        @bind-Value="form.DeliveryType"
+                        DataSource="deliveryTypeOptions"
+                        ValueName="Value"
+                        LabelName="Label"
+                        Style="width: 100%;"
+                        Placeholder="Select Delivery Type" />
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0;">
+            <div>
+                <label>Delivery Personnel</label>
+                <Select TItemValue="int?" TItem="EnumOption"
+                        @bind-Value="form.DeliveryPersonnel"
+                        DataSource="deliveryPersonnelOptions"
+                        ValueName="Value"
+                        LabelName="Label"
+                        Style="width: 100%;"
+                        Placeholder="Select Personnel" />
+            </div>
+            <div>
+                <label>Delivery Place</label>
+                <Select TItemValue="int?" TItem="EnumOption"
+                        @bind-Value="form.DeliveryPlace"
+                        DataSource="deliveryPlaceOptions"
+                        ValueName="Value"
+                        LabelName="Label"
+                        Style="width: 100%;"
+                        Placeholder="Select Place" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Neonatal Visits Section -->
+    <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+        <h3 style="margin-top: 0;">Neonatal Visits</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label>Visit 1</label>
+                <Input @bind-Value="form.NeonatalVisit1" Placeholder="Visit 1 Date" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Visit 2</label>
+                <Input @bind-Value="form.NeonatalVisit2" Placeholder="Visit 2 Date" Style="width: 100%;" />
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0;">
+            <div>
+                <label>Visit 3</label>
+                <Input @bind-Value="form.NeonatalVisit3" Placeholder="Visit 3 Date" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Visit 4</label>
+                <Input @bind-Value="form.NeonatalVisit4" Placeholder="Visit 4 Date" Style="width: 100%;" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Feeding & Supplementation Section -->
+    <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+        <h3 style="margin-top: 0;">Feeding & Supplementation</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label>Breastfeeding Status</label>
+                <RadioGroup @bind-Value="form.BreastfeedingStatus" TValue="int?">
+                    @foreach (var option in breastfeedingStatusOptions)
+                    {
+                        <Radio Value="option.Value" TValue="int?">@option.Label</Radio>
+                    }
+                </RadioGroup>
+            </div>
+            <div>
+                <label>Vitamin A Status (6 Months)</label>
+                <RadioGroup @bind-Value="form.VitaminAStatusSixMonths" TValue="int?">
+                    @foreach (var option in vitaminAStatusOptions)
+                    {
+                        <Radio Value="option.Value" TValue="int?">@option.Label</Radio>
+                    }
+                </RadioGroup>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vaccine Information Section -->
+    <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+        <h3 style="margin-top: 0;">Vaccine Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label>Age Category</label>
+                <Select TItemValue="int?" TItem="EnumOption"
+                        @bind-Value="form.AgeCategory"
+                        DataSource="ageCategoryOptions"
+                        ValueName="Value"
+                        LabelName="Label"
+                        Style="width: 100%;"
+                        Placeholder="Select Age Category" />
+            </div>
+            <div>
+                <label>Vaccine Type</label>
+                <Select TItemValue="int?" TItem="EnumOption"
+                        @bind-Value="form.VaccineType"
+                        DataSource="vaccineTypeOptions"
+                        ValueName="Value"
+                        LabelName="Label"
+                        Style="width: 100%;"
+                        Placeholder="Select Vaccine Type" />
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label>Vaccine Name</label>
+                <Input @bind-Value="form.VaccineName" Placeholder="Vaccine Name" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Vaccine Date</label>
+                <DatePicker TValue="DateTime?" @bind-Value="form.VaccineDate" Placeholder="@("Select Date")" Style="width: 100%;" />
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label>Dose Number</label>
+                <AntDesign.InputNumber TValue="int?" @bind-Value="form.DoseNumber" Placeholder="1" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Lot Number</label>
+                <Input @bind-Value="form.Lot" Placeholder="Lot Number" Style="width: 100%;" />
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0;">
+            <div>
+                <label>Route</label>
+                <Select TItemValue="int?" TItem="EnumOption"
+                        @bind-Value="form.Route"
+                        DataSource="vaccineRouteOptions"
+                        ValueName="Value"
+                        LabelName="Label"
+                        Style="width: 100%;"
+                        Placeholder="Select Route" />
+            </div>
+            <div>
+                <label>Site</label>
+                <Select TItemValue="int?" TItem="EnumOption"
+                        @bind-Value="form.Site"
+                        DataSource="vaccineSiteOptions"
+                        ValueName="Value"
+                        LabelName="Label"
+                        Style="width: 100%;"
+                        Placeholder="Select Site" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Reactions & Adverse Events Section -->
+    <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+        <h3 style="margin-top: 0;">Reactions & Adverse Events</h3>
+        <div style="margin-bottom: 16px;">
+            <label>Reactions</label>
+            <TextArea @bind-Value="form.Reactions" Placeholder="Describe any reactions or adverse events" Style="width: 100%; min-height: 80px;" />
+        </div>
+        <div>
+            <label>Reaction Severity</label>
+            <Select TItemValue="int?" TItem="EnumOption"
+                    @bind-Value="form.ReactionSeverity"
+                    DataSource="reactionSeverityOptions"
+                    ValueName="Value"
+                    LabelName="Label"
+                    Style="width: 100%;"
+                    Placeholder="Select Severity" />
+        </div>
+    </div>
+</div>
 
 @code {
     [Parameter]
     public Guid AppointmentId { get; set; }
 
+    private bool isSaving = false;
+    private ImmunizationFormModel form = new();
+
+    // Enum Option Lists
+    private List<EnumOption> deliveryTypeOptions = new();
+    private List<EnumOption> deliveryPersonnelOptions = new();
+    private List<EnumOption> deliveryPlaceOptions = new();
+    private List<EnumOption> breastfeedingStatusOptions = new();
+    private List<EnumOption> vitaminAStatusOptions = new();
+    private List<EnumOption> vaccineTypeOptions = new();
+    private List<EnumOption> vaccineRouteOptions = new();
+    private List<EnumOption> vaccineSiteOptions = new();
+    private List<EnumOption> ageCategoryOptions = new();
+    private List<EnumOption> reactionSeverityOptions = new();
+
     protected override async Task OnInitializedAsync()
     {
         LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
         LayoutState.ActiveTabKey = "immunization";
+        InitializeEnumOptions();
+        form.AppointmentId = AppointmentId;
     }
 
     private async void OnAuthenticationChanged(bool isAuthenticated)
@@ -32,10 +303,197 @@
         }
     }
 
+    private void InitializeEnumOptions()
+    {
+        deliveryTypeOptions = new List<EnumOption>
+        {
+            new EnumOption { Value = 1, Label = "Normal" },
+            new EnumOption { Value = 2, Label = "Cesarean" },
+            new EnumOption { Value = 3, Label = "Vacuum" },
+            new EnumOption { Value = 4, Label = "Forceps" }
+        };
+
+        deliveryPersonnelOptions = new List<EnumOption>
+        {
+            new EnumOption { Value = 1, Label = "Dokter" },
+            new EnumOption { Value = 2, Label = "Bidan" },
+            new EnumOption { Value = 3, Label = "Perawat" },
+            new EnumOption { Value = 4, Label = "Traditional Birth Attendant" }
+        };
+
+        deliveryPlaceOptions = new List<EnumOption>
+        {
+            new EnumOption { Value = 1, Label = "Home" },
+            new EnumOption { Value = 2, Label = "Public Health Center" },
+            new EnumOption { Value = 3, Label = "Hospital" },
+            new EnumOption { Value = 4, Label = "Private Clinic" }
+        };
+
+        breastfeedingStatusOptions = new List<EnumOption>
+        {
+            new EnumOption { Value = 1, Label = "Exclusively Breastfed" },
+            new EnumOption { Value = 2, Label = "Partially Breastfed" },
+            new EnumOption { Value = 3, Label = "Not Breastfed" }
+        };
+
+        vitaminAStatusOptions = new List<EnumOption>
+        {
+            new EnumOption { Value = 1, Label = "Given" },
+            new EnumOption { Value = 2, Label = "Not Given" }
+        };
+
+        vaccineTypeOptions = new List<EnumOption>
+        {
+            new EnumOption { Value = 1, Label = "BCG" },
+            new EnumOption { Value = 2, Label = "Polio" },
+            new EnumOption { Value = 3, Label = "DPT" },
+            new EnumOption { Value = 4, Label = "Hepatitis B" },
+            new EnumOption { Value = 5, Label = "Measles" },
+            new EnumOption { Value = 6, Label = "Tetanus" },
+            new EnumOption { Value = 7, Label = "Pertussis" },
+            new EnumOption { Value = 8, Label = "HPV" },
+            new EnumOption { Value = 9, Label = "Rotavirus" },
+            new EnumOption { Value = 10, Label = "Pneumococcal" }
+        };
+
+        vaccineRouteOptions = new List<EnumOption>
+        {
+            new EnumOption { Value = 1, Label = "Oral" },
+            new EnumOption { Value = 2, Label = "Intramuscular" },
+            new EnumOption { Value = 3, Label = "Subcutaneous" },
+            new EnumOption { Value = 4, Label = "Intradermal" }
+        };
+
+        vaccineSiteOptions = new List<EnumOption>
+        {
+            new EnumOption { Value = 1, Label = "Left Arm" },
+            new EnumOption { Value = 2, Label = "Right Arm" },
+            new EnumOption { Value = 3, Label = "Left Thigh" },
+            new EnumOption { Value = 4, Label = "Right Thigh" }
+        };
+
+        ageCategoryOptions = new List<EnumOption>
+        {
+            new EnumOption { Value = 1, Label = "0-2 Months" },
+            new EnumOption { Value = 2, Label = "2-4 Months" },
+            new EnumOption { Value = 3, Label = "4-6 Months" },
+            new EnumOption { Value = 4, Label = "6-9 Months" },
+            new EnumOption { Value = 5, Label = "9-12 Months" },
+            new EnumOption { Value = 6, Label = "12-24 Months" },
+            new EnumOption { Value = 7, Label = "2-5 Years" },
+            new EnumOption { Value = 8, Label = "Above 5 Years" }
+        };
+
+        reactionSeverityOptions = new List<EnumOption>
+        {
+            new EnumOption { Value = 1, Label = "Mild" },
+            new EnumOption { Value = 2, Label = "Moderate" },
+            new EnumOption { Value = 3, Label = "Severe" }
+        };
+    }
+
+    private async Task SaveImmunization()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(form.VaccineName))
+            {
+                await _notice.Warning(new NotificationConfig { Message = "Vaccine name is required" });
+                return;
+            }
+
+            isSaving = true;
+
+            var request = new CreateImmunizationRequest
+            {
+                AppointmentId = AppointmentId,
+                DateOfBirth = form.DateOfBirth.HasValue ? new DateTimeOffset(form.DateOfBirth.Value) : null,
+                BirthPlace = form.BirthPlace,
+                BirthWeight = form.BirthWeight,
+                BirthLength = form.BirthLength,
+                FatherName = form.FatherName,
+                FatherOccupation = form.FatherOccupation,
+                MotherName = form.MotherName,
+                MotherOccupation = form.MotherOccupation,
+                DeliveryType = form.DeliveryType,
+                DeliveryPersonnel = form.DeliveryPersonnel,
+                DeliveryPlace = form.DeliveryPlace,
+                NeonatalVisit1 = form.NeonatalVisit1,
+                NeonatalVisit2 = form.NeonatalVisit2,
+                NeonatalVisit3 = form.NeonatalVisit3,
+                NeonatalVisit4 = form.NeonatalVisit4,
+                BreastfeedingStatus = form.BreastfeedingStatus,
+                VitaminAStatusSixMonths = form.VitaminAStatusSixMonths,
+                VaccineType = form.VaccineType,
+                VaccineName = form.VaccineName,
+                VaccineDate = form.VaccineDate.HasValue ? new DateTimeOffset(form.VaccineDate.Value) : new DateTimeOffset(DateTime.Now),
+                DoseNumber = form.DoseNumber,
+                Lot = form.Lot,
+                Route = form.Route,
+                Site = form.Site,
+                Reactions = form.Reactions,
+                ReactionSeverity = form.ReactionSeverity,
+                AgeCategory = form.AgeCategory
+            };
+
+            await ApiClient.Api.V1.Immunization.Appointments[AppointmentId].Immunization.PostAsync(request);
+
+            await _notice.Success(new NotificationConfig { Message = "Immunization record saved successfully" });
+            form = new ImmunizationFormModel { AppointmentId = AppointmentId };
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await _notice.Error(new NotificationConfig { Message = $"Error saving immunization: {ex.Message}" });
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
         LayoutState.OnAuthenticationChanged -= OnAuthenticationChanged;
         await Task.CompletedTask;
     }
 
+    private class ImmunizationFormModel
+    {
+        public Guid AppointmentId { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string? BirthPlace { get; set; }
+        public double? BirthWeight { get; set; }
+        public double? BirthLength { get; set; }
+        public int? ChildNumber { get; set; }
+        public string? FatherName { get; set; }
+        public string? FatherOccupation { get; set; }
+        public string? MotherName { get; set; }
+        public string? MotherOccupation { get; set; }
+        public int? DeliveryType { get; set; }
+        public int? DeliveryPersonnel { get; set; }
+        public int? DeliveryPlace { get; set; }
+        public string? NeonatalVisit1 { get; set; }
+        public string? NeonatalVisit2 { get; set; }
+        public string? NeonatalVisit3 { get; set; }
+        public string? NeonatalVisit4 { get; set; }
+        public int? BreastfeedingStatus { get; set; }
+        public int? VitaminAStatusSixMonths { get; set; }
+        public int? VaccineType { get; set; }
+        public string? VaccineName { get; set; }
+        public DateTime? VaccineDate { get; set; }
+        public int? DoseNumber { get; set; }
+        public string? Lot { get; set; }
+        public int? Route { get; set; }
+        public int? Site { get; set; }
+        public string? Reactions { get; set; }
+        public int? ReactionSeverity { get; set; }
+        public int? AgeCategory { get; set; }
+    }
+
+    private class EnumOption
+    {
+        public int? Value { get; set; }
+        public string Label { get; set; } = string.Empty;
+    }
 }
