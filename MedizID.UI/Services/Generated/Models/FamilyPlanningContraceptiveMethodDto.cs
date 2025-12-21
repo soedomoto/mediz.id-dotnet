@@ -18,14 +18,8 @@ namespace MedizID.UI.Services.Generated.Models
         public Guid? FamilyPlanningId { get; set; }
         /// <summary>The id property</summary>
         public Guid? Id { get; set; }
-        /// <summary>The methodName property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? MethodName { get; set; }
-#nullable restore
-#else
-        public string MethodName { get; set; }
-#endif
+        /// <summary>The methodType property</summary>
+        public int? MethodType { get; set; }
         /// <summary>The notes property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -61,7 +55,7 @@ namespace MedizID.UI.Services.Generated.Models
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
                 { "familyPlanningId", n => { FamilyPlanningId = n.GetGuidValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
-                { "methodName", n => { MethodName = n.GetStringValue(); } },
+                { "methodType", n => { MethodType = n.GetIntValue(); } },
                 { "notes", n => { Notes = n.GetStringValue(); } },
                 { "quantity", n => { Quantity = n.GetIntValue(); } },
                 { "serviceDate", n => { ServiceDate = n.GetDateTimeOffsetValue(); } },
@@ -78,7 +72,7 @@ namespace MedizID.UI.Services.Generated.Models
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
             writer.WriteGuidValue("familyPlanningId", FamilyPlanningId);
             writer.WriteGuidValue("id", Id);
-            writer.WriteStringValue("methodName", MethodName);
+            writer.WriteIntValue("methodType", MethodType);
             writer.WriteStringValue("notes", Notes);
             writer.WriteIntValue("quantity", Quantity);
             writer.WriteDateTimeOffsetValue("serviceDate", ServiceDate);

@@ -227,9 +227,14 @@
                 @if (form.ContraceptiveMethods != null && form.ContraceptiveMethods.Count > 0)
                 {
                     <Table TItem="ContraceptiveMethodItem" DataSource="@form.ContraceptiveMethods" Size="@TableSize.Small" Bordered>
-                        <Column @bind-Field="@context.MethodName" Title="Method" />
-                        <Column @bind-Field="@context.ServiceDate" Title="Service Date" Format="dd-MM-yyyy" />
-                        <Column @bind-Field="@context.Quantity" Title="Qty" />
+                        <Column TData="string" Title="Method">
+                            @{
+                                var methodLabel = GetContraceptiveMethodLabel(context.MethodType);
+                            }
+                            @methodLabel
+                        </Column>
+                        <Column TData="DateTime?" @bind-Field="@context.ServiceDate" Title="Service Date" Format="dd-MM-yyyy" />
+                        <Column TData="int?" @bind-Field="@context.Quantity" Title="Qty" />
                         <ActionColumn Title="Action">
                             <Space Size="@SpaceSize.Small">
                                 <SpaceItem>
@@ -446,17 +451,19 @@
                 form.Id = response.Id ?? Guid.Empty;
                 form.AppointmentId = response.AppointmentId ?? Guid.Empty;
                 form.SpouseName = response.SpouseName;
-                form.HusbandEducationId = 1;
-                form.WifeEducationId = 1;
+                form.HusbandEducationId = response.HusbandEducation;
+                form.WifeEducationId = response.WifeEducation;
                 form.HusbandOccupation = response.HusbandOccupation;
                 form.WifeOccupation = response.WifeOccupation;
-                form.FamilyPlanningStageId = 2;
+                form.FamilyPlanningStageId = response.FamilyPlanningStage;
                 form.NumberOfLivingChildren = response.NumberOfLivingChildren ?? 0;
                 form.YoungestChildYears = response.YoungestChildYears ?? 0;
                 form.YoungestChildMonths = response.YoungestChildMonths ?? 0;
-                form.KBParticipantStatusId = 5;
-                form.LastContraceptiveMethodId = 1;
+                form.KBParticipantStatusId = response.KbParticipantStatus;
+                form.LastContraceptiveMethodId = response.LastContraceptiveMethod;
+                form.UterinePositionId = response.UterinePosition;
                 form.AllowedContraceptiveMethods = response.AllowedContraceptiveMethods;
+                form.SelectedContraceptiveMethod = response.SelectedContraceptiveMethod;
                 form.ServiceDate = response.ServiceDate?.DateTime;
                 form.FollowUpDate = response.FollowUpDate?.DateTime;
                 form.RemovalDate = response.RemovalDate?.DateTime;
@@ -485,7 +492,7 @@
                 form.ContraceptiveMethods = response.ContraceptiveMethods?.Select(cm => new ContraceptiveMethodItem
                 {
                     Id = cm.Id ?? Guid.NewGuid(),
-                    MethodName = cm.MethodName,
+                    MethodType = cm.MethodType,
                     ServiceDate = cm.ServiceDate?.DateTime,
                     Quantity = cm.Quantity ?? 0,
                     Notes = cm.Notes
@@ -514,11 +521,16 @@
             {
                 AppointmentId = AppointmentId,
                 SpouseName = form.SpouseName,
+                HusbandEducation = form.HusbandEducationId,
+                WifeEducation = form.WifeEducationId,
                 HusbandOccupation = form.HusbandOccupation,
                 WifeOccupation = form.WifeOccupation,
+                FamilyPlanningStage = form.FamilyPlanningStageId,
                 NumberOfLivingChildren = numChildren,
                 YoungestChildYears = youngYears,
                 YoungestChildMonths = youngMonths,
+                KbParticipantStatus = form.KBParticipantStatusId,
+                LastContraceptiveMethod = form.LastContraceptiveMethodId,
                 PregnancySigns = pregSigns,
                 AbnormalVaginalDischarge = abnormalDischarge,
                 AbdominalPain = abdominalPain,
@@ -529,18 +541,20 @@
                 Dysmenorrhea = dysmenorrhea,
                 InflammationSigns = inflammationSigns,
                 TumorOrMalignancy = tumor,
+                UterinePosition = form.UterinePositionId,
                 DiabetesSigns = diabetesSigns,
                 BloodClottingDisorder = bloodClottingDisorder,
                 OrchitisEpididymitis = orchitis,
                 TumorOrMalignancyMOP = tumorMOP,
                 AllowedContraceptiveMethods = form.AllowedContraceptiveMethods,
+                SelectedContraceptiveMethod = form.SelectedContraceptiveMethod,
                 ServiceDate = form.ServiceDate,
                 FollowUpDate = form.FollowUpDate,
                 RemovalDate = form.RemovalDate,
                 ObservationNotes = form.ObservationNotes,
                 ContraceptiveMethods = form.ContraceptiveMethods?.Select(cm => new CreateFamilyPlanningContraceptiveMethodRequest
                 {
-                    MethodName = cm.MethodName,
+                    MethodType = cm.MethodType,
                     ServiceDate = cm.ServiceDate,
                     Quantity = cm.Quantity,
                     Notes = cm.Notes
@@ -596,7 +610,7 @@
         currentMethod = new()
         {
             Id = method.Id,
-            MethodId = GetMethodId(method.MethodName),
+            MethodId = method.MethodType,
             ServiceDate = method.ServiceDate,
             Quantity = method.Quantity,
             Notes = method.Notes
@@ -611,14 +625,13 @@
             return;
 
         int.TryParse(qtyStr, out int qty);
-        var methodName = contraceptiveOptions.FirstOrDefault(x => x.Value == currentMethod.MethodId)?.Label;
         
         if (editingMethodId.HasValue && editingMethodId != Guid.Empty)
         {
             var existing = form.ContraceptiveMethods.FirstOrDefault(m => m.Id == editingMethodId);
             if (existing != null)
             {
-                existing.MethodName = methodName;
+                existing.MethodType = currentMethod.MethodId;
                 existing.ServiceDate = currentMethod.ServiceDate;
                 existing.Quantity = qty;
                 existing.Notes = currentMethod.Notes;
@@ -629,7 +642,7 @@
             form.ContraceptiveMethods.Add(new ContraceptiveMethodItem
             {
                 Id = Guid.NewGuid(),
-                MethodName = methodName,
+                MethodType = currentMethod.MethodId,
                 ServiceDate = currentMethod.ServiceDate,
                 Quantity = qty,
                 Notes = currentMethod.Notes
@@ -657,6 +670,13 @@
     private int? GetMethodId(string methodName)
     {
         return contraceptiveOptions.FirstOrDefault(x => x.Label == methodName)?.Value;
+    }
+
+    private string GetContraceptiveMethodLabel(int? methodType)
+    {
+        if (!methodType.HasValue)
+            return "Unknown";
+        return contraceptiveOptions.FirstOrDefault(x => x.Value == methodType)?.Label ?? "Unknown";
     }
 
     private void PrintForm()
@@ -699,6 +719,7 @@
         public int? LastContraceptiveMethodId { get; set; }
         public int? UterinePositionId { get; set; }
         public string AllowedContraceptiveMethods { get; set; }
+        public string SelectedContraceptiveMethod { get; set; }
         public DateTime? ServiceDate { get; set; }
         public DateTime? FollowUpDate { get; set; }
         public DateTime? RemovalDate { get; set; }
@@ -710,7 +731,7 @@
     {
         public Guid Id { get; set; }
         public int? MethodId { get; set; }
-        public string MethodName { get; set; }
+        public int? MethodType { get; set; }
         public DateTime? ServiceDate { get; set; }
         public int? Quantity { get; set; }
         public string Notes { get; set; }

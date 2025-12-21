@@ -1,5 +1,7 @@
 namespace MedizID.API.Models;
 
+using MedizID.API.Common.Enums;
+
 /// <summary>
 /// Family Planning (Keluarga Berencana) model for contraceptive counseling and services
 /// Based on Indonesian health standards (Form Akseptor)
@@ -19,10 +21,10 @@ public class FamilyPlanning
     public string? SpouseName { get; set; }
     
     /// <summary>Husband education level (Pendidikan Suami)</summary>
-    public string? HusbandEducation { get; set; }
+    public EducationLevel? HusbandEducation { get; set; }
     
     /// <summary>Wife education level (Pendidikan Istri)</summary>
-    public string? WifeEducation { get; set; }
+    public EducationLevel? WifeEducation { get; set; }
     
     #endregion
 
@@ -39,7 +41,7 @@ public class FamilyPlanning
     #region Section IX-X: Family Planning Status
     
     /// <summary>Family Planning stage/status (Tahapan KS)</summary>
-    public string? FamilyPlanningStage { get; set; }
+    public FamilyPlanningStage? FamilyPlanningStage { get; set; }
     
     /// <summary>Number of living children (Jumlah Anak Hidup)</summary>
     public int? NumberOfLivingChildren { get; set; }
@@ -59,10 +61,10 @@ public class FamilyPlanning
     #region Section XII: KB Participant Status
     
     /// <summary>Current KB participant status (Status Peserta KB)</summary>
-    public string? KBParticipantStatus { get; set; }
+    public KBParticipantStatus? KBParticipantStatus { get; set; }
     
     /// <summary>Last contraceptive method used (Cara KB Terakhir)</summary>
-    public string? LastContraceptiveMethod { get; set; }
+    public ContraceptiveMethod? LastContraceptiveMethod { get; set; }
     
     #endregion
 
@@ -107,7 +109,7 @@ public class FamilyPlanning
     #region Section 10: Uterine Position
     
     /// <summary>Uterine position (Posisi Rahim)</summary>
-    public string? UterinePosition { get; set; }
+    public UterinePosition? UterinePosition { get; set; }
     
     #endregion
 

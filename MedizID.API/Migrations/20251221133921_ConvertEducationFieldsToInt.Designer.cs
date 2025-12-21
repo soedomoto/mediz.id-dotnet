@@ -3,6 +3,7 @@ using System;
 using MedizID.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedizID.API.Migrations
 {
     [DbContext(typeof(MedizIDDbContext))]
-    partial class MedizIDDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251221133921_ConvertEducationFieldsToInt")]
+    partial class ConvertEducationFieldsToInt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -876,8 +879,8 @@ namespace MedizID.API.Migrations
                     b.Property<bool?>("EctopicPregnancyHistory")
                         .HasColumnType("boolean");
 
-                    b.Property<int?>("FamilyPlanningStage")
-                        .HasColumnType("integer");
+                    b.Property<string>("FamilyPlanningStage")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("FollowUpDate")
                         .HasColumnType("timestamp with time zone");
@@ -894,11 +897,11 @@ namespace MedizID.API.Migrations
                     b.Property<bool?>("InflammationSigns")
                         .HasColumnType("boolean");
 
-                    b.Property<int?>("KBParticipantStatus")
-                        .HasColumnType("integer");
+                    b.Property<string>("KBParticipantStatus")
+                        .HasColumnType("text");
 
-                    b.Property<int?>("LastContraceptiveMethod")
-                        .HasColumnType("integer");
+                    b.Property<string>("LastContraceptiveMethod")
+                        .HasColumnType("text");
 
                     b.Property<int?>("NumberOfLivingChildren")
                         .HasColumnType("integer");
@@ -936,8 +939,8 @@ namespace MedizID.API.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("UterinePosition")
-                        .HasColumnType("integer");
+                    b.Property<string>("UterinePosition")
+                        .HasColumnType("text");
 
                     b.Property<int?>("WifeEducation")
                         .HasColumnType("integer");
@@ -970,8 +973,8 @@ namespace MedizID.API.Migrations
                     b.Property<Guid>("FamilyPlanningId")
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("MethodType")
-                        .HasColumnType("integer");
+                    b.Property<string>("MethodName")
+                        .HasColumnType("text");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");

@@ -9,15 +9,15 @@ public class CreateFamilyPlanningRequest
     
     // Section VI-VII: Spouse Information and Education
     public string? SpouseName { get; set; }
-    public string? HusbandEducation { get; set; }
-    public string? WifeEducation { get; set; }
+    public int? HusbandEducation { get; set; }
+    public int? WifeEducation { get; set; }
     
     // Section VIII: Employment
     public string? HusbandOccupation { get; set; }
     public string? WifeOccupation { get; set; }
     
     // Section IX-X: Family Planning Status
-    public string? FamilyPlanningStage { get; set; }
+    public int? FamilyPlanningStage { get; set; }
     public int? NumberOfLivingChildren { get; set; }
     
     // Section XI: Youngest Child Age
@@ -25,8 +25,8 @@ public class CreateFamilyPlanningRequest
     public int? YoungestChildMonths { get; set; }
     
     // Section XII: KB Participant Status
-    public string? KBParticipantStatus { get; set; }
-    public string? LastContraceptiveMethod { get; set; }
+    public int? KBParticipantStatus { get; set; }
+    public int? LastContraceptiveMethod { get; set; }
     
     // Section 1-8: Pre-Insertion Examination
     public bool? PregnancySigns { get; set; }
@@ -43,7 +43,7 @@ public class CreateFamilyPlanningRequest
     public bool? TumorOrMalignancy { get; set; }
     
     // Section 10: Uterine Position
-    public string? UterinePosition { get; set; }
+    public int? UterinePosition { get; set; }
     
     // Section 11: Additional Examination for MOP/MOW
     public bool? DiabetesSigns { get; set; }
@@ -75,15 +75,15 @@ public class FamilyPlanningResponse
     
     // Section VI-VII: Spouse Information and Education
     public string? SpouseName { get; set; }
-    public string? HusbandEducation { get; set; }
-    public string? WifeEducation { get; set; }
+    public int? HusbandEducation { get; set; }
+    public int? WifeEducation { get; set; }
     
     // Section VIII: Employment
     public string? HusbandOccupation { get; set; }
     public string? WifeOccupation { get; set; }
     
     // Section IX-X: Family Planning Status
-    public string? FamilyPlanningStage { get; set; }
+    public int? FamilyPlanningStage { get; set; }
     public int? NumberOfLivingChildren { get; set; }
     
     // Section XI: Youngest Child Age
@@ -91,8 +91,8 @@ public class FamilyPlanningResponse
     public int? YoungestChildMonths { get; set; }
     
     // Section XII: KB Participant Status
-    public string? KBParticipantStatus { get; set; }
-    public string? LastContraceptiveMethod { get; set; }
+    public int? KBParticipantStatus { get; set; }
+    public int? LastContraceptiveMethod { get; set; }
     
     // Section 1-8: Pre-Insertion Examination
     public bool? PregnancySigns { get; set; }
@@ -109,7 +109,7 @@ public class FamilyPlanningResponse
     public bool? TumorOrMalignancy { get; set; }
     
     // Section 10: Uterine Position
-    public string? UterinePosition { get; set; }
+    public int? UterinePosition { get; set; }
     
     // Section 11: Additional Examination for MOP/MOW
     public bool? DiabetesSigns { get; set; }
@@ -137,13 +137,24 @@ public class FamilyPlanningResponse
 }
 
 /// <summary>
+/// DTO for creating/updating Contraceptive Methods
+/// </summary>
+public class CreateFamilyPlanningContraceptiveMethodRequest
+{
+    public int? MethodType { get; set; }
+    public DateTime? ServiceDate { get; set; }
+    public int? Quantity { get; set; }
+    public string? Notes { get; set; }
+}
+
+/// <summary>
 /// DTO for Contraceptive Methods
 /// </summary>
 public class FamilyPlanningContraceptiveMethodDto
 {
     public Guid Id { get; set; }
     public Guid FamilyPlanningId { get; set; }
-    public string? MethodName { get; set; }
+    public int? MethodType { get; set; }
     public DateTime? ServiceDate { get; set; }
     public int? Quantity { get; set; }
     public string? Notes { get; set; }

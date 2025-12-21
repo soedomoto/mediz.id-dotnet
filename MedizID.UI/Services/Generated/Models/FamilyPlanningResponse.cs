@@ -47,23 +47,11 @@ namespace MedizID.UI.Services.Generated.Models
         /// <summary>The ectopicPregnancyHistory property</summary>
         public bool? EctopicPregnancyHistory { get; set; }
         /// <summary>The familyPlanningStage property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? FamilyPlanningStage { get; set; }
-#nullable restore
-#else
-        public string FamilyPlanningStage { get; set; }
-#endif
+        public int? FamilyPlanningStage { get; set; }
         /// <summary>The followUpDate property</summary>
         public DateTimeOffset? FollowUpDate { get; set; }
         /// <summary>The husbandEducation property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? HusbandEducation { get; set; }
-#nullable restore
-#else
-        public string HusbandEducation { get; set; }
-#endif
+        public int? HusbandEducation { get; set; }
         /// <summary>The husbandOccupation property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -79,13 +67,7 @@ namespace MedizID.UI.Services.Generated.Models
         /// <summary>The iudStillInPlace property</summary>
         public bool? IudStillInPlace { get; set; }
         /// <summary>The kbParticipantStatus property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? KbParticipantStatus { get; set; }
-#nullable restore
-#else
-        public string KbParticipantStatus { get; set; }
-#endif
+        public int? KbParticipantStatus { get; set; }
         /// <summary>The laboratoryResults property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -95,13 +77,7 @@ namespace MedizID.UI.Services.Generated.Models
         public List<global::MedizID.UI.Services.Generated.Models.FamilyPlanningLaboratoryResultDto> LaboratoryResults { get; set; }
 #endif
         /// <summary>The lastContraceptiveMethod property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? LastContraceptiveMethod { get; set; }
-#nullable restore
-#else
-        public string LastContraceptiveMethod { get; set; }
-#endif
+        public int? LastContraceptiveMethod { get; set; }
         /// <summary>The numberOfLivingChildren property</summary>
         public int? NumberOfLivingChildren { get; set; }
         /// <summary>The observationNotes property</summary>
@@ -153,21 +129,9 @@ namespace MedizID.UI.Services.Generated.Models
         /// <summary>The updatedAt property</summary>
         public DateTimeOffset? UpdatedAt { get; set; }
         /// <summary>The uterinePosition property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? UterinePosition { get; set; }
-#nullable restore
-#else
-        public string UterinePosition { get; set; }
-#endif
+        public int? UterinePosition { get; set; }
         /// <summary>The wifeEducation property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? WifeEducation { get; set; }
-#nullable restore
-#else
-        public string WifeEducation { get; set; }
-#endif
+        public int? WifeEducation { get; set; }
         /// <summary>The wifeOccupation property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -209,16 +173,16 @@ namespace MedizID.UI.Services.Generated.Models
                 { "diabetesSigns", n => { DiabetesSigns = n.GetBoolValue(); } },
                 { "dysmenorrhea", n => { Dysmenorrhea = n.GetBoolValue(); } },
                 { "ectopicPregnancyHistory", n => { EctopicPregnancyHistory = n.GetBoolValue(); } },
-                { "familyPlanningStage", n => { FamilyPlanningStage = n.GetStringValue(); } },
+                { "familyPlanningStage", n => { FamilyPlanningStage = n.GetIntValue(); } },
                 { "followUpDate", n => { FollowUpDate = n.GetDateTimeOffsetValue(); } },
-                { "husbandEducation", n => { HusbandEducation = n.GetStringValue(); } },
+                { "husbandEducation", n => { HusbandEducation = n.GetIntValue(); } },
                 { "husbandOccupation", n => { HusbandOccupation = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
                 { "inflammationSigns", n => { InflammationSigns = n.GetBoolValue(); } },
                 { "iudStillInPlace", n => { IudStillInPlace = n.GetBoolValue(); } },
-                { "kbParticipantStatus", n => { KbParticipantStatus = n.GetStringValue(); } },
+                { "kbParticipantStatus", n => { KbParticipantStatus = n.GetIntValue(); } },
                 { "laboratoryResults", n => { LaboratoryResults = n.GetCollectionOfObjectValues<global::MedizID.UI.Services.Generated.Models.FamilyPlanningLaboratoryResultDto>(global::MedizID.UI.Services.Generated.Models.FamilyPlanningLaboratoryResultDto.CreateFromDiscriminatorValue)?.AsList(); } },
-                { "lastContraceptiveMethod", n => { LastContraceptiveMethod = n.GetStringValue(); } },
+                { "lastContraceptiveMethod", n => { LastContraceptiveMethod = n.GetIntValue(); } },
                 { "numberOfLivingChildren", n => { NumberOfLivingChildren = n.GetIntValue(); } },
                 { "observationNotes", n => { ObservationNotes = n.GetStringValue(); } },
                 { "orchitisEpididymitis", n => { OrchitisEpididymitis = n.GetBoolValue(); } },
@@ -232,8 +196,8 @@ namespace MedizID.UI.Services.Generated.Models
                 { "tumorOrMalignancy", n => { TumorOrMalignancy = n.GetBoolValue(); } },
                 { "tumorOrMalignancyMOP", n => { TumorOrMalignancyMOP = n.GetBoolValue(); } },
                 { "updatedAt", n => { UpdatedAt = n.GetDateTimeOffsetValue(); } },
-                { "uterinePosition", n => { UterinePosition = n.GetStringValue(); } },
-                { "wifeEducation", n => { WifeEducation = n.GetStringValue(); } },
+                { "uterinePosition", n => { UterinePosition = n.GetIntValue(); } },
+                { "wifeEducation", n => { WifeEducation = n.GetIntValue(); } },
                 { "wifeOccupation", n => { WifeOccupation = n.GetStringValue(); } },
                 { "youngestChildMonths", n => { YoungestChildMonths = n.GetIntValue(); } },
                 { "youngestChildYears", n => { YoungestChildYears = n.GetIntValue(); } },
@@ -257,16 +221,16 @@ namespace MedizID.UI.Services.Generated.Models
             writer.WriteBoolValue("diabetesSigns", DiabetesSigns);
             writer.WriteBoolValue("dysmenorrhea", Dysmenorrhea);
             writer.WriteBoolValue("ectopicPregnancyHistory", EctopicPregnancyHistory);
-            writer.WriteStringValue("familyPlanningStage", FamilyPlanningStage);
+            writer.WriteIntValue("familyPlanningStage", FamilyPlanningStage);
             writer.WriteDateTimeOffsetValue("followUpDate", FollowUpDate);
-            writer.WriteStringValue("husbandEducation", HusbandEducation);
+            writer.WriteIntValue("husbandEducation", HusbandEducation);
             writer.WriteStringValue("husbandOccupation", HusbandOccupation);
             writer.WriteGuidValue("id", Id);
             writer.WriteBoolValue("inflammationSigns", InflammationSigns);
             writer.WriteBoolValue("iudStillInPlace", IudStillInPlace);
-            writer.WriteStringValue("kbParticipantStatus", KbParticipantStatus);
+            writer.WriteIntValue("kbParticipantStatus", KbParticipantStatus);
             writer.WriteCollectionOfObjectValues<global::MedizID.UI.Services.Generated.Models.FamilyPlanningLaboratoryResultDto>("laboratoryResults", LaboratoryResults);
-            writer.WriteStringValue("lastContraceptiveMethod", LastContraceptiveMethod);
+            writer.WriteIntValue("lastContraceptiveMethod", LastContraceptiveMethod);
             writer.WriteIntValue("numberOfLivingChildren", NumberOfLivingChildren);
             writer.WriteStringValue("observationNotes", ObservationNotes);
             writer.WriteBoolValue("orchitisEpididymitis", OrchitisEpididymitis);
@@ -280,8 +244,8 @@ namespace MedizID.UI.Services.Generated.Models
             writer.WriteBoolValue("tumorOrMalignancy", TumorOrMalignancy);
             writer.WriteBoolValue("tumorOrMalignancyMOP", TumorOrMalignancyMOP);
             writer.WriteDateTimeOffsetValue("updatedAt", UpdatedAt);
-            writer.WriteStringValue("uterinePosition", UterinePosition);
-            writer.WriteStringValue("wifeEducation", WifeEducation);
+            writer.WriteIntValue("uterinePosition", UterinePosition);
+            writer.WriteIntValue("wifeEducation", WifeEducation);
             writer.WriteStringValue("wifeOccupation", WifeOccupation);
             writer.WriteIntValue("youngestChildMonths", YoungestChildMonths);
             writer.WriteIntValue("youngestChildYears", YoungestChildYears);

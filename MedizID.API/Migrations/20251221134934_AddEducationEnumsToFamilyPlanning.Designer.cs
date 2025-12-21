@@ -3,6 +3,7 @@ using System;
 using MedizID.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedizID.API.Migrations
 {
     [DbContext(typeof(MedizIDDbContext))]
-    partial class MedizIDDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251221134934_AddEducationEnumsToFamilyPlanning")]
+    partial class AddEducationEnumsToFamilyPlanning
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -936,8 +939,8 @@ namespace MedizID.API.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("UterinePosition")
-                        .HasColumnType("integer");
+                    b.Property<string>("UterinePosition")
+                        .HasColumnType("text");
 
                     b.Property<int?>("WifeEducation")
                         .HasColumnType("integer");
@@ -970,8 +973,8 @@ namespace MedizID.API.Migrations
                     b.Property<Guid>("FamilyPlanningId")
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("MethodType")
-                        .HasColumnType("integer");
+                    b.Property<string>("MethodName")
+                        .HasColumnType("text");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");

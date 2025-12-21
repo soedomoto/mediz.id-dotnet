@@ -1,4 +1,5 @@
 using System;
+using MedizID.API.Common.Enums;
 
 namespace MedizID.API.Models;
 
@@ -18,9 +19,9 @@ public class FamilyPlanningContraceptiveMethod
     public Guid FamilyPlanningId { get; set; }
 
     /// <summary>
-    /// Contraceptive method name (IUD, Implant, Pill, Condom, etc.)
+    /// Contraceptive method type (IUD, Implant, Pill, Condom, etc.)
     /// </summary>
-    public string? MethodName { get; set; }
+    public ContraceptiveMethod? MethodType { get; set; }
 
     /// <summary>
     /// Service date (tanggal pelayanan)

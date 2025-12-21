@@ -12,14 +12,8 @@ namespace MedizID.UI.Services.Generated.Models
     public partial class CreateFamilyPlanningContraceptiveMethodRequest : IParsable
     #pragma warning restore CS1591
     {
-        /// <summary>The methodName property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? MethodName { get; set; }
-#nullable restore
-#else
-        public string MethodName { get; set; }
-#endif
+        /// <summary>The methodType property</summary>
+        public int? MethodType { get; set; }
         /// <summary>The notes property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -50,7 +44,7 @@ namespace MedizID.UI.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "methodName", n => { MethodName = n.GetStringValue(); } },
+                { "methodType", n => { MethodType = n.GetIntValue(); } },
                 { "notes", n => { Notes = n.GetStringValue(); } },
                 { "quantity", n => { Quantity = n.GetIntValue(); } },
                 { "serviceDate", n => { ServiceDate = n.GetDateTimeOffsetValue(); } },
@@ -63,7 +57,7 @@ namespace MedizID.UI.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteStringValue("methodName", MethodName);
+            writer.WriteIntValue("methodType", MethodType);
             writer.WriteStringValue("notes", Notes);
             writer.WriteIntValue("quantity", Quantity);
             writer.WriteDateTimeOffsetValue("serviceDate", ServiceDate);

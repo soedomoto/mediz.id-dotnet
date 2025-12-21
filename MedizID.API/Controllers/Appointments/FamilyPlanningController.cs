@@ -1,4 +1,5 @@
 using MedizID.API.Common.Exceptions;
+using MedizID.API.Common.Enums;
 using MedizID.API.Data;
 using MedizID.API.DTOs;
 using MedizID.API.Models;
@@ -57,16 +58,16 @@ public class FamilyPlanningController : ControllerBase
                     Id = fp.Id,
                     AppointmentId = fp.AppointmentId,
                     SpouseName = fp.SpouseName,
-                    HusbandEducation = fp.HusbandEducation,
-                    WifeEducation = fp.WifeEducation,
+                    HusbandEducation = fp.HusbandEducation.HasValue ? (int)fp.HusbandEducation : null,
+                    WifeEducation = fp.WifeEducation.HasValue ? (int)fp.WifeEducation : null,
                     HusbandOccupation = fp.HusbandOccupation,
                     WifeOccupation = fp.WifeOccupation,
-                    FamilyPlanningStage = fp.FamilyPlanningStage,
+                    FamilyPlanningStage = fp.FamilyPlanningStage.HasValue ? (int)fp.FamilyPlanningStage : null,
                     NumberOfLivingChildren = fp.NumberOfLivingChildren,
                     YoungestChildYears = fp.YoungestChildYears,
                     YoungestChildMonths = fp.YoungestChildMonths,
-                    KBParticipantStatus = fp.KBParticipantStatus,
-                    LastContraceptiveMethod = fp.LastContraceptiveMethod,
+                    KBParticipantStatus = fp.KBParticipantStatus.HasValue ? (int)fp.KBParticipantStatus : null,
+                    LastContraceptiveMethod = fp.LastContraceptiveMethod.HasValue ? (int)fp.LastContraceptiveMethod : null,
                     PregnancySigns = fp.PregnancySigns,
                     AbnormalVaginalDischarge = fp.AbnormalVaginalDischarge,
                     AbdominalPain = fp.AbdominalPain,
@@ -77,7 +78,7 @@ public class FamilyPlanningController : ControllerBase
                     Dysmenorrhea = fp.Dysmenorrhea,
                     InflammationSigns = fp.InflammationSigns,
                     TumorOrMalignancy = fp.TumorOrMalignancy,
-                    UterinePosition = fp.UterinePosition,
+                    UterinePosition = fp.UterinePosition.HasValue ? (int)fp.UterinePosition : null,
                     DiabetesSigns = fp.DiabetesSigns,
                     BloodClottingDisorder = fp.BloodClottingDisorder,
                     OrchitisEpididymitis = fp.OrchitisEpididymitis,
@@ -94,7 +95,7 @@ public class FamilyPlanningController : ControllerBase
                     {
                         Id = cm.Id,
                         FamilyPlanningId = cm.FamilyPlanningId,
-                        MethodName = cm.MethodName,
+                        MethodType = cm.MethodType.HasValue ? (int)cm.MethodType : null,
                         ServiceDate = cm.ServiceDate,
                         Quantity = cm.Quantity,
                         Notes = cm.Notes,
@@ -174,16 +175,16 @@ public class FamilyPlanningController : ControllerBase
                 Id = record.Id,
                 AppointmentId = record.AppointmentId,
                 SpouseName = record.SpouseName,
-                HusbandEducation = record.HusbandEducation,
-                WifeEducation = record.WifeEducation,
+                HusbandEducation = record.HusbandEducation.HasValue ? (int)record.HusbandEducation : null,
+                WifeEducation = record.WifeEducation.HasValue ? (int)record.WifeEducation : null,
                 HusbandOccupation = record.HusbandOccupation,
                 WifeOccupation = record.WifeOccupation,
-                FamilyPlanningStage = record.FamilyPlanningStage,
+                FamilyPlanningStage = record.FamilyPlanningStage.HasValue ? (int)record.FamilyPlanningStage : null,
                 NumberOfLivingChildren = record.NumberOfLivingChildren,
                 YoungestChildYears = record.YoungestChildYears,
                 YoungestChildMonths = record.YoungestChildMonths,
-                KBParticipantStatus = record.KBParticipantStatus,
-                LastContraceptiveMethod = record.LastContraceptiveMethod,
+                KBParticipantStatus = record.KBParticipantStatus.HasValue ? (int)record.KBParticipantStatus : null,
+                LastContraceptiveMethod = record.LastContraceptiveMethod.HasValue ? (int)record.LastContraceptiveMethod : null,
                 PregnancySigns = record.PregnancySigns,
                 AbnormalVaginalDischarge = record.AbnormalVaginalDischarge,
                 AbdominalPain = record.AbdominalPain,
@@ -194,7 +195,7 @@ public class FamilyPlanningController : ControllerBase
                 Dysmenorrhea = record.Dysmenorrhea,
                 InflammationSigns = record.InflammationSigns,
                 TumorOrMalignancy = record.TumorOrMalignancy,
-                UterinePosition = record.UterinePosition,
+                UterinePosition = record.UterinePosition.HasValue ? (int)record.UterinePosition : null,
                 DiabetesSigns = record.DiabetesSigns,
                 BloodClottingDisorder = record.BloodClottingDisorder,
                 OrchitisEpididymitis = record.OrchitisEpididymitis,
@@ -211,7 +212,7 @@ public class FamilyPlanningController : ControllerBase
                 {
                     Id = cm.Id,
                     FamilyPlanningId = cm.FamilyPlanningId,
-                    MethodName = cm.MethodName,
+                    MethodType = cm.MethodType.HasValue ? (int)cm.MethodType : null,
                     ServiceDate = cm.ServiceDate,
                     Quantity = cm.Quantity,
                     Notes = cm.Notes,
@@ -267,16 +268,16 @@ public class FamilyPlanningController : ControllerBase
                 Id = record.Id,
                 AppointmentId = record.AppointmentId,
                 SpouseName = record.SpouseName,
-                HusbandEducation = record.HusbandEducation,
-                WifeEducation = record.WifeEducation,
+                HusbandEducation = record.HusbandEducation.HasValue ? (int)record.HusbandEducation : null,
+                WifeEducation = record.WifeEducation.HasValue ? (int)record.WifeEducation : null,
                 HusbandOccupation = record.HusbandOccupation,
                 WifeOccupation = record.WifeOccupation,
-                FamilyPlanningStage = record.FamilyPlanningStage,
+                FamilyPlanningStage = record.FamilyPlanningStage.HasValue ? (int)record.FamilyPlanningStage : null,
                 NumberOfLivingChildren = record.NumberOfLivingChildren,
                 YoungestChildYears = record.YoungestChildYears,
                 YoungestChildMonths = record.YoungestChildMonths,
-                KBParticipantStatus = record.KBParticipantStatus,
-                LastContraceptiveMethod = record.LastContraceptiveMethod,
+                KBParticipantStatus = record.KBParticipantStatus.HasValue ? (int)record.KBParticipantStatus : null,
+                LastContraceptiveMethod = record.LastContraceptiveMethod.HasValue ? (int)record.LastContraceptiveMethod : null,
                 PregnancySigns = record.PregnancySigns,
                 AbnormalVaginalDischarge = record.AbnormalVaginalDischarge,
                 AbdominalPain = record.AbdominalPain,
@@ -287,7 +288,7 @@ public class FamilyPlanningController : ControllerBase
                 Dysmenorrhea = record.Dysmenorrhea,
                 InflammationSigns = record.InflammationSigns,
                 TumorOrMalignancy = record.TumorOrMalignancy,
-                UterinePosition = record.UterinePosition,
+                UterinePosition = record.UterinePosition.HasValue ? (int)record.UterinePosition : null,
                 DiabetesSigns = record.DiabetesSigns,
                 BloodClottingDisorder = record.BloodClottingDisorder,
                 OrchitisEpididymitis = record.OrchitisEpididymitis,
@@ -304,7 +305,7 @@ public class FamilyPlanningController : ControllerBase
                 {
                     Id = cm.Id,
                     FamilyPlanningId = cm.FamilyPlanningId,
-                    MethodName = cm.MethodName,
+                    MethodType = cm.MethodType.HasValue ? (int)cm.MethodType : null,
                     ServiceDate = cm.ServiceDate,
                     Quantity = cm.Quantity,
                     Notes = cm.Notes,
@@ -362,16 +363,16 @@ public class FamilyPlanningController : ControllerBase
                 Id = Guid.NewGuid(),
                 AppointmentId = request.AppointmentId,
                 SpouseName = request.SpouseName,
-                HusbandEducation = request.HusbandEducation,
-                WifeEducation = request.WifeEducation,
+                HusbandEducation = request.HusbandEducation.HasValue ? (EducationLevel)request.HusbandEducation : null,
+                WifeEducation = request.WifeEducation.HasValue ? (EducationLevel)request.WifeEducation : null,
                 HusbandOccupation = request.HusbandOccupation,
                 WifeOccupation = request.WifeOccupation,
-                FamilyPlanningStage = request.FamilyPlanningStage,
+                FamilyPlanningStage = request.FamilyPlanningStage.HasValue ? (FamilyPlanningStage)request.FamilyPlanningStage : null,
                 NumberOfLivingChildren = request.NumberOfLivingChildren,
                 YoungestChildYears = request.YoungestChildYears,
                 YoungestChildMonths = request.YoungestChildMonths,
-                KBParticipantStatus = request.KBParticipantStatus,
-                LastContraceptiveMethod = request.LastContraceptiveMethod,
+                KBParticipantStatus = request.KBParticipantStatus.HasValue ? (KBParticipantStatus)request.KBParticipantStatus : null,
+                LastContraceptiveMethod = request.LastContraceptiveMethod.HasValue ? (ContraceptiveMethod)request.LastContraceptiveMethod : null,
                 PregnancySigns = request.PregnancySigns,
                 AbnormalVaginalDischarge = request.AbnormalVaginalDischarge,
                 AbdominalPain = request.AbdominalPain,
@@ -382,16 +383,16 @@ public class FamilyPlanningController : ControllerBase
                 Dysmenorrhea = request.Dysmenorrhea,
                 InflammationSigns = request.InflammationSigns,
                 TumorOrMalignancy = request.TumorOrMalignancy,
-                UterinePosition = request.UterinePosition,
+                UterinePosition = request.UterinePosition.HasValue ? (UterinePosition)request.UterinePosition : null,
                 DiabetesSigns = request.DiabetesSigns,
                 BloodClottingDisorder = request.BloodClottingDisorder,
                 OrchitisEpididymitis = request.OrchitisEpididymitis,
                 TumorOrMalignancyMOP = request.TumorOrMalignancyMOP,
                 AllowedContraceptiveMethods = request.AllowedContraceptiveMethods,
                 SelectedContraceptiveMethod = request.SelectedContraceptiveMethod,
-                ServiceDate = request.ServiceDate,
-                FollowUpDate = request.FollowUpDate,
-                RemovalDate = request.RemovalDate,
+                ServiceDate = request.ServiceDate.HasValue ? (request.ServiceDate.Value.Kind == DateTimeKind.Utc ? request.ServiceDate.Value : request.ServiceDate.Value.ToUniversalTime()) : (DateTime?)null,
+                FollowUpDate = request.FollowUpDate.HasValue ? (request.FollowUpDate.Value.Kind == DateTimeKind.Utc ? request.FollowUpDate.Value : request.FollowUpDate.Value.ToUniversalTime()) : (DateTime?)null,
+                RemovalDate = request.RemovalDate.HasValue ? (request.RemovalDate.Value.Kind == DateTimeKind.Utc ? request.RemovalDate.Value : request.RemovalDate.Value.ToUniversalTime()) : (DateTime?)null,
                 ObservationNotes = request.ObservationNotes,
                 CreatedAt = DateTime.UtcNow
             };
@@ -406,8 +407,8 @@ public class FamilyPlanningController : ControllerBase
                 {
                     Id = Guid.NewGuid(),
                     FamilyPlanningId = familyPlanning.Id,
-                    MethodName = cm.MethodName,
-                    ServiceDate = cm.ServiceDate,
+                    MethodType = cm.MethodType.HasValue ? (ContraceptiveMethod)cm.MethodType : null,
+                    ServiceDate = cm.ServiceDate.HasValue ? (cm.ServiceDate.Value.Kind == DateTimeKind.Utc ? cm.ServiceDate.Value : cm.ServiceDate.Value.ToUniversalTime()) : (DateTime?)null,
                     Quantity = cm.Quantity,
                     Notes = cm.Notes,
                     CreatedAt = DateTime.UtcNow,
@@ -425,16 +426,16 @@ public class FamilyPlanningController : ControllerBase
                 Id = familyPlanning.Id,
                 AppointmentId = familyPlanning.AppointmentId,
                 SpouseName = familyPlanning.SpouseName,
-                HusbandEducation = familyPlanning.HusbandEducation,
-                WifeEducation = familyPlanning.WifeEducation,
+                HusbandEducation = familyPlanning.HusbandEducation.HasValue ? (int)familyPlanning.HusbandEducation : null,
+                WifeEducation = familyPlanning.WifeEducation.HasValue ? (int)familyPlanning.WifeEducation : null,
                 HusbandOccupation = familyPlanning.HusbandOccupation,
                 WifeOccupation = familyPlanning.WifeOccupation,
-                FamilyPlanningStage = familyPlanning.FamilyPlanningStage,
+                FamilyPlanningStage = familyPlanning.FamilyPlanningStage.HasValue ? (int)familyPlanning.FamilyPlanningStage : null,
                 NumberOfLivingChildren = familyPlanning.NumberOfLivingChildren,
                 YoungestChildYears = familyPlanning.YoungestChildYears,
                 YoungestChildMonths = familyPlanning.YoungestChildMonths,
-                KBParticipantStatus = familyPlanning.KBParticipantStatus,
-                LastContraceptiveMethod = familyPlanning.LastContraceptiveMethod,
+                KBParticipantStatus = familyPlanning.KBParticipantStatus.HasValue ? (int)familyPlanning.KBParticipantStatus : null,
+                LastContraceptiveMethod = familyPlanning.LastContraceptiveMethod.HasValue ? (int)familyPlanning.LastContraceptiveMethod : null,
                 PregnancySigns = familyPlanning.PregnancySigns,
                 AbnormalVaginalDischarge = familyPlanning.AbnormalVaginalDischarge,
                 AbdominalPain = familyPlanning.AbdominalPain,
@@ -445,7 +446,7 @@ public class FamilyPlanningController : ControllerBase
                 Dysmenorrhea = familyPlanning.Dysmenorrhea,
                 InflammationSigns = familyPlanning.InflammationSigns,
                 TumorOrMalignancy = familyPlanning.TumorOrMalignancy,
-                UterinePosition = familyPlanning.UterinePosition,
+                UterinePosition = familyPlanning.UterinePosition.HasValue ? (int)familyPlanning.UterinePosition : null,
                 DiabetesSigns = familyPlanning.DiabetesSigns,
                 BloodClottingDisorder = familyPlanning.BloodClottingDisorder,
                 OrchitisEpididymitis = familyPlanning.OrchitisEpididymitis,
@@ -460,7 +461,7 @@ public class FamilyPlanningController : ControllerBase
                 UpdatedAt = familyPlanning.UpdatedAt,
                 ContraceptiveMethods = request.ContraceptiveMethods?.Select(cm => new FamilyPlanningContraceptiveMethodDto
                 {
-                    MethodName = cm.MethodName,
+                    MethodType = cm.MethodType,
                     ServiceDate = cm.ServiceDate,
                     Quantity = cm.Quantity,
                     Notes = cm.Notes
@@ -501,11 +502,11 @@ public class FamilyPlanningController : ControllerBase
             if (!string.IsNullOrEmpty(request.SpouseName))
                 familyPlanning.SpouseName = request.SpouseName;
 
-            if (!string.IsNullOrEmpty(request.HusbandEducation))
-                familyPlanning.HusbandEducation = request.HusbandEducation;
+            if (request.HusbandEducation.HasValue)
+                familyPlanning.HusbandEducation = (EducationLevel)request.HusbandEducation;
 
-            if (!string.IsNullOrEmpty(request.WifeEducation))
-                familyPlanning.WifeEducation = request.WifeEducation;
+            if (request.WifeEducation.HasValue)
+                familyPlanning.WifeEducation = (EducationLevel)request.WifeEducation;
 
             if (!string.IsNullOrEmpty(request.HusbandOccupation))
                 familyPlanning.HusbandOccupation = request.HusbandOccupation;
@@ -513,8 +514,8 @@ public class FamilyPlanningController : ControllerBase
             if (!string.IsNullOrEmpty(request.WifeOccupation))
                 familyPlanning.WifeOccupation = request.WifeOccupation;
 
-            if (!string.IsNullOrEmpty(request.FamilyPlanningStage))
-                familyPlanning.FamilyPlanningStage = request.FamilyPlanningStage;
+            if (request.FamilyPlanningStage.HasValue)
+                familyPlanning.FamilyPlanningStage = (FamilyPlanningStage)request.FamilyPlanningStage;
 
             if (request.NumberOfLivingChildren.HasValue)
                 familyPlanning.NumberOfLivingChildren = request.NumberOfLivingChildren;
@@ -525,11 +526,11 @@ public class FamilyPlanningController : ControllerBase
             if (request.YoungestChildMonths.HasValue)
                 familyPlanning.YoungestChildMonths = request.YoungestChildMonths;
 
-            if (!string.IsNullOrEmpty(request.KBParticipantStatus))
-                familyPlanning.KBParticipantStatus = request.KBParticipantStatus;
+            if (request.KBParticipantStatus.HasValue)
+                familyPlanning.KBParticipantStatus = (KBParticipantStatus)request.KBParticipantStatus;
 
-            if (!string.IsNullOrEmpty(request.LastContraceptiveMethod))
-                familyPlanning.LastContraceptiveMethod = request.LastContraceptiveMethod;
+            if (request.LastContraceptiveMethod.HasValue)
+                familyPlanning.LastContraceptiveMethod = (ContraceptiveMethod)request.LastContraceptiveMethod;
 
             // Pre-insertion examination
             if (request.PregnancySigns.HasValue)
@@ -563,8 +564,8 @@ public class FamilyPlanningController : ControllerBase
             if (request.TumorOrMalignancy.HasValue)
                 familyPlanning.TumorOrMalignancy = request.TumorOrMalignancy;
 
-            if (!string.IsNullOrEmpty(request.UterinePosition))
-                familyPlanning.UterinePosition = request.UterinePosition;
+            if (request.UterinePosition.HasValue)
+                familyPlanning.UterinePosition = (UterinePosition)request.UterinePosition;
 
             // Additional examination for MOP/MOW
             if (request.DiabetesSigns.HasValue)
@@ -587,13 +588,13 @@ public class FamilyPlanningController : ControllerBase
                 familyPlanning.SelectedContraceptiveMethod = request.SelectedContraceptiveMethod;
 
             if (request.ServiceDate.HasValue)
-                familyPlanning.ServiceDate = request.ServiceDate;
+                familyPlanning.ServiceDate = request.ServiceDate.Value.Kind == DateTimeKind.Utc ? request.ServiceDate.Value : request.ServiceDate.Value.ToUniversalTime();
 
             if (request.FollowUpDate.HasValue)
-                familyPlanning.FollowUpDate = request.FollowUpDate;
+                familyPlanning.FollowUpDate = request.FollowUpDate.Value.Kind == DateTimeKind.Utc ? request.FollowUpDate.Value : request.FollowUpDate.Value.ToUniversalTime();
 
             if (request.RemovalDate.HasValue)
-                familyPlanning.RemovalDate = request.RemovalDate;
+                familyPlanning.RemovalDate = request.RemovalDate.Value.Kind == DateTimeKind.Utc ? request.RemovalDate.Value : request.RemovalDate.Value.ToUniversalTime();
 
             if (!string.IsNullOrEmpty(request.ObservationNotes))
                 familyPlanning.ObservationNotes = request.ObservationNotes;
@@ -613,8 +614,8 @@ public class FamilyPlanningController : ControllerBase
                     {
                         Id = Guid.NewGuid(),
                         FamilyPlanningId = familyPlanning.Id,
-                        MethodName = cm.MethodName,
-                        ServiceDate = cm.ServiceDate,
+                        MethodType = cm.MethodType.HasValue ? (ContraceptiveMethod)cm.MethodType : null,
+                        ServiceDate = cm.ServiceDate.HasValue ? (cm.ServiceDate.Value.Kind == DateTimeKind.Utc ? cm.ServiceDate.Value : cm.ServiceDate.Value.ToUniversalTime()) : (DateTime?)null,
                         Quantity = cm.Quantity,
                         Notes = cm.Notes,
                         CreatedAt = DateTime.UtcNow,
@@ -642,16 +643,16 @@ public class FamilyPlanningController : ControllerBase
                 Id = familyPlanning.Id,
                 AppointmentId = familyPlanning.AppointmentId,
                 SpouseName = familyPlanning.SpouseName,
-                HusbandEducation = familyPlanning.HusbandEducation,
-                WifeEducation = familyPlanning.WifeEducation,
+                HusbandEducation = familyPlanning.HusbandEducation.HasValue ? (int)familyPlanning.HusbandEducation : null,
+                WifeEducation = familyPlanning.WifeEducation.HasValue ? (int)familyPlanning.WifeEducation : null,
                 HusbandOccupation = familyPlanning.HusbandOccupation,
                 WifeOccupation = familyPlanning.WifeOccupation,
-                FamilyPlanningStage = familyPlanning.FamilyPlanningStage,
+                FamilyPlanningStage = familyPlanning.FamilyPlanningStage.HasValue ? (int)familyPlanning.FamilyPlanningStage : null,
                 NumberOfLivingChildren = familyPlanning.NumberOfLivingChildren,
                 YoungestChildYears = familyPlanning.YoungestChildYears,
                 YoungestChildMonths = familyPlanning.YoungestChildMonths,
-                KBParticipantStatus = familyPlanning.KBParticipantStatus,
-                LastContraceptiveMethod = familyPlanning.LastContraceptiveMethod,
+                KBParticipantStatus = familyPlanning.KBParticipantStatus.HasValue ? (int)familyPlanning.KBParticipantStatus : null,
+                LastContraceptiveMethod = familyPlanning.LastContraceptiveMethod.HasValue ? (int)familyPlanning.LastContraceptiveMethod : null,
                 PregnancySigns = familyPlanning.PregnancySigns,
                 AbnormalVaginalDischarge = familyPlanning.AbnormalVaginalDischarge,
                 AbdominalPain = familyPlanning.AbdominalPain,
@@ -662,7 +663,7 @@ public class FamilyPlanningController : ControllerBase
                 Dysmenorrhea = familyPlanning.Dysmenorrhea,
                 InflammationSigns = familyPlanning.InflammationSigns,
                 TumorOrMalignancy = familyPlanning.TumorOrMalignancy,
-                UterinePosition = familyPlanning.UterinePosition,
+                UterinePosition = familyPlanning.UterinePosition.HasValue ? (int)familyPlanning.UterinePosition : null,
                 DiabetesSigns = familyPlanning.DiabetesSigns,
                 BloodClottingDisorder = familyPlanning.BloodClottingDisorder,
                 OrchitisEpididymitis = familyPlanning.OrchitisEpididymitis,
@@ -679,7 +680,7 @@ public class FamilyPlanningController : ControllerBase
                 {
                     Id = cm.Id,
                     FamilyPlanningId = cm.FamilyPlanningId,
-                    MethodName = cm.MethodName,
+                    MethodType = cm.MethodType.HasValue ? (int)cm.MethodType : null,
                     ServiceDate = cm.ServiceDate,
                     Quantity = cm.Quantity,
                     Notes = cm.Notes,
