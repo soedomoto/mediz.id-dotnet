@@ -270,8 +270,8 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
 
         modelBuilder.Entity<Immunization>()
             .HasOne(i => i.Appointment)
-            .WithMany()
-            .HasForeignKey(i => i.AppointmentId)
+            .WithOne(a => a.Immunization)
+            .HasForeignKey<Immunization>(i => i.AppointmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Procedure>()

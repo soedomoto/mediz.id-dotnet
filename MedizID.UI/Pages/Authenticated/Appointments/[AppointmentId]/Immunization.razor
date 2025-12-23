@@ -15,7 +15,7 @@
 <div style="padding: 24px; background-color: white; border-radius: 8px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2>Immunization Record</h2>
-        <button class="ant-btn ant-btn-primary" @onclick="SaveImmunization" disabled="@isSaving">
+        <Button Type="ButtonType.Primary" OnClick="SaveImmunization" Disabled="@isSaving">
             @if (isSaving)
             {
                 <span>Saving...</span>
@@ -24,9 +24,24 @@
             {
                 <span>Save</span>
             }
-        </button>
+        </Button>
     </div>
 
+    <!-- Immunization Type Selection -->
+    <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+        <h3 style="margin-top: 0;">Immunization Type</h3>
+        <RadioGroup @bind-Value="immunizationType" TValue="string">
+            <Radio TValue="string" Value="childType">
+                <span>Child Immunization</span>
+            </Radio>
+            <Radio TValue="string" Value="adultType">
+                <span>Adult Immunization</span>
+            </Radio>
+        </RadioGroup>
+    </div>
+
+    @if (immunizationType == "child")
+    {
     <!-- Child Demographics Section -->
     <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
         <h3 style="margin-top: 0;">Child Demographics</h3>
@@ -38,6 +53,23 @@
             <div>
                 <label>Birth Place</label>
                 <Input @bind-Value="form.BirthPlace" Placeholder="Tempat Lahir" Style="width: 100%;" />
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label>Gender</label>
+                <RadioGroup @bind-Value="form.Gender" TValue="int?">
+                    <Radio TValue="int?" Value="1">
+                        <span>Male</span>
+                    </Radio>
+                    <Radio TValue="int?" Value="2">
+                        <span>Female</span>
+                    </Radio>
+                </RadioGroup>
+            </div>
+            <div>
+                <label>Address</label>
+                <TextArea @bind-Value="form.Address" Placeholder="Address" Style="width: 100%; min-height: 60px;" />
             </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0;">
@@ -87,7 +119,7 @@
         <h3 style="margin-top: 0;">Delivery Information</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
             <div>
-                <label>Child Number</label>
+                <label>Child Number <span style="color:red;">*</span></label>
                 <AntDesign.InputNumber TValue="int?" @bind-Value="form.ChildNumber" Placeholder="1" Style="width: 100%;" />
             </div>
             <div>
@@ -101,7 +133,7 @@
                         Placeholder="Select Delivery Type" />
             </div>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
             <div>
                 <label>Delivery Personnel</label>
                 <Select TItemValue="int?" TItem="EnumOption"
@@ -265,6 +297,102 @@
                     Placeholder="Select Severity" />
         </div>
     </div>
+    }
+    else if (immunizationType == "adult")
+    {
+    <!-- Adult Information Section -->
+    <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+        <h3 style="margin-top: 0;">Adult Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label>Service Date</label>
+                <DatePicker TValue="DateTime?" @bind-Value="adultForm.ServiceDate" Placeholder="@("Select Date")" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Age (Years) <span style="color:red;">*</span></label>
+                <AntDesign.InputNumber TValue="int?" @bind-Value="adultForm.AgeYears" Placeholder="0" Style="width: 100%;" />
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label>Doctor / Medical Staff <span style="color:red;">*</span></label>
+                <Input @bind-Value="adultForm.DoctorName" Placeholder="Name of Doctor / Midwife / Nurse" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Nurse / Midwife / Nutritionist / Sanitarian</label>
+                <Input @bind-Value="adultForm.NurseName" Placeholder="Name of Assistant" Style="width: 100%;" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Adult Vaccine Selection Section -->
+    <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+        <h3 style="margin-top: 0;">Vaccine Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label>Vaccine Name</label>
+                <Input @bind-Value="adultForm.VaccineName" Placeholder="Vaccine Name" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Vaccine Date</label>
+                <DatePicker TValue="DateTime?" @bind-Value="adultForm.VaccineDate" Placeholder="@("Select Date")" Style="width: 100%;" />
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label>Dose Number</label>
+                <AntDesign.InputNumber TValue="int?" @bind-Value="adultForm.DoseNumber" Placeholder="1" Style="width: 100%;" />
+            </div>
+            <div>
+                <label>Lot Number</label>
+                <Input @bind-Value="adultForm.LotNumber" Placeholder="Lot Number" Style="width: 100%;" />
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0;">
+            <div>
+                <label>Route</label>
+                <Select TItemValue="int?" TItem="EnumOption"
+                        @bind-Value="adultForm.Route"
+                        DataSource="vaccineRouteOptions"
+                        ValueName="Value"
+                        LabelName="Label"
+                        Style="width: 100%;"
+                        Placeholder="Select Route" />
+            </div>
+            <div>
+                <label>Site</label>
+                <Select TItemValue="int?" TItem="EnumOption"
+                        @bind-Value="adultForm.Site"
+                        DataSource="vaccineSiteOptions"
+                        ValueName="Value"
+                        LabelName="Label"
+                        Style="width: 100%;"
+                        Placeholder="Select Site" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Adult Reactions & Adverse Events Section -->
+    <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+        <h3 style="margin-top: 0;">Reactions & Adverse Events</h3>
+        <div style="margin-bottom: 16px;">
+            <label>Reactions</label>
+            <TextArea @bind-Value="adultForm.Reactions" Placeholder="Describe any reactions or adverse events" Style="width: 100%; min-height: 80px;" />
+        </div>
+        <div>
+            <label>Reaction Severity</label>
+            <Select TItemValue="int?" TItem="EnumOption"
+                    @bind-Value="adultForm.ReactionSeverity"
+                    DataSource="reactionSeverityOptions"
+                    ValueName="Value"
+                    LabelName="Label"
+                    Style="width: 100%;"
+                    Placeholder="Select Severity" />
+        </div>
+    </div>
+    }
 </div>
 
 @code {
@@ -272,7 +400,11 @@
     public Guid AppointmentId { get; set; }
 
     private bool isSaving = false;
+    private string childType = "child";
+    private string adultType = "adult";
+    private string immunizationType = "child"; // Default to child immunization
     private ImmunizationFormModel form = new();
+    private AdultImmunizationFormModel adultForm = new();
 
     // Enum Option Lists
     private List<EnumOption> deliveryTypeOptions = new();
@@ -292,6 +424,13 @@
         LayoutState.ActiveTabKey = "immunization";
         InitializeEnumOptions();
         form.AppointmentId = AppointmentId;
+        adultForm.AppointmentId = AppointmentId;
+
+        if (AppointmentId != Guid.Empty)
+        {
+            await LoadImmunizationData();
+            StateHasChanged();
+        }
     }
 
     private async void OnAuthenticationChanged(bool isAuthenticated)
@@ -299,7 +438,85 @@
         if (isAuthenticated && AppointmentId != Guid.Empty)
         {
             await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadImmunizationData();
             StateHasChanged();
+        }
+    }
+
+    private async Task LoadImmunizationData()
+    {
+        try
+        {
+            var immunization = await ApiClient.Api.V1.Immunization.Appointments[AppointmentId].Immunization.GetAsync();
+            
+            if (immunization != null)
+            {
+                // Determine if it's a child or adult record based on available data
+                if (immunization.DateOfBirth.HasValue || !string.IsNullOrEmpty(immunization.FatherName))
+                {
+                    immunizationType = "child";
+                    form = new ImmunizationFormModel
+                    {
+                        AppointmentId = AppointmentId,
+                        DateOfBirth = immunization.DateOfBirth?.DateTime,
+                        BirthPlace = immunization.BirthPlace,
+                        Gender = immunization.Gender,
+                        Address = immunization.Address,
+                        BirthWeight = immunization.BirthWeight,
+                        BirthLength = immunization.BirthLength,
+                        FatherName = immunization.FatherName,
+                        FatherOccupation = immunization.FatherOccupation,
+                        MotherName = immunization.MotherName,
+                        MotherOccupation = immunization.MotherOccupation,
+                        DeliveryType = immunization.DeliveryType,
+                        DeliveryPersonnel = immunization.DeliveryPersonnel,
+                        DeliveryPlace = immunization.DeliveryPlace,
+                        ChildNumber = immunization.ChildNumber,
+                        NeonatalVisit1 = immunization.NeonatalVisit1,
+                        NeonatalVisit2 = immunization.NeonatalVisit2,
+                        NeonatalVisit3 = immunization.NeonatalVisit3,
+                        NeonatalVisit4 = immunization.NeonatalVisit4,
+                        BreastfeedingStatus = immunization.BreastfeedingStatus,
+                        VitaminAStatusSixMonths = immunization.VitaminAStatusSixMonths,
+                        VaccineType = immunization.VaccineType,
+                        VaccineName = immunization.VaccineName,
+                        VaccineDate = immunization.VaccineDate?.DateTime,
+                        DoseNumber = immunization.DoseNumber,
+                        Lot = immunization.Lot,
+                        Route = immunization.Route,
+                        Site = immunization.Site,
+                        Reactions = immunization.Reactions,
+                        ReactionSeverity = immunization.ReactionSeverity,
+                        AgeCategory = immunization.AgeCategory
+                    };
+                }
+                else if (immunization.AgeYears.HasValue)
+                {
+                    immunizationType = "adult";
+                    adultForm = new AdultImmunizationFormModel
+                    {
+                        AppointmentId = AppointmentId,
+                        ServiceDate = immunization.ServiceDate?.DateTime,
+                        AgeYears = immunization.AgeYears,
+                        DoctorName = immunization.DoctorName,
+                        NurseName = immunization.NurseName,
+                        VaccineName = immunization.VaccineName,
+                        VaccineDate = immunization.VaccineDate?.DateTime,
+                        DoseNumber = immunization.DoseNumber,
+                        LotNumber = immunization.Lot,
+                        Route = immunization.Route,
+                        Site = immunization.Site,
+                        Reactions = immunization.Reactions,
+                        ReactionSeverity = immunization.ReactionSeverity
+                    };
+                }
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Silently fail if no immunization records exist yet
+            System.Diagnostics.Debug.WriteLine($"Error loading immunization data: {ex.Message}");
         }
     }
 
@@ -308,52 +525,92 @@
         deliveryTypeOptions = new List<EnumOption>
         {
             new EnumOption { Value = 1, Label = "Normal" },
-            new EnumOption { Value = 2, Label = "Cesarean" },
-            new EnumOption { Value = 3, Label = "Vacuum" },
-            new EnumOption { Value = 4, Label = "Forceps" }
+            new EnumOption { Value = 2, Label = "Kelainan Letak" },
+            new EnumOption { Value = 3, Label = "CPD" },
+            new EnumOption { Value = 4, Label = "Cacat Bawaan" },
+            new EnumOption { Value = 5, Label = "Caesar" }
         };
 
         deliveryPersonnelOptions = new List<EnumOption>
         {
             new EnumOption { Value = 1, Label = "Dokter" },
             new EnumOption { Value = 2, Label = "Bidan" },
-            new EnumOption { Value = 3, Label = "Perawat" },
-            new EnumOption { Value = 4, Label = "Traditional Birth Attendant" }
+            new EnumOption { Value = 3, Label = "Tenaga Medis (selain Bidan)" },
+            new EnumOption { Value = 4, Label = "Dukun Terlatih" },
+            new EnumOption { Value = 5, Label = "Tenaga Tak Terlatih" }
         };
 
         deliveryPlaceOptions = new List<EnumOption>
         {
-            new EnumOption { Value = 1, Label = "Home" },
-            new EnumOption { Value = 2, Label = "Public Health Center" },
-            new EnumOption { Value = 3, Label = "Hospital" },
-            new EnumOption { Value = 4, Label = "Private Clinic" }
+            new EnumOption { Value = 1, Label = "Rumah" },
+            new EnumOption { Value = 2, Label = "Rumah Sakit" },
+            new EnumOption { Value = 3, Label = "Puskesmas" },
+            new EnumOption { Value = 4, Label = "R. Bersalin" },
+            new EnumOption { Value = 5, Label = "R. Bidan" },
+            new EnumOption { Value = 6, Label = "Klinik" }
         };
 
         breastfeedingStatusOptions = new List<EnumOption>
         {
-            new EnumOption { Value = 1, Label = "Exclusively Breastfed" },
-            new EnumOption { Value = 2, Label = "Partially Breastfed" },
-            new EnumOption { Value = 3, Label = "Not Breastfed" }
+            new EnumOption { Value = 1, Label = "ASI" },
+            new EnumOption { Value = 2, Label = "Bukan ASI" }
         };
 
         vitaminAStatusOptions = new List<EnumOption>
         {
-            new EnumOption { Value = 1, Label = "Given" },
-            new EnumOption { Value = 2, Label = "Not Given" }
+            new EnumOption { Value = 1, Label = "Ya" },
+            new EnumOption { Value = 2, Label = "Tidak" }
         };
 
         vaccineTypeOptions = new List<EnumOption>
         {
             new EnumOption { Value = 1, Label = "BCG" },
-            new EnumOption { Value = 2, Label = "Polio" },
-            new EnumOption { Value = 3, Label = "DPT" },
-            new EnumOption { Value = 4, Label = "Hepatitis B" },
-            new EnumOption { Value = 5, Label = "Measles" },
-            new EnumOption { Value = 6, Label = "Tetanus" },
-            new EnumOption { Value = 7, Label = "Pertussis" },
-            new EnumOption { Value = 8, Label = "HPV" },
-            new EnumOption { Value = 9, Label = "Rotavirus" },
-            new EnumOption { Value = 10, Label = "Pneumococcal" }
+            new EnumOption { Value = 2, Label = "CAMPAK-1" },
+            new EnumOption { Value = 3, Label = "CAMPAK-2" },
+            new EnumOption { Value = 4, Label = "DPT-HB-Hib 1" },
+            new EnumOption { Value = 5, Label = "DPT-HB-Hib 2" },
+            new EnumOption { Value = 6, Label = "DPT-HB-Hib 3" },
+            new EnumOption { Value = 7, Label = "DPT-HB-Hib 4" },
+            new EnumOption { Value = 8, Label = "DTP-1" },
+            new EnumOption { Value = 9, Label = "DTP-2" },
+            new EnumOption { Value = 10, Label = "DTP-3" },
+            new EnumOption { Value = 11, Label = "DTP-4" },
+            new EnumOption { Value = 12, Label = "HEPATITIS A-1" },
+            new EnumOption { Value = 13, Label = "HEPATITIS A-2" },
+            new EnumOption { Value = 14, Label = "HEPATITIS B-0" },
+            new EnumOption { Value = 15, Label = "HEPATITIS B-1" },
+            new EnumOption { Value = 16, Label = "HEPATITIS B-2" },
+            new EnumOption { Value = 17, Label = "HEPATITIS B-3" },
+            new EnumOption { Value = 18, Label = "HiB-1" },
+            new EnumOption { Value = 19, Label = "HiB-2" },
+            new EnumOption { Value = 20, Label = "HiB-3" },
+            new EnumOption { Value = 21, Label = "HiB-4" },
+            new EnumOption { Value = 22, Label = "INFLUENZA" },
+            new EnumOption { Value = 23, Label = "IPV" },
+            new EnumOption { Value = 24, Label = "MMR-1" },
+            new EnumOption { Value = 25, Label = "MMR-2" },
+            new EnumOption { Value = 26, Label = "MR" },
+            new EnumOption { Value = 27, Label = "MR-2" },
+            new EnumOption { Value = 28, Label = "OPV-1" },
+            new EnumOption { Value = 29, Label = "OPV-2" },
+            new EnumOption { Value = 30, Label = "OPV-3" },
+            new EnumOption { Value = 31, Label = "OPV-4" },
+            new EnumOption { Value = 32, Label = "PCV-1" },
+            new EnumOption { Value = 33, Label = "PCV-2" },
+            new EnumOption { Value = 34, Label = "PCV-3" },
+            new EnumOption { Value = 35, Label = "PCV-4" },
+            new EnumOption { Value = 36, Label = "POLIO-0" },
+            new EnumOption { Value = 37, Label = "POLIO-1" },
+            new EnumOption { Value = 38, Label = "POLIO-2" },
+            new EnumOption { Value = 39, Label = "POLIO-3" },
+            new EnumOption { Value = 40, Label = "POLIO-4" },
+            new EnumOption { Value = 41, Label = "POLIO-5" },
+            new EnumOption { Value = 42, Label = "ROTAVIRUS-1" },
+            new EnumOption { Value = 43, Label = "ROTAVIRUS-2" },
+            new EnumOption { Value = 44, Label = "ROTAVIRUS-3" },
+            new EnumOption { Value = 45, Label = "TIFOID-1" },
+            new EnumOption { Value = 46, Label = "TIFOID-2" },
+            new EnumOption { Value = 47, Label = "VARISELA" }
         };
 
         vaccineRouteOptions = new List<EnumOption>
@@ -396,50 +653,92 @@
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(form.VaccineName))
+            if (immunizationType == "child" && string.IsNullOrWhiteSpace(form.VaccineName))
             {
-                await _notice.Warning(new NotificationConfig { Message = "Vaccine name is required" });
+                await _notice.Open(new NotificationConfig { NotificationType = NotificationType.Warning, Message = "Vaccine name is required" });
                 return;
+            }
+
+            if (immunizationType == "adult")
+            {
+                if (!adultForm.AgeYears.HasValue)
+                {
+                    await _notice.Warning(new NotificationConfig { Message = "Age is required" });
+                    return;
+                }
+                if (string.IsNullOrWhiteSpace(adultForm.DoctorName))
+                {
+                    await _notice.Warning(new NotificationConfig { Message = "Doctor name is required" });
+                    return;
+                }
             }
 
             isSaving = true;
 
-            var request = new CreateImmunizationRequest
+            if (immunizationType == "child")
             {
-                AppointmentId = AppointmentId,
-                DateOfBirth = form.DateOfBirth.HasValue ? new DateTimeOffset(form.DateOfBirth.Value) : null,
-                BirthPlace = form.BirthPlace,
-                BirthWeight = form.BirthWeight,
-                BirthLength = form.BirthLength,
-                FatherName = form.FatherName,
-                FatherOccupation = form.FatherOccupation,
-                MotherName = form.MotherName,
-                MotherOccupation = form.MotherOccupation,
-                DeliveryType = form.DeliveryType,
-                DeliveryPersonnel = form.DeliveryPersonnel,
-                DeliveryPlace = form.DeliveryPlace,
-                NeonatalVisit1 = form.NeonatalVisit1,
-                NeonatalVisit2 = form.NeonatalVisit2,
-                NeonatalVisit3 = form.NeonatalVisit3,
-                NeonatalVisit4 = form.NeonatalVisit4,
-                BreastfeedingStatus = form.BreastfeedingStatus,
-                VitaminAStatusSixMonths = form.VitaminAStatusSixMonths,
-                VaccineType = form.VaccineType,
-                VaccineName = form.VaccineName,
-                VaccineDate = form.VaccineDate.HasValue ? new DateTimeOffset(form.VaccineDate.Value) : new DateTimeOffset(DateTime.Now),
-                DoseNumber = form.DoseNumber,
-                Lot = form.Lot,
-                Route = form.Route,
-                Site = form.Site,
-                Reactions = form.Reactions,
-                ReactionSeverity = form.ReactionSeverity,
-                AgeCategory = form.AgeCategory
-            };
+                var request = new CreateImmunizationRequest
+                {
+                    AppointmentId = AppointmentId,
+                    DateOfBirth = form.DateOfBirth.HasValue ? new DateTimeOffset(form.DateOfBirth.Value) : null,
+                    BirthPlace = form.BirthPlace,
+                    Gender = form.Gender,
+                    Address = form.Address,
+                    BirthWeight = form.BirthWeight,
+                    BirthLength = form.BirthLength,
+                    FatherName = form.FatherName,
+                    FatherOccupation = form.FatherOccupation,
+                    MotherName = form.MotherName,
+                    MotherOccupation = form.MotherOccupation,
+                    DeliveryType = form.DeliveryType,
+                    DeliveryPersonnel = form.DeliveryPersonnel,
+                    DeliveryPlace = form.DeliveryPlace,
+                    ChildNumber = form.ChildNumber,
+                    NeonatalVisit1 = form.NeonatalVisit1,
+                    NeonatalVisit2 = form.NeonatalVisit2,
+                    NeonatalVisit3 = form.NeonatalVisit3,
+                    NeonatalVisit4 = form.NeonatalVisit4,
+                    BreastfeedingStatus = form.BreastfeedingStatus,
+                    VitaminAStatusSixMonths = form.VitaminAStatusSixMonths,
+                    VaccineType = form.VaccineType,
+                    VaccineName = form.VaccineName,
+                    VaccineDate = form.VaccineDate.HasValue ? new DateTimeOffset(form.VaccineDate.Value) : null,
+                    DoseNumber = form.DoseNumber,
+                    Lot = form.Lot,
+                    Route = form.Route,
+                    Site = form.Site,
+                    Reactions = form.Reactions,
+                    ReactionSeverity = form.ReactionSeverity,
+                    AgeCategory = form.AgeCategory
+                };
 
-            await ApiClient.Api.V1.Immunization.Appointments[AppointmentId].Immunization.PostAsync(request);
+                await ApiClient.Api.V1.Immunization.Appointments[AppointmentId].Immunization.PostAsync(request);
+            }
+            else if (immunizationType == "adult")
+            {
+                var request = new CreateImmunizationRequest
+                {
+                    AppointmentId = AppointmentId,
+                    ServiceDate = adultForm.ServiceDate.HasValue ? new DateTimeOffset(adultForm.ServiceDate.Value) : null,
+                    AgeYears = adultForm.AgeYears,
+                    DoctorName = adultForm.DoctorName,
+                    NurseName = adultForm.NurseName,
+                    VaccineName = adultForm.VaccineName,
+                    VaccineDate = adultForm.VaccineDate.HasValue ? new DateTimeOffset(adultForm.VaccineDate.Value) : null,
+                    DoseNumber = adultForm.DoseNumber,
+                    Lot = adultForm.LotNumber,
+                    Route = adultForm.Route,
+                    Site = adultForm.Site,
+                    Reactions = adultForm.Reactions,
+                    ReactionSeverity = adultForm.ReactionSeverity
+                };
+
+                await ApiClient.Api.V1.Immunization.Appointments[AppointmentId].Immunization.PostAsync(request);
+            }
 
             await _notice.Success(new NotificationConfig { Message = "Immunization record saved successfully" });
             form = new ImmunizationFormModel { AppointmentId = AppointmentId };
+            adultForm = new AdultImmunizationFormModel { AppointmentId = AppointmentId };
             StateHasChanged();
         }
         catch (Exception ex)
@@ -463,6 +762,8 @@
         public Guid AppointmentId { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string? BirthPlace { get; set; }
+        public int? Gender { get; set; }
+        public string? Address { get; set; }
         public double? BirthWeight { get; set; }
         public double? BirthLength { get; set; }
         public int? ChildNumber { get; set; }
@@ -495,5 +796,22 @@
     {
         public int? Value { get; set; }
         public string Label { get; set; } = string.Empty;
+    }
+
+    private class AdultImmunizationFormModel
+    {
+        public Guid AppointmentId { get; set; }
+        public DateTime? ServiceDate { get; set; }
+        public int? AgeYears { get; set; }
+        public string? DoctorName { get; set; }
+        public string? NurseName { get; set; }
+        public string? VaccineName { get; set; }
+        public DateTime? VaccineDate { get; set; }
+        public int? DoseNumber { get; set; }
+        public string? LotNumber { get; set; }
+        public int? Route { get; set; }
+        public int? Site { get; set; }
+        public string? Reactions { get; set; }
+        public int? ReactionSeverity { get; set; }
     }
 }

@@ -26,16 +26,18 @@ public class ImmunizationController : ControllerBase
     }
 
     /// <summary>
-    /// Create immunization record for an appointment
+    /// Create or update immunization record for an appointment (one-to-one relationship)
     /// </summary>
     [HttpPost("appointments/{appointmentId}/immunization")]
     [ProducesResponseType(typeof(ImmunizationResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ImmunizationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateImmunizationRecord(Guid appointmentId, [FromBody] CreateImmunizationRequest request)
+    public async Task<IActionResult> CreateOrUpdateImmunizationRecord(Guid appointmentId, [FromBody] CreateImmunizationRequest request)
     {
         try
         {
             var appointment = await _context.Appointments
+                .Include(a => a.Immunization)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
 
             if (appointment == null)
@@ -43,51 +45,78 @@ public class ImmunizationController : ControllerBase
                 throw new NotFoundException($"Appointment with ID {appointmentId} not found");
             }
 
-            var immunization = new Immunization
+            // Check if immunization already exists for this appointment
+            var immunization = appointment.Immunization;
+            var isNew = immunization == null;
+
+            if (isNew)
             {
-                Id = Guid.NewGuid(),
-                AppointmentId = appointmentId,
-                DateOfBirth = request.DateOfBirth,
-                BirthPlace = request.BirthPlace,
-                BirthWeight = request.BirthWeight,
-                BirthLength = request.BirthLength,
-                FatherName = request.FatherName,
-                FatherOccupation = request.FatherOccupation,
-                MotherName = request.MotherName,
-                MotherOccupation = request.MotherOccupation,
-                DeliveryType = request.DeliveryType.HasValue ? (DeliveryType)request.DeliveryType : null,
-                DeliveryPersonnel = request.DeliveryPersonnel.HasValue ? (DeliveryPersonnel)request.DeliveryPersonnel : null,
-                DeliveryPlace = request.DeliveryPlace.HasValue ? (DeliveryPlace)request.DeliveryPlace : null,
-                ChildNumber = request.ChildNumber,
-                NeonatalVisit1 = request.NeonatalVisit1,
-                NeonatalVisit2 = request.NeonatalVisit2,
-                NeonatalVisit3 = request.NeonatalVisit3,
-                NeonatalVisit4 = request.NeonatalVisit4,
-                BreastfeedingStatus = request.BreastfeedingStatus.HasValue ? (BreastfeedingStatus)request.BreastfeedingStatus : null,
-                VitaminAStatusSixMonths = request.VitaminAStatusSixMonths.HasValue ? (VitaminAStatus)request.VitaminAStatusSixMonths : null,
-                VaccineType = request.VaccineType.HasValue ? (VaccineType)request.VaccineType : null,
-                VaccineName = request.VaccineName,
-                VaccineDate = request.VaccineDate,
-                DoseNumber = request.DoseNumber,
-                Lot = request.Lot,
-                Route = request.Route.HasValue ? (VaccineRoute)request.Route : null,
-                Site = request.Site.HasValue ? (VaccineSite)request.Site : null,
-                Reactions = request.Reactions,
-                ReactionSeverity = request.ReactionSeverity.HasValue ? (VaccineReactionSeverity)request.ReactionSeverity : null,
-                AgeCategory = request.AgeCategory.HasValue ? (ImmunizationAgeCategory)request.AgeCategory : null,
-                ProviderId = request.ProviderId,
-                NurseId = request.NurseId,
-                CreatedAt = DateTime.UtcNow
-            };
+                immunization = new Immunization
+                {
+                    Id = Guid.NewGuid(),
+                    AppointmentId = appointmentId,
+                    CreatedAt = DateTime.UtcNow
+                };
+            }
+            else
+            {
+                immunization.UpdatedAt = DateTime.UtcNow;
+            }
 
-            _context.Immunizations.Add(immunization);
-            await _context.SaveChangesAsync();
+            // Update all fields
+            immunization.DateOfBirth = ConvertToUtc(request.DateOfBirth);
+            immunization.BirthPlace = request.BirthPlace;
+            immunization.Gender = request.Gender;
+            immunization.Address = request.Address;
+            immunization.BirthWeight = request.BirthWeight;
+            immunization.BirthLength = request.BirthLength;
+            immunization.FatherName = request.FatherName;
+            immunization.FatherOccupation = request.FatherOccupation;
+            immunization.MotherName = request.MotherName;
+            immunization.MotherOccupation = request.MotherOccupation;
+            immunization.DeliveryType = request.DeliveryType.HasValue ? (DeliveryType)request.DeliveryType : null;
+            immunization.DeliveryPersonnel = request.DeliveryPersonnel.HasValue ? (DeliveryPersonnel)request.DeliveryPersonnel : null;
+            immunization.DeliveryPlace = request.DeliveryPlace.HasValue ? (DeliveryPlace)request.DeliveryPlace : null;
+            immunization.ChildNumber = request.ChildNumber;
+            immunization.NeonatalVisit1 = request.NeonatalVisit1;
+            immunization.NeonatalVisit2 = request.NeonatalVisit2;
+            immunization.NeonatalVisit3 = request.NeonatalVisit3;
+            immunization.NeonatalVisit4 = request.NeonatalVisit4;
+            immunization.BreastfeedingStatus = request.BreastfeedingStatus.HasValue ? (BreastfeedingStatus)request.BreastfeedingStatus : null;
+            immunization.VitaminAStatusSixMonths = request.VitaminAStatusSixMonths.HasValue ? (VitaminAStatus)request.VitaminAStatusSixMonths : null;
+            immunization.VaccineType = request.VaccineType.HasValue ? (VaccineType)request.VaccineType : null;
+            immunization.VaccineName = request.VaccineName;
+            immunization.VaccineDate = ConvertToUtc(request.VaccineDate);
+            immunization.DoseNumber = request.DoseNumber;
+            immunization.Lot = request.Lot;
+            immunization.Route = request.Route.HasValue ? (VaccineRoute)request.Route : null;
+            immunization.Site = request.Site.HasValue ? (VaccineSite)request.Site : null;
+            immunization.Reactions = request.Reactions;
+            immunization.ReactionSeverity = request.ReactionSeverity.HasValue ? (VaccineReactionSeverity)request.ReactionSeverity : null;
+            immunization.AgeCategory = request.AgeCategory.HasValue ? (ImmunizationAgeCategory)request.AgeCategory : null;
+            immunization.ServiceDate = ConvertToUtc(request.ServiceDate);
+            immunization.AgeYears = request.AgeYears;
+            immunization.DoctorName = request.DoctorName;
+            immunization.NurseName = request.NurseName;
+            immunization.ProviderId = request.ProviderId;
+            immunization.NurseId = request.NurseId;
 
-            _logger.LogInformation($"Immunization record created: {immunization.Id}");
-
-            return CreatedAtAction(nameof(GetImmunizationRecord), 
-                new { appointmentId = appointmentId, immunizationId = immunization.Id }, 
-                MapToResponse(immunization));
+            if (isNew)
+            {
+                _context.Immunizations.Add(immunization);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"Immunization record created: {immunization.Id}");
+                return CreatedAtAction(nameof(GetImmunizationRecord), 
+                    new { appointmentId = appointmentId }, 
+                    MapToResponse(immunization));
+            }
+            else
+            {
+                _context.Immunizations.Update(immunization);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"Immunization record updated: {immunization.Id}");
+                return Ok(MapToResponse(immunization));
+            }
         }
         catch (NotFoundException ex)
         {
@@ -99,87 +128,31 @@ public class ImmunizationController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating immunization record");
+            _logger.LogError(ex, "Error creating or updating immunization record");
             return StatusCode(500, new ErrorResponse
             {
                 ErrorCode = "INTERNAL_SERVER_ERROR",
-                Message = "An error occurred while creating immunization record"
+                Message = "An error occurred while creating or updating immunization record"
             });
         }
     }
 
     /// <summary>
-    /// Get all immunization records for an appointment
+    /// Get immunization record for an appointment (one-to-one relationship)
     /// </summary>
     [HttpGet("appointments/{appointmentId}/immunization")]
-    [ProducesResponseType(typeof(ImmunizationListResponse), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAppointmentImmunizations(Guid appointmentId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-    {
-        try
-        {
-            var appointment = await _context.Appointments
-                .FirstOrDefaultAsync(a => a.Id == appointmentId);
-
-            if (appointment == null)
-            {
-                throw new NotFoundException($"Appointment with ID {appointmentId} not found");
-            }
-
-            if (page < 1) page = 1;
-            if (pageSize < 1 || pageSize > 100) pageSize = 10;
-
-            var query = _context.Immunizations
-                .Where(i => i.AppointmentId == appointmentId)
-                .OrderByDescending(i => i.VaccineDate);
-
-            var total = await query.CountAsync();
-
-            var immunizations = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return Ok(new ImmunizationListResponse
-            {
-                Immunizations = immunizations.Select(MapToResponse).ToList(),
-                TotalCount = total
-            });
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new ErrorResponse
-            {
-                ErrorCode = ex.ErrorCode,
-                Message = ex.Message
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching immunization records");
-            return StatusCode(500, new ErrorResponse
-            {
-                ErrorCode = "INTERNAL_SERVER_ERROR",
-                Message = "An error occurred while fetching immunization records"
-            });
-        }
-    }
-
-    /// <summary>
-    /// Get specific immunization record
-    /// </summary>
-    [HttpGet("appointments/{appointmentId}/immunization/{immunizationId}")]
     [ProducesResponseType(typeof(ImmunizationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetImmunizationRecord(Guid appointmentId, Guid immunizationId)
+    public async Task<IActionResult> GetImmunizationRecord(Guid appointmentId)
     {
         try
         {
             var immunization = await _context.Immunizations
-                .FirstOrDefaultAsync(i => i.Id == immunizationId && i.AppointmentId == appointmentId);
+                .FirstOrDefaultAsync(i => i.AppointmentId == appointmentId);
 
             if (immunization == null)
             {
-                throw new NotFoundException($"Immunization record with ID {immunizationId} not found");
+                throw new NotFoundException($"Immunization record for appointment {appointmentId} not found");
             }
 
             return Ok(MapToResponse(immunization));
@@ -204,26 +177,28 @@ public class ImmunizationController : ControllerBase
     }
 
     /// <summary>
-    /// Update immunization record
+    /// Update immunization record for an appointment
     /// </summary>
-    [HttpPut("appointments/{appointmentId}/immunization/{immunizationId}")]
+    [HttpPut("appointments/{appointmentId}/immunization")]
     [ProducesResponseType(typeof(ImmunizationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateImmunizationRecord(Guid appointmentId, Guid immunizationId, [FromBody] UpdateImmunizationRequest request)
+    public async Task<IActionResult> UpdateImmunizationRecord(Guid appointmentId, [FromBody] UpdateImmunizationRequest request)
     {
         try
         {
             var immunization = await _context.Immunizations
-                .FirstOrDefaultAsync(i => i.Id == immunizationId && i.AppointmentId == appointmentId);
+                .FirstOrDefaultAsync(i => i.AppointmentId == appointmentId);
 
             if (immunization == null)
             {
-                throw new NotFoundException($"Immunization record with ID {immunizationId} not found");
+                throw new NotFoundException($"Immunization record for appointment {appointmentId} not found");
             }
 
             // Update fields
             immunization.DateOfBirth = request.DateOfBirth ?? immunization.DateOfBirth;
             immunization.BirthPlace = request.BirthPlace ?? immunization.BirthPlace;
+            immunization.Gender = request.Gender ?? immunization.Gender;
+            immunization.Address = request.Address ?? immunization.Address;
             immunization.BirthWeight = request.BirthWeight ?? immunization.BirthWeight;
             immunization.BirthLength = request.BirthLength ?? immunization.BirthLength;
             immunization.FatherName = request.FatherName ?? immunization.FatherName;
@@ -269,6 +244,10 @@ public class ImmunizationController : ControllerBase
             if (request.AgeCategory.HasValue)
                 immunization.AgeCategory = (ImmunizationAgeCategory)request.AgeCategory;
                 
+            immunization.ServiceDate = request.ServiceDate ?? immunization.ServiceDate;
+            immunization.AgeYears = request.AgeYears ?? immunization.AgeYears;
+            immunization.DoctorName = request.DoctorName ?? immunization.DoctorName;
+            immunization.NurseName = request.NurseName ?? immunization.NurseName;
             immunization.ProviderId = request.ProviderId ?? immunization.ProviderId;
             immunization.NurseId = request.NurseId ?? immunization.NurseId;
             immunization.UpdatedAt = DateTime.UtcNow;
@@ -300,21 +279,21 @@ public class ImmunizationController : ControllerBase
     }
 
     /// <summary>
-    /// Delete immunization record
+    /// Delete immunization record for an appointment
     /// </summary>
-    [HttpDelete("appointments/{appointmentId}/immunization/{immunizationId}")]
+    [HttpDelete("appointments/{appointmentId}/immunization")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteImmunizationRecord(Guid appointmentId, Guid immunizationId)
+    public async Task<IActionResult> DeleteImmunizationRecord(Guid appointmentId)
     {
         try
         {
             var immunization = await _context.Immunizations
-                .FirstOrDefaultAsync(i => i.Id == immunizationId && i.AppointmentId == appointmentId);
+                .FirstOrDefaultAsync(i => i.AppointmentId == appointmentId);
 
             if (immunization == null)
             {
-                throw new NotFoundException($"Immunization record with ID {immunizationId} not found");
+                throw new NotFoundException($"Immunization record for appointment {appointmentId} not found");
             }
 
             _context.Immunizations.Remove(immunization);
@@ -435,6 +414,8 @@ public class ImmunizationController : ControllerBase
             AppointmentId = immunization.AppointmentId,
             DateOfBirth = immunization.DateOfBirth,
             BirthPlace = immunization.BirthPlace,
+            Gender = immunization.Gender,
+            Address = immunization.Address,
             BirthWeight = immunization.BirthWeight,
             BirthLength = immunization.BirthLength,
             FatherName = immunization.FatherName,
@@ -471,6 +452,10 @@ public class ImmunizationController : ControllerBase
             ReactionSeverityLabel = immunization.ReactionSeverity.HasValue ? GetEnumDisplay(immunization.ReactionSeverity) : null,
             AgeCategory = (int?)immunization.AgeCategory,
             AgeCategoryLabel = immunization.AgeCategory.HasValue ? GetEnumDisplay(immunization.AgeCategory) : null,
+            ServiceDate = immunization.ServiceDate,
+            AgeYears = immunization.AgeYears,
+            DoctorName = immunization.DoctorName,
+            NurseName = immunization.NurseName,
             ProviderId = immunization.ProviderId,
             NurseId = immunization.NurseId,
             CreatedAt = immunization.CreatedAt,
@@ -483,5 +468,14 @@ public class ImmunizationController : ControllerBase
         var field = enumValue?.GetType().GetField(enumValue?.ToString() ?? "");
         var attribute = field?.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
         return attribute?.Name ?? enumValue?.ToString() ?? "";
+    }
+
+    private DateTime? ConvertToUtc(DateTimeOffset? dateTime)
+    {
+        if (dateTime == null)
+            return null;
+
+        // Convert to UTC DateTime
+        return dateTime.Value.UtcDateTime;
     }
 }

@@ -3,6 +3,7 @@ using System;
 using MedizID.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedizID.API.Migrations
 {
     [DbContext(typeof(MedizIDDbContext))]
-    partial class MedizIDDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251222080923_AddImmunizationFields")]
+    partial class AddImmunizationFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1163,9 +1166,6 @@ namespace MedizID.API.Migrations
                     b.Property<int?>("AgeCategory")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("AgeYears")
-                        .HasColumnType("integer");
-
                     b.Property<Guid>("AppointmentId")
                         .HasColumnType("uuid");
 
@@ -1276,8 +1276,7 @@ namespace MedizID.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppointmentId")
-                        .IsUnique();
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("Immunizations");
                 });
@@ -2205,8 +2204,8 @@ namespace MedizID.API.Migrations
             modelBuilder.Entity("MedizID.API.Models.Immunization", b =>
                 {
                     b.HasOne("MedizID.API.Models.Appointment", "Appointment")
-                        .WithOne("Immunization")
-                        .HasForeignKey("MedizID.API.Models.Immunization", "AppointmentId")
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -2450,8 +2449,6 @@ namespace MedizID.API.Migrations
                     b.Navigation("Anamnesis");
 
                     b.Navigation("Diagnoses");
-
-                    b.Navigation("Immunization");
 
                     b.Navigation("LaboratoriumTests");
 

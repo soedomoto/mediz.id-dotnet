@@ -12,6 +12,14 @@ namespace MedizID.UI.Services.Generated.Models
     public partial class ImmunizationResponse : IParsable
     #pragma warning restore CS1591
     {
+        /// <summary>The address property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Address { get; set; }
+#nullable restore
+#else
+        public string Address { get; set; }
+#endif
         /// <summary>The ageCategory property</summary>
         public int? AgeCategory { get; set; }
         /// <summary>The ageCategoryLabel property</summary>
@@ -22,6 +30,8 @@ namespace MedizID.UI.Services.Generated.Models
 #else
         public string AgeCategoryLabel { get; set; }
 #endif
+        /// <summary>The ageYears property</summary>
+        public int? AgeYears { get; set; }
         /// <summary>The appointmentId property</summary>
         public Guid? AppointmentId { get; set; }
         /// <summary>The birthLength property</summary>
@@ -82,6 +92,14 @@ namespace MedizID.UI.Services.Generated.Models
 #else
         public string DeliveryTypeLabel { get; set; }
 #endif
+        /// <summary>The doctorName property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? DoctorName { get; set; }
+#nullable restore
+#else
+        public string DoctorName { get; set; }
+#endif
         /// <summary>The doseNumber property</summary>
         public int? DoseNumber { get; set; }
         /// <summary>The fatherName property</summary>
@@ -100,6 +118,8 @@ namespace MedizID.UI.Services.Generated.Models
 #else
         public string FatherOccupation { get; set; }
 #endif
+        /// <summary>The gender property</summary>
+        public int? Gender { get; set; }
         /// <summary>The id property</summary>
         public Guid? Id { get; set; }
         /// <summary>The lot property</summary>
@@ -160,6 +180,14 @@ namespace MedizID.UI.Services.Generated.Models
 #endif
         /// <summary>The nurseId property</summary>
         public Guid? NurseId { get; set; }
+        /// <summary>The nurseName property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? NurseName { get; set; }
+#nullable restore
+#else
+        public string NurseName { get; set; }
+#endif
         /// <summary>The providerId property</summary>
         public Guid? ProviderId { get; set; }
         /// <summary>The reactions property</summary>
@@ -190,6 +218,8 @@ namespace MedizID.UI.Services.Generated.Models
 #else
         public string RouteLabel { get; set; }
 #endif
+        /// <summary>The serviceDate property</summary>
+        public DateTimeOffset? ServiceDate { get; set; }
         /// <summary>The site property</summary>
         public int? Site { get; set; }
         /// <summary>The siteLabel property</summary>
@@ -250,8 +280,10 @@ namespace MedizID.UI.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "address", n => { Address = n.GetStringValue(); } },
                 { "ageCategory", n => { AgeCategory = n.GetIntValue(); } },
                 { "ageCategoryLabel", n => { AgeCategoryLabel = n.GetStringValue(); } },
+                { "ageYears", n => { AgeYears = n.GetIntValue(); } },
                 { "appointmentId", n => { AppointmentId = n.GetGuidValue(); } },
                 { "birthLength", n => { BirthLength = n.GetDoubleValue(); } },
                 { "birthPlace", n => { BirthPlace = n.GetStringValue(); } },
@@ -267,9 +299,11 @@ namespace MedizID.UI.Services.Generated.Models
                 { "deliveryPlaceLabel", n => { DeliveryPlaceLabel = n.GetStringValue(); } },
                 { "deliveryType", n => { DeliveryType = n.GetIntValue(); } },
                 { "deliveryTypeLabel", n => { DeliveryTypeLabel = n.GetStringValue(); } },
+                { "doctorName", n => { DoctorName = n.GetStringValue(); } },
                 { "doseNumber", n => { DoseNumber = n.GetIntValue(); } },
                 { "fatherName", n => { FatherName = n.GetStringValue(); } },
                 { "fatherOccupation", n => { FatherOccupation = n.GetStringValue(); } },
+                { "gender", n => { Gender = n.GetIntValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
                 { "lot", n => { Lot = n.GetStringValue(); } },
                 { "motherName", n => { MotherName = n.GetStringValue(); } },
@@ -279,12 +313,14 @@ namespace MedizID.UI.Services.Generated.Models
                 { "neonatalVisit3", n => { NeonatalVisit3 = n.GetStringValue(); } },
                 { "neonatalVisit4", n => { NeonatalVisit4 = n.GetStringValue(); } },
                 { "nurseId", n => { NurseId = n.GetGuidValue(); } },
+                { "nurseName", n => { NurseName = n.GetStringValue(); } },
                 { "providerId", n => { ProviderId = n.GetGuidValue(); } },
                 { "reactionSeverity", n => { ReactionSeverity = n.GetIntValue(); } },
                 { "reactionSeverityLabel", n => { ReactionSeverityLabel = n.GetStringValue(); } },
                 { "reactions", n => { Reactions = n.GetStringValue(); } },
                 { "route", n => { Route = n.GetIntValue(); } },
                 { "routeLabel", n => { RouteLabel = n.GetStringValue(); } },
+                { "serviceDate", n => { ServiceDate = n.GetDateTimeOffsetValue(); } },
                 { "site", n => { Site = n.GetIntValue(); } },
                 { "siteLabel", n => { SiteLabel = n.GetStringValue(); } },
                 { "updatedAt", n => { UpdatedAt = n.GetDateTimeOffsetValue(); } },
@@ -303,8 +339,10 @@ namespace MedizID.UI.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteStringValue("address", Address);
             writer.WriteIntValue("ageCategory", AgeCategory);
             writer.WriteStringValue("ageCategoryLabel", AgeCategoryLabel);
+            writer.WriteIntValue("ageYears", AgeYears);
             writer.WriteGuidValue("appointmentId", AppointmentId);
             writer.WriteDoubleValue("birthLength", BirthLength);
             writer.WriteStringValue("birthPlace", BirthPlace);
@@ -320,9 +358,11 @@ namespace MedizID.UI.Services.Generated.Models
             writer.WriteStringValue("deliveryPlaceLabel", DeliveryPlaceLabel);
             writer.WriteIntValue("deliveryType", DeliveryType);
             writer.WriteStringValue("deliveryTypeLabel", DeliveryTypeLabel);
+            writer.WriteStringValue("doctorName", DoctorName);
             writer.WriteIntValue("doseNumber", DoseNumber);
             writer.WriteStringValue("fatherName", FatherName);
             writer.WriteStringValue("fatherOccupation", FatherOccupation);
+            writer.WriteIntValue("gender", Gender);
             writer.WriteGuidValue("id", Id);
             writer.WriteStringValue("lot", Lot);
             writer.WriteStringValue("motherName", MotherName);
@@ -332,12 +372,14 @@ namespace MedizID.UI.Services.Generated.Models
             writer.WriteStringValue("neonatalVisit3", NeonatalVisit3);
             writer.WriteStringValue("neonatalVisit4", NeonatalVisit4);
             writer.WriteGuidValue("nurseId", NurseId);
+            writer.WriteStringValue("nurseName", NurseName);
             writer.WriteGuidValue("providerId", ProviderId);
             writer.WriteStringValue("reactions", Reactions);
             writer.WriteIntValue("reactionSeverity", ReactionSeverity);
             writer.WriteStringValue("reactionSeverityLabel", ReactionSeverityLabel);
             writer.WriteIntValue("route", Route);
             writer.WriteStringValue("routeLabel", RouteLabel);
+            writer.WriteDateTimeOffsetValue("serviceDate", ServiceDate);
             writer.WriteIntValue("site", Site);
             writer.WriteStringValue("siteLabel", SiteLabel);
             writer.WriteDateTimeOffsetValue("updatedAt", UpdatedAt);

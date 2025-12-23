@@ -10,6 +10,8 @@ public class Immunization
     // Patient Demographics (for child immunization)
     public DateTime? DateOfBirth { get; set; }
     public string? BirthPlace { get; set; }
+    public int? Gender { get; set; }
+    public string? Address { get; set; }
     public decimal? BirthWeight { get; set; }
     public decimal? BirthLength { get; set; }
     public string? FatherName { get; set; }
@@ -35,8 +37,8 @@ public class Immunization
     
     // Vaccine Information
     public VaccineType? VaccineType { get; set; }
-    public string? VaccineName { get; set; } = null!;
-    public DateTime VaccineDate { get; set; }
+    public string? VaccineName { get; set; }
+    public DateTime? VaccineDate { get; set; }
     public int? DoseNumber { get; set; }
     public string? Lot { get; set; }
     public VaccineRoute? Route { get; set; }
@@ -47,7 +49,11 @@ public class Immunization
     // Age Category
     public ImmunizationAgeCategory? AgeCategory { get; set; }
     
-    // Medical Personnel
+    // Medical Personnel (for adult immunization)
+    public DateTime? ServiceDate { get; set; }
+    public int? AgeYears { get; set; }
+    public string? DoctorName { get; set; }
+    public string? NurseName { get; set; }
     public Guid? ProviderId { get; set; }
     public Guid? NurseId { get; set; }
     

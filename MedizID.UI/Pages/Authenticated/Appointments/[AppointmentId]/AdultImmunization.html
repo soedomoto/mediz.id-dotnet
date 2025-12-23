@@ -1,0 +1,247 @@
+<form form-ajax="" id="form_create" method="POST" action="https://emr.eclinic.id/imunisasi/store" class="form-horizontal">
+    <input type="hidden" name="_token" value="GufFdUtETmSruxkA5n08EVdNjBU52NJb0a7GsfG5">
+    <input type="hidden" name="Imunisasi[kategori]" value="anak">
+    <div class="panel-body row">
+        <div class="col-sm-12">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="col-sm-12"><strong>Tanggal</strong></label>
+                    <div class="col-sm-12">
+                        <label id="tanggal">
+                                                        19-12-2025 08:49:49
+                                                    </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-12"><strong>Umur Tahun <span style="color:red;">*</span></strong></label>
+                    <div class="col-sm-12 input-group has-success" style=" padding-left: 15px; padding-right: 15px; ">
+                        <input type="text" class="form-control input-sm" required="" name="Imunisasi[umur_bulan]" value="32" placeholder="Umur"><span class="input-group-addon btn-info">Tahun</span>
+                    </div>
+                </div>
+                <input type="text" class="hidden form-control input-sm" required="" readonly="" name="Imunisasi[pelayanan_id]" value="14969">
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="col-sm-12"><strong>Dokter / Tenaga Medis <span style="color:red;">*</span></strong></label>
+                    <div class="col-sm-12 has-success">
+                        <input type="text" class="hidden form-control input-sm" readonly="" required="" name="Imunisasi[dokter_id]" value="1000000000041217">
+                        <input type="text" class="form-control input-sm ui-autocomplete-input" required="" name="dokter_nama" value="Dini Winastri" placeholder="🔍 Nama Dokter / Bidan / Perawat" maxlength="128" autocomplete="off">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-12"><strong>Perawat / Bidan / Nutrisionist / Sanitarian </strong></label>
+                    <div class="col-sm-12 has-success">
+                        <input type="text" class="hidden form-control input-sm" readonly="" name="Imunisasi[perawat_id]" value="1000000000041208">
+                        <input type="text" class="form-control input-sm ui-autocomplete-input" name="perawat_nama" value="Hanvi" placeholder="🔍 Nama Asisten Dokter / Bidan / Perawat" maxlength="128" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+            <br><br>
+        </div>
+        <div class="col-sm-12" style="padding:0 ">
+            <br><br>
+            <div class="col-sm-12 box" id="pkesehatan">
+                <div class="with-border box-header">
+                    <span class="panel-title"><strong>Data Imunisasi </strong></span>
+                </div>
+                <div class="panel-body">
+                                        
+                                                                        <div class="col-sm-3">
+                                <input type="checkbox" value="BCG" name="ImunisasiDetail[imunisasi_kode][0]">
+                                <span class="control-label">BCG</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="CMPK1" name="ImunisasiDetail[imunisasi_kode][1]">
+                                <span class="control-label">CAMPAK-1</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="CMPK2" name="ImunisasiDetail[imunisasi_kode][2]">
+                                <span class="control-label">CAMPAK-2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="DHH1" name="ImunisasiDetail[imunisasi_kode][3]">
+                                <span class="control-label">DPT-HB-Hib 1</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="DHH2" name="ImunisasiDetail[imunisasi_kode][4]">
+                                <span class="control-label">DPT-HB-Hib 2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="DHH3" name="ImunisasiDetail[imunisasi_kode][5]">
+                                <span class="control-label">DPT-HB-Hib 3</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="DHH4" name="ImunisasiDetail[imunisasi_kode][6]">
+                                <span class="control-label">DPT-HB-Hib 4</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="DTP1" name="ImunisasiDetail[imunisasi_kode][7]">
+                                <span class="control-label">DTP-1</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="DTP2" name="ImunisasiDetail[imunisasi_kode][8]">
+                                <span class="control-label">DTP-2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="DTP3" name="ImunisasiDetail[imunisasi_kode][9]">
+                                <span class="control-label">DTP-3</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="DTP4" name="ImunisasiDetail[imunisasi_kode][10]">
+                                <span class="control-label">DTP-4</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="HA1" name="ImunisasiDetail[imunisasi_kode][11]">
+                                <span class="control-label">HEPATITIS A-1</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="HA2" name="ImunisasiDetail[imunisasi_kode][12]">
+                                <span class="control-label">HEPATITIS A-2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="HB0" name="ImunisasiDetail[imunisasi_kode][13]">
+                                <span class="control-label">HEPATITIS B-0</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="HB1" name="ImunisasiDetail[imunisasi_kode][14]">
+                                <span class="control-label">HEPATITIS B-1</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="HB2" name="ImunisasiDetail[imunisasi_kode][15]">
+                                <span class="control-label">HEPATITIS B-2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="HB3" name="ImunisasiDetail[imunisasi_kode][16]">
+                                <span class="control-label">HEPATITIS B-3</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="HIB1" name="ImunisasiDetail[imunisasi_kode][17]">
+                                <span class="control-label">HiB-1</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="HIB2" name="ImunisasiDetail[imunisasi_kode][18]">
+                                <span class="control-label">HiB-2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="HIB3" name="ImunisasiDetail[imunisasi_kode][19]">
+                                <span class="control-label">HiB-3</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="HIB4" name="ImunisasiDetail[imunisasi_kode][20]">
+                                <span class="control-label">HiB-4</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="INFLUE" name="ImunisasiDetail[imunisasi_kode][21]">
+                                <span class="control-label">INFLUENZA</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="IPV" name="ImunisasiDetail[imunisasi_kode][22]">
+                                <span class="control-label">IPV</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="MMR1" name="ImunisasiDetail[imunisasi_kode][23]">
+                                <span class="control-label">MMR-1</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="MMR2" name="ImunisasiDetail[imunisasi_kode][24]">
+                                <span class="control-label">MMR-2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="MR" name="ImunisasiDetail[imunisasi_kode][25]">
+                                <span class="control-label">MR</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="MR2" name="ImunisasiDetail[imunisasi_kode][26]">
+                                <span class="control-label">MR-2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="OPV1" name="ImunisasiDetail[imunisasi_kode][27]">
+                                <span class="control-label">OPV-1</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="OPV2" name="ImunisasiDetail[imunisasi_kode][28]">
+                                <span class="control-label">OPV-2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="OPV3" name="ImunisasiDetail[imunisasi_kode][29]">
+                                <span class="control-label">OPV-3</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="OPV4" name="ImunisasiDetail[imunisasi_kode][30]">
+                                <span class="control-label">OPV-4</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="PCV1" name="ImunisasiDetail[imunisasi_kode][31]">
+                                <span class="control-label">PCV-1</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="PCV2" name="ImunisasiDetail[imunisasi_kode][32]">
+                                <span class="control-label">PCV-2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="PCV3" name="ImunisasiDetail[imunisasi_kode][33]">
+                                <span class="control-label">PCV-3</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="PCV4" name="ImunisasiDetail[imunisasi_kode][34]">
+                                <span class="control-label">PCV-4</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="POLIO0" name="ImunisasiDetail[imunisasi_kode][35]">
+                                <span class="control-label">POLIO-0</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="POLIO1" name="ImunisasiDetail[imunisasi_kode][36]">
+                                <span class="control-label">POLIO-1</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="POLIO2" name="ImunisasiDetail[imunisasi_kode][37]">
+                                <span class="control-label">POLIO-2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="POLIO3" name="ImunisasiDetail[imunisasi_kode][38]">
+                                <span class="control-label">POLIO-3</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="POLIO4" name="ImunisasiDetail[imunisasi_kode][39]">
+                                <span class="control-label">POLIO-4</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="POLIO5" name="ImunisasiDetail[imunisasi_kode][40]">
+                                <span class="control-label">POLIO-5</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="RTVRS1" name="ImunisasiDetail[imunisasi_kode][41]">
+                                <span class="control-label">ROTAVIRUS-1</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="RTVRS2" name="ImunisasiDetail[imunisasi_kode][42]">
+                                <span class="control-label">ROTAVIRUS-2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="RTVRS3" name="ImunisasiDetail[imunisasi_kode][43]">
+                                <span class="control-label">ROTAVIRUS-3</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="TFD1" name="ImunisasiDetail[imunisasi_kode][44]">
+                                <span class="control-label">TIFOID-1</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="TFD2" name="ImunisasiDetail[imunisasi_kode][45]">
+                                <span class="control-label">TIFOID-2</span>
+                            </div>
+                                                    <div class="col-sm-3">
+                                <input type="checkbox" value="VRSL" name="ImunisasiDetail[imunisasi_kode][46]">
+                                <span class="control-label">VARISELA</span>
+                            </div>
+                                                            </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-footer row panel-button">
+                <button id="button_save" type="submit" class="btn btn-sm btn-success" onclick="if (!window.__cfRLUnblockHandlers) return false; return requiredCheck(this)">Simpan</button>
+        <button id="button_print_0" type="button" class="btn btn-sm btn-info" disabled=""> Cetak</button>
+                <button id="button_reset" type="reset" class="btn btn-sm btn-warning">Reset</button>
+    </div>
+</form>

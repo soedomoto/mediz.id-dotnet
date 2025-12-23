@@ -1,5 +1,6 @@
 ﻿@using Blazored.LocalStorage
 @using MedizID.UI
+@using AntDesign
 @inject ILocalStorageService LocalStorage
 
 <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="@AdditionalAssemblies">
@@ -30,6 +31,8 @@
         }
     </NotFound>
 </Router>
+
+<AntContainer />
 
 @code {
     private bool isAuthenticated = false;
