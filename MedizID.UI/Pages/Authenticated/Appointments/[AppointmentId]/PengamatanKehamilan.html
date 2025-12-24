@@ -1,0 +1,349 @@
+<form form-ajax-self="" id="formPengamatan" method="POST" action="https://emr.eclinic.id/kohort/update/37" class="form-horizontal">
+                <button class="hidden" id="btnTriggerValidation"></button>
+                <button class="hidden" type="reset" id="btnTriggerReset"></button>
+                <input type="hidden" name="_token" value="BOUfxTDJBWGT2GesV2eMqv8JsK0yOExMpBDzkNsN">
+                <div class="panel-body row">
+                  <input type="text" class="hidden form-control input-sm" name="pelayanan_id_baru" value="Testi">
+                    <div class="box box-bordered">
+                        <div class="box-header with-border solid-colored">
+                            <span class="panel-title">Pengamatan Kehamilan</span>
+                        </div>
+                        <div class="col-md-12 box-bordered-withPadding">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">ID <span style="color:red;">*</span></label>
+                                    <div class="col-sm-8">
+                                        <label id="created_id">
+                                                                                    37
+                                                                                </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Tanggal</label>
+                                    <div class="col-sm-8">
+                                        <label id="tanggal">
+                                                                                            22-12-2025 09:53:28
+                                                                                    </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Dokter / Tenaga Medis <span style="color:red;">*</span></label>
+                                    <div class="col-sm-8 has-success">
+                                        <input type="text" class="hidden form-control input-sm" readonly="" required="" name="Kohort[dokter_id]" value="1000000000041217">
+                                        <input type="text" class="form-control input-sm ui-autocomplete-input" required="" name="dokter_nama" value="Dini Winastri" placeholder="🔍 Nama Dokter / Bidan / Perawat" maxlength="128" autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Perawat / Bidan / Nutrisionist / Sanitarian</label>
+                                    <div class="col-sm-8 has-success">
+                                        <input type="text" class="hidden form-control input-sm" readonly="" name="Kohort[perawat_id]" value="1000000000041208">
+                                        <input type="text" class="form-control input-sm ui-autocomplete-input" name="perawat_nama" value="Hanvi" placeholder="🔍 Nama Asisten Dokter / Bidan / Perawat" maxlength="128" autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Posyandu</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control input-sm" name="Kehamilan[posyandu]" placeholder="Nama Posyandu" value="" maxlength="64">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Nama Kader</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control input-sm" name="Kehamilan[kader]" placeholder="Nama Kader" value="" maxlength="64">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Nama Dukun</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control input-sm" name="Kehamilan[dukun]" placeholder="Nama Dukun" value="" maxlength="64">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Golongan Darah</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control input-sm" name="gol_darah" readonly="" value="A">
+                                        </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Telp./ HP</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control input-sm" name="no_hp" readonly="" value="********">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="box box-bordered">
+                                <div class="box-header with-border solid-colored">
+                                    <span class="panel-title">Riwayat Pasien</span>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Riwayat Komplikasi Kebidanan</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" class="form-control input-sm" name="Kehamilan[riwayat_komplikasi]" placeholder="Riwayat Komplikasi" value="" maxlength="64">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Penyakit Kronis dan Alergi</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" class="form-control input-sm" name="Kehamilan[penyakit_kronis]" placeholder="Penyakit Kronis dan Alergi" value="" maxlength="64">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Riwayat Penyakit</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" class="form-control input-sm" name="Kehamilan[riwayat_penyakit]" placeholder="Riwayat Penyakit" value="" maxlength="128">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="box box-bordered">
+                                <div class="box-header with-border solid-colored">
+                                    <span class="panel-title">Riwayat Obstetrik</span>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Gravida</label>
+                                        <div class="col-sm-8">
+                                            <input type="number" inputmode="numeric" min="0" class="form-control input-sm" name="Kehamilan[gravida]" placeholder="0" value="" maxlength="3">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Partus</label>
+                                        <div class="col-sm-8">
+                                            <input type="number" inputmode="numeric" min="0" class="form-control input-sm" name="Kehamilan[partus]" placeholder="0" value="" maxlength="3">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Abortus</label>
+                                        <div class="col-sm-8">
+                                            <input type="number" inputmode="numeric" min="0" class="form-control input-sm" name="Kehamilan[abortus]" placeholder="0" value="" maxlength="3">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Hidup</label>
+                                        <div class="col-sm-8">
+                                            <input type="number" inputmode="numeric" min="0" class="form-control input-sm" name="Kehamilan[hidup]" placeholder="0" value="" maxlength="3">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="box box-bordered">
+                                <div class="box-header with-border solid-colored">
+                                    <span class="panel-title">Rencana Persalinan</span>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Tanggal </label>
+                                        <div class="col-sm-8">
+                                            <div class="input-group date-next">
+                                                <input type="text" class="form-control input-sm " name="Kehamilan[tanggal_rencana]" value="" placeholder="dd-mm-yyyy">
+                                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Penolong </label>
+                                        <div class="col-sm-8">
+                                            <select class="form-control input-sm" name="Kehamilan[penolong]">
+                                                <option value="">- Pilih -</option>
+                                                                                                                                                            <option value="Keluarga">Keluarga</option>
+                                                                                                            <option value="Dukun">Dukun</option>
+                                                                                                            <option value="Bidan">Bidan</option>
+                                                                                                            <option value="dr. umum">dr. umum</option>
+                                                                                                            <option value="dr. spesialis">dr. spesialis</option>
+                                                                                                            <option value="Lain-lain">Lain-lain</option>
+                                                                                                            <option value="Tidak ada">Tidak ada</option>
+                                                                                                                                                </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Tempat </label>
+                                        <div class="col-sm-8">
+                                            <select class="form-control input-sm" name="Kehamilan[tempat]">
+                                                <option value="">- Pilih -</option>
+                                                                                                                                                            <option value="Rumah">Rumah</option>
+                                                                                                            <option value="Polides">Polides</option>
+                                                                                                            <option value="Pustu">Pustu</option>
+                                                                                                            <option value="Puskesmas">Puskesmas</option>
+                                                                                                            <option value="RB">RB</option>
+                                                                                                            <option value="RSIA">RSIA</option>
+                                                                                                            <option value="RS">RS</option>
+                                                                                                            <option value="RS ODHA">RS ODHA</option>
+                                                                                                                                                </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Pendamping </label>
+                                        <div class="col-sm-8">
+                                            <select class="form-control input-sm" name="Kehamilan[pendamping]">
+                                                <option value="">- Pilih -</option>
+                                                                                                                                                            <option value="Suami">Suami</option>
+                                                                                                            <option value="Keluarga">Keluarga</option>
+                                                                                                            <option value="Teman">Teman</option>
+                                                                                                            <option value="Tetangga">Tetangga</option>
+                                                                                                            <option value="Lainnya">Lainnya</option>
+                                                                                                                                                </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Transportasi </label>
+                                        <div class="col-sm-8">
+                                            <select class="form-control input-sm" name="Kehamilan[transportasi]">
+                                                <option value="">- Pilih -</option>
+                                                                                                                                                            <option value="Ambulan Desa">Ambulan Desa</option>
+                                                                                                            <option value="Ambulan Puskesmas">Ambulan Puskesmas</option>
+                                                                                                            <option value="Ambulan Swasta">Ambulan Swasta</option>
+                                                                                                            <option value="Kendaraan Pribadi">Kendaraan Pribadi</option>
+                                                                                                            <option value="Kendaraan Umum">Kendaraan Umum</option>
+                                                                                                                                                </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Pendonor </label>
+                                        <div class="col-sm-8">
+                                            <select class="form-control input-sm" name="Kehamilan[pendonor]">
+                                                <option value="">- Pilih -</option>
+                                                                                                                                                            <option value="Suami">Suami</option>
+                                                                                                            <option value="Keluarga">Keluarga</option>
+                                                                                                            <option value="Teman">Teman</option>
+                                                                                                            <option value="Tetangga">Tetangga</option>
+                                                                                                            <option value="Lainnya">Lainnya</option>
+                                                                                                                                                </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="box box-bordered">
+                                <div class="box-header with-border solid-colored">
+                                    <span class="panel-title">Pemeriksaan Bidan</span>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Tanggal HPHT </label>
+                                        <div class="col-sm-6">
+                                            <div class="input-group date" id="div_date">
+                                                <input type="text" class="form-control input-sm" name="Kehamilan[tanggal_hpht]" value="" placeholder="dd-mm-yyyy" id="hpht">
+                                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Taksiran Persalinan </label>
+                                        <div class="col-sm-6">
+                                            <div class="input-group date-next">
+                                                <input type="text" class="form-control input-sm" name="Kehamilan[taksiran_persalinan]" id="taksiran" value="" placeholder="dd-mm-yyyy">
+                                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Persalinan Sebelumnya </label>
+                                        <div class="col-sm-6">
+                                            <div class="input-group date">
+                                                <input type="text" class="form-control input-sm" name="Kehamilan[persalinan_sebelumnya]" value="" placeholder="dd-mm-yyyy">
+                                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Buku KIA <span style="color:red;">*</span></label>
+                                        <div class="col-sm-8">
+                                            <div class="input-group">
+                                                <label class="radio-inline">
+                                                    <input type="radio" name="Kehamilan[buku_kia]" required="" value="Y">
+                                                    Memiliki
+                                                </label>
+                                                <label class="radio-inline">
+                                                    <input type="radio" name="Kehamilan[buku_kia]" required="" value="T">
+                                                    Tidak Memiliki
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">
+                                            BB sebelum hamil <span style="color:red;">*</span>
+                                        </label>
+                                        <div class="col-sm-6">
+                                            <div class="input-group">
+                                                <input type="number" inputmode="numeric" min="0" name="Kehamilan[bb_sblm_hamil]" class="form-control input-sm" value="" placeholder="0" required=""><span class="input-group-addon">Kg</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">
+                                            Tinggi Badan
+                                        </label>
+                                        <div class="col-sm-6">
+                                            <div class="input-group">
+                                                <input type="number" inputmode="numeric" min="0" name="Kehamilan[tb]" class="form-control input-sm" value="" placeholder="0"><span class="input-group-addon">cm</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="box box-bordered">
+                                <div class="box-header with-border solid-colored">
+                                    <span class="panel-title">Risiko</span>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Skor Ibu (KSPR)</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" value="2" class="hidden" name="Kehamilan[skor_ibu]">
+                                            <input type="number" class="form-control input-sm" name="skor_ibu" value="2" placeholder="2" id="skor_ibu" inputmode="numeric" min="2" maxlength="2" readonly="">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="" class="col-sm-4 control-label">Risiko</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" class="hidden" value="krr" name="Kehamilan[risiko_kspr]">
+                                            <input type="text" name="risiko_kspr" class="form-control input-sm" value="Kehamilan Risiko Rendah" readonly="">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="" class="col-sm-4 control-label">Sebutkan Jenis Risiko Tinggi</label>
+                                        <div class="col-sm-8">
+                                            <textarea name="Kehamilan[risiko_tinggi_kspr]" rows="4" class="form-control input-sm" placeholder="Sebutkan Jenis Risiko Tinggi"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="" class="col-sm-4 control-label">Risiko Kasuistik</label>
+                                        <div class="col-sm-8">
+                                            <select name="Kehamilan[risiko_kasuistik]" id="" class="form-control input-sm">
+                                                <option value="">- Pilih -</option>
+                                                <option value="hiv">HIV atau AIDS</option>
+                                                <option value="hbsag">HbSAG</option>
+                                                <option value="gangguan_darah">Gangguan darah</option>
+                                                <option value="penyakit_ginjal_kronis">Penyakit ginjal kronis</option>
+                                                <option value="depresi">Depresi</option>
+                                                <option value="tekanan_darah_tinggi">Tekanan darah tinggi</option>
+                                                <option value="lupus">Lupus</option>
+                                                <option value="kegemukan">Kegemukan</option>
+                                                <option value="penyakit_tiroid">Penyakit tiroid</option>
+                                                <option value="diabetes">Diabetes</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>

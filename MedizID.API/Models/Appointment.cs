@@ -26,4 +26,5 @@ public class Appointment
     public ICollection<Procedure> Procedures { get; set; } = new List<Procedure>();
     public ICollection<Laboratorium> LaboratoriumTests { get; set; } = new List<Laboratorium>();
     public Immunization? Immunization { get; set; }
+    public AntenatalCareObservation? AntenatalCareObservation { get; set; }
 }

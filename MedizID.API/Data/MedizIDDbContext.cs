@@ -27,6 +27,7 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<Anamnesis> Anamnesis { get; set; }
     public DbSet<AnamnesisTemplate> AnamnesisTemplates { get; set; }
     public DbSet<Diagnosis> Diagnoses { get; set; }
+    public DbSet<AntenatalCareObservation> AntenatalCareObservations { get; set; }
     public DbSet<Prescription> Prescriptions { get; set; }
     public DbSet<PrescriptionDetail> PrescriptionDetails { get; set; }
     public DbSet<LaboratoriumTestMaster> LaboratoriumTestMasters { get; set; }

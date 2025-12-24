@@ -12,6 +12,7 @@ using MedizID.UI.Services.Generated.Api.V1.FamilyPlanning;
 using MedizID.UI.Services.Generated.Api.V1.Immunization;
 using MedizID.UI.Services.Generated.Api.V1.Laboratorium;
 using MedizID.UI.Services.Generated.Api.V1.LaboratoriumTestMaster;
+using MedizID.UI.Services.Generated.Api.V1.MaternalChildHealth;
 using MedizID.UI.Services.Generated.Api.V1.Odontogram;
 using MedizID.UI.Services.Generated.Api.V1.Prescriptions;
 using MedizID.UI.Services.Generated.Api.V1.Procedure;
@@ -90,6 +91,11 @@ namespace MedizID.UI.Services.Generated.Api.V1
         public global::MedizID.UI.Services.Generated.Api.V1.LaboratoriumTestMaster.LaboratoriumTestMasterRequestBuilder LaboratoriumTestMaster
         {
             get => new global::MedizID.UI.Services.Generated.Api.V1.LaboratoriumTestMaster.LaboratoriumTestMasterRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The MaternalChildHealth property</summary>
+        public global::MedizID.UI.Services.Generated.Api.V1.MaternalChildHealth.MaternalChildHealthRequestBuilder MaternalChildHealth
+        {
+            get => new global::MedizID.UI.Services.Generated.Api.V1.MaternalChildHealth.MaternalChildHealthRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The Odontogram property</summary>
         public global::MedizID.UI.Services.Generated.Api.V1.Odontogram.OdontogramRequestBuilder Odontogram

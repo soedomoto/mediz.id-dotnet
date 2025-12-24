@@ -10,17 +10,104 @@
 @inject INotificationService _notice
 @implements IAsyncDisposable
 
-<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Maternal Child Health" : "MedizID")
-</PageTitle>
+<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Maternal Child Health" : "MedizID")</PageTitle>
+
+<div style="padding: 24px; background-color: white; border-radius: 8px;">
+    @if (LayoutState.Appointment != null && _antenatalForm != null)
+    {
+        <h2>Pengamatan Kehamilan (Antenatal Care Observation)</h2>
+        
+        <Form Model="@_antenatalForm" OnFinish="@OnSaveAntenatalCareAsync" Layout="@FormLayout.Vertical">
+            <Divider>Informasi Tenaga Kesehatan</Divider>
+            
+            <FormItem Label="Dokter / Tenaga Medis">
+                <Input @bind-Value="_antenatalForm.MedicalPersonnelName" Placeholder="Nama Dokter / Tenaga Medis" />
+            </FormItem>
+            
+            <FormItem Label="Perawat / Bidan">
+                <Input @bind-Value="_antenatalForm.NurseName" Placeholder="Nama Perawat / Bidan" />
+            </FormItem>
+            
+            <Divider>Riwayat Pasien</Divider>
+            
+            <FormItem Label="Gravida">
+                <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.Gravida" Min="0" Placeholder="0" />
+            </FormItem>
+            
+            <FormItem Label="Partus">
+                <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.Partus" Min="0" Placeholder="0" />
+            </FormItem>
+            
+            <FormItem Label="Abortus">
+                <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.Abortus" Min="0" Placeholder="0" />
+            </FormItem>
+            
+            <FormItem Label="Anak Hidup">
+                <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.AliveChildren" Min="0" Placeholder="0" />
+            </FormItem>
+            
+            <Divider>Tanggal-Tanggal Penting</Divider>
+            
+            <FormItem Label="Tanggal HPHT (Hari Pertama Haid Terakhir)">
+                <AntDesign.DatePicker TValue="DateTime?" Value="@(_antenatalForm.LastMenstrualPeriodDate?.DateTime)" ValueChanged="OnLastMenstrualPeriodDateChanged" Placeholder="@("Pilih tanggal")" />
+            </FormItem>
+            
+            <FormItem Label="Taksiran Persalinan">
+                <AntDesign.DatePicker TValue="DateTime?" Value="@(_antenatalForm.EstimatedDeliveryDate?.DateTime)" ValueChanged="OnEstimatedDeliveryDateChanged" Placeholder="@("Pilih tanggal")" />
+            </FormItem>
+            
+            <FormItem Label="Berat Badan Sebelum Hamil (kg)">
+                <AntDesign.InputNumber TValue="double?" @bind-Value="_antenatalForm.PrePregnancyWeight" Placeholder="0.0" Step="0.1" />
+            </FormItem>
+            
+            <FormItem Label="Tinggi Badan (cm)">
+                <AntDesign.InputNumber TValue="double?" @bind-Value="_antenatalForm.Height" Placeholder="0.0" Step="0.1" />
+            </FormItem>
+            
+            <Divider>Penilaian Risiko</Divider>
+            
+            <FormItem Label="Kategori Risiko Kehamilan">
+                <RadioGroup @bind-Value="_antenatalForm.PregnancyRiskCategory" TValue="string">
+                    <Radio TValue="string" Value="@("1")">Risiko Rendah</Radio>
+                    <Radio TValue="string" Value="@("2")">Risiko Sedang</Radio>
+                    <Radio TValue="string" Value="@("3")">Risiko Tinggi</Radio>
+                </RadioGroup>
+            </FormItem>
+            
+            <FormItem Label="Skor Ibu (KSPR)">
+                <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.MotherKsurScore" Min="2" Placeholder="2" />
+            </FormItem>
+            
+            <FormItem Label="Deskripsi Risiko Tinggi">
+                <TextArea @bind-Value="_antenatalForm.HighRiskDescription" Placeholder="Jelaskan jenis risiko tinggi jika ada" Rows="3" />
+            </FormItem>
+            
+            <Button Type="@ButtonType.Primary" HtmlType="submit" Loading="@_isSaving">
+                Simpan Pengamatan Kehamilan
+            </Button>
+        </Form>
+    }
+</div>
 
 @code {
     [Parameter]
     public Guid AppointmentId { get; set; }
 
+    private CreateAntenatalCareObservationRequest _antenatalForm = new();
+    private Guid? _existingObservationId;
+    private bool _isSaving = false;
+
     protected override async Task OnInitializedAsync()
     {
         LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
         LayoutState.ActiveTabKey = "maternal-child-health";
+        
+        if (LayoutState.IsAuthenticated && AppointmentId != Guid.Empty)
+        {
+            await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadAntenatalCareObservationAsync();
+            StateHasChanged();
+        }
     }
 
     private async void OnAuthenticationChanged(bool isAuthenticated)
@@ -28,7 +115,101 @@
         if (isAuthenticated && AppointmentId != Guid.Empty)
         {
             await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadAntenatalCareObservationAsync();
             StateHasChanged();
+        }
+    }
+
+    private async Task LoadAntenatalCareObservationAsync()
+    {
+        try
+        {
+            _antenatalForm = new CreateAntenatalCareObservationRequest
+            {
+                AppointmentId = AppointmentId
+            };
+
+            try
+            {
+                var observation = await ApiClient.Api.V1.MaternalChildHealth.AntenatalCareObservation.Appointment[AppointmentId].GetAsync();
+
+                if (observation != null)
+                {
+                    _existingObservationId = observation.Id;
+                    
+                    _antenatalForm = new CreateAntenatalCareObservationRequest
+                    {
+                        AppointmentId = AppointmentId,
+                        MedicalPersonnelName = observation.MedicalPersonnelName,
+                        NurseName = observation.NurseName,
+                        Gravida = observation.Gravida,
+                        Partus = observation.Partus,
+                        Abortus = observation.Abortus,
+                        AliveChildren = observation.AliveChildren,
+                        LastMenstrualPeriodDate = observation.LastMenstrualPeriodDate,
+                        EstimatedDeliveryDate = observation.EstimatedDeliveryDate,
+                        PrePregnancyWeight = observation.PrePregnancyWeight,
+                        Height = observation.Height,
+                        PregnancyRiskCategory = observation.PregnancyRiskCategory,
+                        MotherKsurScore = observation.MotherKsurScore,
+                        HighRiskDescription = observation.HighRiskDescription
+                    };
+                }
+            }
+            catch
+            {
+                _notice?.Warning(new NotificationConfig { Message = "Info", Description = "Data pengamatan kehamilan tidak ditemukan" });
+            }
+        }
+        catch (Exception ex)
+        {
+            _notice?.Error(new NotificationConfig { Message = "Error", Description = $"Failed to load data: {ex.Message}" });
+        }
+    }
+
+    private void OnLastMenstrualPeriodDateChanged(DateTime? dt)
+    {
+        _antenatalForm.LastMenstrualPeriodDate = dt.HasValue ? new DateTimeOffset(dt.Value) : null;
+    }
+
+    private void OnEstimatedDeliveryDateChanged(DateTime? dt)
+    {
+        _antenatalForm.EstimatedDeliveryDate = dt.HasValue ? new DateTimeOffset(dt.Value) : null;
+    }
+
+    private async Task OnSaveAntenatalCareAsync()
+    {
+        try
+        {
+            _isSaving = true;
+            _antenatalForm.AppointmentId = AppointmentId;
+
+            if (_existingObservationId.HasValue)
+            {
+                var result = await ApiClient.Api.V1.MaternalChildHealth.AntenatalCareObservation[_existingObservationId.Value].PutAsync(_antenatalForm);
+                _notice?.Success(new NotificationConfig 
+                { 
+                    Message = "Success", 
+                    Description = "Pengamatan kehamilan berhasil diperbarui" 
+                });
+            }
+            else
+            {
+                var result = await ApiClient.Api.V1.MaternalChildHealth.AntenatalCareObservation.PostAsync(_antenatalForm);
+                _existingObservationId = result?.Id;
+                _notice?.Success(new NotificationConfig 
+                { 
+                    Message = "Success", 
+                    Description = "Pengamatan kehamilan berhasil disimpan" 
+                });
+            }
+
+            _isSaving = false;
+        }
+        catch (Exception ex)
+        {
+            _isSaving = false;
+            _notice?.Error(new NotificationConfig { Message = "Error", Description = $"Failed to save: {ex.Message}" });
         }
     }
 
@@ -37,5 +218,4 @@
         LayoutState.OnAuthenticationChanged -= OnAuthenticationChanged;
         await Task.CompletedTask;
     }
-
 }
