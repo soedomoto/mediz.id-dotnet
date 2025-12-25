@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace MedizID.API.Controllers.SpecializedServices;
+namespace MedizID.API.Controllers.Appointments;
 
 [ApiController]
 [Route("api/v1/[controller]")]

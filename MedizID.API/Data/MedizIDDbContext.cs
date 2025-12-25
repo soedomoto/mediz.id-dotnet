@@ -28,6 +28,10 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<AnamnesisTemplate> AnamnesisTemplates { get; set; }
     public DbSet<Diagnosis> Diagnoses { get; set; }
     public DbSet<AntenatalCareObservation> AntenatalCareObservations { get; set; }
+    public DbSet<AntenatalExamination> AntenatalExaminations { get; set; }
+    public DbSet<DeliveryObservation> DeliveryObservations { get; set; }
+    public DbSet<PostpartumObservation> PostpartumObservations { get; set; }
+    public DbSet<Partograph> Partographs { get; set; }
     public DbSet<Prescription> Prescriptions { get; set; }
     public DbSet<PrescriptionDetail> PrescriptionDetails { get; set; }
     public DbSet<LaboratoriumTestMaster> LaboratoriumTestMasters { get; set; }
@@ -186,6 +190,34 @@ public class MedizIDDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .HasOne(s => s.Appointment)
             .WithMany()
             .HasForeignKey(s => s.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Antenatal Examination relationships
+        modelBuilder.Entity<AntenatalExamination>()
+            .HasOne(a => a.Appointment)
+            .WithMany()
+            .HasForeignKey(a => a.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Delivery Observation relationships
+        modelBuilder.Entity<DeliveryObservation>()
+            .HasOne(d => d.Appointment)
+            .WithMany()
+            .HasForeignKey(d => d.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Postpartum Observation relationships
+        modelBuilder.Entity<PostpartumObservation>()
+            .HasOne(p => p.Appointment)
+            .WithMany()
+            .HasForeignKey(p => p.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Partograph relationships
+        modelBuilder.Entity<Partograph>()
+            .HasOne(p => p.Appointment)
+            .WithMany()
+            .HasForeignKey(p => p.AppointmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // AnamnesisTemplate relationships

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace MedizID.API.Controllers.SpecializedServices;
+namespace MedizID.API.Controllers.Appointments;
 
 [ApiController]
 [Route("api/v1/[controller]")]

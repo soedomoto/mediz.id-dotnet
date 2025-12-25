@@ -3,6 +3,7 @@ using System;
 using MedizID.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedizID.API.Migrations
 {
     [DbContext(typeof(MedizIDDbContext))]
-    partial class MedizIDDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251224074018_AddPemeriksaanAntenatal")]
+    partial class AddPemeriksaanAntenatal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -496,88 +499,6 @@ namespace MedizID.API.Migrations
                     b.ToTable("AntenatalCareObservations");
                 });
 
-            modelBuilder.Entity("MedizID.API.Models.AntenatalExamination", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Anemia")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("AppointmentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("BloodGlucose")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("BloodPressure")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ClinicalHistory")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<double?>("EstimatedFetalWeight")
-                        .HasColumnType("double precision");
-
-                    b.Property<int?>("FetalCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("FetalHeartRate")
-                        .HasColumnType("text");
-
-                    b.Property<double?>("FundusHeight")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("HeadPosition")
-                        .HasColumnType("text");
-
-                    b.Property<double?>("Height")
-                        .HasColumnType("double precision");
-
-                    b.Property<double?>("Hemoglobin")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("NutritionStatus")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PatellaReflex")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("PregnancyWeeks")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Presentation")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("ProteinUrine")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("Trimester")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<double?>("UpperArmCircumference")
-                        .HasColumnType("double precision");
-
-                    b.Property<int?>("UrineReducingSubstances")
-                        .HasColumnType("integer");
-
-                    b.Property<double?>("Weight")
-                        .HasColumnType("double precision");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppointmentId");
-
-                    b.ToTable("AntenatalExaminations");
-                });
-
             modelBuilder.Entity("MedizID.API.Models.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -730,100 +651,6 @@ namespace MedizID.API.Migrations
                     b.HasIndex("FacilityPatientId");
 
                     b.ToTable("Appointments");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.DeliveryObservation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool?>("AntibioticTherapy")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("AntiretroviralProphylaxis")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("AppointmentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("BirthAttendant")
-                        .HasColumnType("text");
-
-                    b.Property<bool?>("BloodTransfusion")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ComplicationsDescription")
-                        .HasColumnType("text");
-
-                    b.Property<bool?>("ControlledCordTraction")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DeliveryAddress")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DeliveryLocation")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DeliveryMode")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("GestationalAge")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("GestationalAgeFromLmp")
-                        .HasColumnType("integer");
-
-                    b.Property<bool?>("HasComplications")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("MaternalCondition")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MaternalConditionAtReferral")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MaternalDischargingCondition")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NeonatalCondition")
-                        .HasColumnType("text");
-
-                    b.Property<bool?>("NeonatalResuscitation")
-                        .HasColumnType("boolean");
-
-                    b.Property<double?>("NeonatalWeight")
-                        .HasColumnType("double precision");
-
-                    b.Property<bool?>("OxytocinAdministered")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Presentation")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProgramIntegration")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ReferralDestination")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool?>("UterineMassage")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool?>("WasReferred")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppointmentId");
-
-                    b.ToTable("DeliveryObservations");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Department", b =>
@@ -1876,119 +1703,86 @@ namespace MedizID.API.Migrations
                     b.ToTable("OdontogramSurfaces");
                 });
 
-            modelBuilder.Entity("MedizID.API.Models.Partograph", b =>
+            modelBuilder.Entity("MedizID.API.Models.PemeriksaanAntenatal", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset?>("AdmissionDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("AdmissionTime")
+                    b.Property<string>("Anamnesis")
                         .HasColumnType("text");
 
-                    b.Property<string>("AmnioticFluidStatus")
+                    b.Property<string>("Anemia")
                         .HasColumnType("text");
 
                     b.Property<Guid>("AppointmentId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("BladderStatus")
+                    b.Property<string>("BloodPressure")
                         .HasColumnType("text");
 
-                    b.Property<string>("BloodPressureReadings")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CervicalDilation")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CervicalEffacement")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ComplicationActions")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Complications")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("DeliveryDateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FetalDescent")
-                        .HasColumnType("text");
-
-                    b.Property<string>("FetalHeartRateReadings")
-                        .HasColumnType("text");
-
-                    b.Property<string>("IVFluidAdministration")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LaborNotes")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("MaternalHemorrhageEstimate")
+                    b.Property<int?>("BloodSugar")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Molding")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MoldingMonitoring")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("OnsetOfLaborDate")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("OnsetOfLaborTime")
+                    b.Property<decimal?>("EstimatedFetalWeight")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("FetalCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FetalHeartRate")
                         .HasColumnType("text");
 
-                    b.Property<string>("OtherMedications")
+                    b.Property<decimal?>("FundusHeight")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("HeadPosition")
                         .HasColumnType("text");
 
-                    b.Property<string>("OxytocinAdministration")
+                    b.Property<decimal?>("Height")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Hemoglobin")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("LILA")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("NutritionStatus")
                         .HasColumnType("text");
 
-                    b.Property<string>("PerinealCondition")
+                    b.Property<string>("PatellaReflex")
                         .HasColumnType("text");
 
-                    b.Property<string>("PlacentaDelivery")
+                    b.Property<int?>("PregnancyWeeks")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Presentation")
                         .HasColumnType("text");
 
-                    b.Property<string>("PostpartumMaternalCondition")
-                        .HasColumnType("text");
+                    b.Property<int?>("Proteinuria")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("PulseRateReadings")
-                        .HasColumnType("text");
+                    b.Property<int?>("Reduction")
+                        .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset?>("RuptureOfMembranesDate")
+                    b.Property<int?>("Trimester")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("RuptureOfMembranesTime")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TemperatureReadings")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ThirdStageDuration")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UrineOutput")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UterineContractionStatus")
-                        .HasColumnType("text");
+                    b.Property<decimal?>("Weight")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentId");
 
-                    b.ToTable("Partographs");
+                    b.ToTable("PemeriksaanAntenatal");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Poli", b =>
@@ -2071,121 +1865,6 @@ namespace MedizID.API.Migrations
                     b.HasIndex("StaffId");
 
                     b.ToTable("PoliTimeSlots");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.PostpartumObservation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AntiMalariaInfo")
-                        .HasColumnType("text");
-
-                    b.Property<string>("AntiTbcInfo")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("AppointmentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ArtStatus")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BirthCanalExamination")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BloodPressure")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BowelMovements")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BreastExamination")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Cd4IfComplications")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Complications")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ConditionAtArrival")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ConditionAtDischarge")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("ContraceptionImplementationDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ContraceptionMethod")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("ContraceptionPlannedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("HighRiskComplicationManagement")
-                        .HasColumnType("text");
-
-                    b.Property<string>("InfectionSigns")
-                        .HasColumnType("text");
-
-                    b.Property<string>("IronSupplementation")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MilkProduction")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PerinealCondition")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("PncDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("PostpartumDay")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PulseRate")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RecordedInKiaBook")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ReferralDestination")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RespiratoryRate")
-                        .HasColumnType("text");
-
-                    b.Property<double?>("Temperature")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("ThoraxPhotoStatus")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Urination")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UterineContraction")
-                        .HasColumnType("text");
-
-                    b.Property<string>("VaginalBleeding")
-                        .HasColumnType("text");
-
-                    b.Property<string>("VitaminA")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppointmentId");
-
-                    b.ToTable("postpartum_observations");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Prescription", b =>
@@ -2566,17 +2245,6 @@ namespace MedizID.API.Migrations
                     b.Navigation("Appointment");
                 });
 
-            modelBuilder.Entity("MedizID.API.Models.AntenatalExamination", b =>
-                {
-                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
-                        .WithMany()
-                        .HasForeignKey("AppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Appointment");
-                });
-
             modelBuilder.Entity("MedizID.API.Models.ApplicationUser", b =>
                 {
                     b.HasOne("MedizID.API.Models.Facility", "Facility")
@@ -2611,17 +2279,6 @@ namespace MedizID.API.Migrations
                     b.Navigation("FacilityDoctor");
 
                     b.Navigation("FacilityPatient");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.DeliveryObservation", b =>
-                {
-                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
-                        .WithMany()
-                        .HasForeignKey("AppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Department", b =>
@@ -2847,7 +2504,7 @@ namespace MedizID.API.Migrations
                     b.Navigation("Odontogram");
                 });
 
-            modelBuilder.Entity("MedizID.API.Models.Partograph", b =>
+            modelBuilder.Entity("MedizID.API.Models.PemeriksaanAntenatal", b =>
                 {
                     b.HasOne("MedizID.API.Models.Appointment", "Appointment")
                         .WithMany()
@@ -2893,17 +2550,6 @@ namespace MedizID.API.Migrations
                     b.Navigation("Poli");
 
                     b.Navigation("Staff");
-                });
-
-            modelBuilder.Entity("MedizID.API.Models.PostpartumObservation", b =>
-                {
-                    b.HasOne("MedizID.API.Models.Appointment", "Appointment")
-                        .WithMany()
-                        .HasForeignKey("AppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("MedizID.API.Models.Prescription", b =>

@@ -4,6 +4,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 @using MedizID.UI.Services.Generated.Models
+@using AntDesign
 @inject ILocalStorageService LocalStorage
 @inject MedizIdApiClient ApiClient
 @inject AppointmentLayoutState LayoutState
@@ -13,79 +14,599 @@
 <PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Maternal Child Health" : "MedizID")</PageTitle>
 
 <div style="padding: 24px; background-color: white; border-radius: 8px;">
-    @if (LayoutState.Appointment != null && _antenatalForm != null)
+    @if (LayoutState.Appointment != null && _antenatalForm != null && _examinationForm != null && _deliveryForm != null && _postpartumForm != null && _partographForm != null)
     {
-        <h2>Pengamatan Kehamilan (Antenatal Care Observation)</h2>
-        
-        <Form Model="@_antenatalForm" OnFinish="@OnSaveAntenatalCareAsync" Layout="@FormLayout.Vertical">
-            <Divider>Informasi Tenaga Kesehatan</Divider>
-            
-            <FormItem Label="Dokter / Tenaga Medis">
-                <Input @bind-Value="_antenatalForm.MedicalPersonnelName" Placeholder="Nama Dokter / Tenaga Medis" />
-            </FormItem>
-            
-            <FormItem Label="Perawat / Bidan">
-                <Input @bind-Value="_antenatalForm.NurseName" Placeholder="Nama Perawat / Bidan" />
-            </FormItem>
-            
-            <Divider>Riwayat Pasien</Divider>
-            
-            <FormItem Label="Gravida">
-                <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.Gravida" Min="0" Placeholder="0" />
-            </FormItem>
-            
-            <FormItem Label="Partus">
-                <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.Partus" Min="0" Placeholder="0" />
-            </FormItem>
-            
-            <FormItem Label="Abortus">
-                <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.Abortus" Min="0" Placeholder="0" />
-            </FormItem>
-            
-            <FormItem Label="Anak Hidup">
-                <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.AliveChildren" Min="0" Placeholder="0" />
-            </FormItem>
-            
-            <Divider>Tanggal-Tanggal Penting</Divider>
-            
-            <FormItem Label="Tanggal HPHT (Hari Pertama Haid Terakhir)">
-                <AntDesign.DatePicker TValue="DateTime?" Value="@(_antenatalForm.LastMenstrualPeriodDate?.DateTime)" ValueChanged="OnLastMenstrualPeriodDateChanged" Placeholder="@("Pilih tanggal")" />
-            </FormItem>
-            
-            <FormItem Label="Taksiran Persalinan">
-                <AntDesign.DatePicker TValue="DateTime?" Value="@(_antenatalForm.EstimatedDeliveryDate?.DateTime)" ValueChanged="OnEstimatedDeliveryDateChanged" Placeholder="@("Pilih tanggal")" />
-            </FormItem>
-            
-            <FormItem Label="Berat Badan Sebelum Hamil (kg)">
-                <AntDesign.InputNumber TValue="double?" @bind-Value="_antenatalForm.PrePregnancyWeight" Placeholder="0.0" Step="0.1" />
-            </FormItem>
-            
-            <FormItem Label="Tinggi Badan (cm)">
-                <AntDesign.InputNumber TValue="double?" @bind-Value="_antenatalForm.Height" Placeholder="0.0" Step="0.1" />
-            </FormItem>
-            
-            <Divider>Penilaian Risiko</Divider>
-            
-            <FormItem Label="Kategori Risiko Kehamilan">
-                <RadioGroup @bind-Value="_antenatalForm.PregnancyRiskCategory" TValue="string">
-                    <Radio TValue="string" Value="@("1")">Risiko Rendah</Radio>
-                    <Radio TValue="string" Value="@("2")">Risiko Sedang</Radio>
-                    <Radio TValue="string" Value="@("3")">Risiko Tinggi</Radio>
-                </RadioGroup>
-            </FormItem>
-            
-            <FormItem Label="Skor Ibu (KSPR)">
-                <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.MotherKsurScore" Min="2" Placeholder="2" />
-            </FormItem>
-            
-            <FormItem Label="Deskripsi Risiko Tinggi">
-                <TextArea @bind-Value="_antenatalForm.HighRiskDescription" Placeholder="Jelaskan jenis risiko tinggi jika ada" Rows="3" />
-            </FormItem>
-            
-            <Button Type="@ButtonType.Primary" HtmlType="submit" Loading="@_isSaving">
-                Simpan Pengamatan Kehamilan
-            </Button>
-        </Form>
+        <Tabs>
+            <TabPane Tab="Antenatal Care Observation" Key="antenatal">
+                <Form Model="@_antenatalForm" OnFinish="@OnSaveAntenatalCareAsync" Layout="@FormLayout.Vertical">
+                    <Divider>Informasi Tenaga Kesehatan</Divider>
+                    
+                    <FormItem Label="Dokter / Tenaga Medis">
+                        <Input @bind-Value="_antenatalForm.MedicalPersonnelName" Placeholder="Nama Dokter / Tenaga Medis" />
+                    </FormItem>
+                    
+                    <FormItem Label="Perawat / Bidan">
+                        <Input @bind-Value="_antenatalForm.NurseName" Placeholder="Nama Perawat / Bidan" />
+                    </FormItem>
+                    
+                    <Divider>Riwayat Pasien</Divider>
+                    
+                    <FormItem Label="Gravida">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.Gravida" Min="0" Placeholder="0" />
+                    </FormItem>
+                    
+                    <FormItem Label="Partus">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.Partus" Min="0" Placeholder="0" />
+                    </FormItem>
+                    
+                    <FormItem Label="Abortus">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.Abortus" Min="0" Placeholder="0" />
+                    </FormItem>
+                    
+                    <FormItem Label="Anak Hidup">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.AliveChildren" Min="0" Placeholder="0" />
+                    </FormItem>
+                    
+                    <Divider>Tanggal-Tanggal Penting</Divider>
+                    
+                    <FormItem Label="Tanggal HPHT (Hari Pertama Haid Terakhir)">
+                        <AntDesign.DatePicker TValue="DateTime?" Value="@(_antenatalForm.LastMenstrualPeriodDate?.DateTime)" ValueChanged="OnLastMenstrualPeriodDateChanged" Placeholder="@("Pilih tanggal")" />
+                    </FormItem>
+                    
+                    <FormItem Label="Taksiran Persalinan">
+                        <AntDesign.DatePicker TValue="DateTime?" Value="@(_antenatalForm.EstimatedDeliveryDate?.DateTime)" ValueChanged="OnEstimatedDeliveryDateChanged" Placeholder="@("Pilih tanggal")" />
+                    </FormItem>
+                    
+                    <FormItem Label="Berat Badan Sebelum Hamil (kg)">
+                        <AntDesign.InputNumber TValue="double?" @bind-Value="_antenatalForm.PrePregnancyWeight" Placeholder="0.0" Step="0.1" />
+                    </FormItem>
+                    
+                    <FormItem Label="Tinggi Badan (cm)">
+                        <AntDesign.InputNumber TValue="double?" @bind-Value="_antenatalForm.Height" Placeholder="0.0" Step="0.1" />
+                    </FormItem>
+                    
+                    <Divider>Penilaian Risiko</Divider>
+                    
+                    <FormItem Label="Kategori Risiko Kehamilan">
+                        <RadioGroup @bind-Value="_antenatalForm.PregnancyRiskCategory" TValue="string">
+                            <Radio TValue="string" Value="@("1")">Risiko Rendah</Radio>
+                            <Radio TValue="string" Value="@("2")">Risiko Sedang</Radio>
+                            <Radio TValue="string" Value="@("3")">Risiko Tinggi</Radio>
+                        </RadioGroup>
+                    </FormItem>
+                    
+                    <FormItem Label="Skor Ibu (KSPR)">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_antenatalForm.MotherKsurScore" Min="2" Placeholder="2" />
+                    </FormItem>
+                    
+                    <FormItem Label="Deskripsi Risiko Tinggi">
+                        <TextArea @bind-Value="_antenatalForm.HighRiskDescription" Placeholder="Jelaskan jenis risiko tinggi jika ada" Rows="3" />
+                    </FormItem>
+                    
+                    <Button Type="@ButtonType.Primary" HtmlType="submit" Loading="@_isSaving">
+                        Simpan Pengamatan Kehamilan
+                    </Button>
+                </Form>
+            </TabPane>
+
+            <TabPane Tab="Antenatal Clinical Examination" Key="examination">
+                <Form Model="@_examinationForm" OnFinish="@OnSaveExaminationAsync" Layout="@FormLayout.Vertical">
+                    <Divider>Register</Divider>
+                    
+                    <FormItem Label="Usia Kehamilan (minggu)">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_examinationForm.PregnancyWeeks" Min="0" Placeholder="0" />
+                    </FormItem>
+                    
+                    <FormItem Label="Trimester">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_examinationForm.Trimester" Min="1" Max="3" Placeholder="1" />
+                    </FormItem>
+                    
+                    <Divider>Fetal Assessment</Divider>
+                    
+                    <FormItem Label="Fetal Heart Rate (beats/min)">
+                        <Input @bind-Value="_examinationForm.FetalHeartRate" Placeholder="Fetal Heart Rate" />
+                    </FormItem>
+                    
+                    <FormItem Label="Head Position to Pelvic Inlet">
+                        <Input @bind-Value="_examinationForm.HeadPosition" Placeholder="Head position to pelvic inlet" />
+                    </FormItem>
+                    
+                    <FormItem Label="Estimated Fetal Weight (g)">
+                        <AntDesign.InputNumber TValue="double?" @bind-Value="_examinationForm.EstimatedFetalWeight" Placeholder="0.0" Step="0.1" />
+                    </FormItem>
+                    
+                    <FormItem Label="Presentation">
+                        <Select DataSource="@_presentasiOptions" @bind-Value="_examinationForm.Presentation" Placeholder="Select Presentation" />
+                    </FormItem>
+                    
+                    <FormItem Label="Fetal Count">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_examinationForm.FetalCount" Min="1" Placeholder="1" />
+                    </FormItem>
+                    
+                    <Divider>Maternal Physical Assessment</Divider>
+                    
+                    <FormItem Label="Clinical History">
+                        <TextArea @bind-Value="_examinationForm.ClinicalHistory" Placeholder="Patient complaints/clinical narrative" Rows="3" />
+                    </FormItem>
+                    
+                    <FormItem Label="Height (cm)">
+                        <AntDesign.InputNumber TValue="double?" @bind-Value="_examinationForm.Height" Placeholder="0.0" Step="0.1" />
+                    </FormItem>
+                    
+                    <FormItem Label="Weight (kg)">
+                        <AntDesign.InputNumber TValue="double?" @bind-Value="_examinationForm.Weight" Placeholder="0.0" Step="0.1" />
+                    </FormItem>
+                    
+                    <FormItem Label="Blood Pressure (mmHg)">
+                        <Input @bind-Value="_examinationForm.BloodPressure" Placeholder="e.g. 120/80" />
+                    </FormItem>
+                    
+                    <FormItem Label="Upper Arm Circumference (cm)">
+                        <AntDesign.InputNumber TValue="double?" @bind-Value="_examinationForm.UpperArmCircumference" Placeholder="0.0" Step="0.1" />
+                    </FormItem>
+                    
+                    <FormItem Label="Nutritional Status">
+                        <Select DataSource="@_gizOptions" @bind-Value="_examinationForm.NutritionStatus" Placeholder="Select Nutritional Status" />
+                    </FormItem>
+                    
+                    <FormItem Label="Fundus Height (cm)">
+                        <AntDesign.InputNumber TValue="double?" @bind-Value="_examinationForm.FundusHeight" Placeholder="0.0" Step="0.1" />
+                    </FormItem>
+                    
+                    <FormItem Label="Patellar Reflex (+/-)">
+                        <Select DataSource="@_reflexOptions" @bind-Value="_examinationForm.PatellaReflex" Placeholder="Select Result" />
+                    </FormItem>
+                    
+                    <Divider>Laboratory Results</Divider>
+                    
+                    <FormItem Label="Hemoglobin (g/dL)">
+                        <AntDesign.InputNumber TValue="double?" @bind-Value="_examinationForm.Hemoglobin" Placeholder="0.0" Step="0.1" />
+                    </FormItem>
+                    
+                    <FormItem Label="Anemia (+/-)">
+                        <Select DataSource="@_yesNoOptions" @bind-Value="_examinationForm.Anemia" Placeholder="Select" />
+                    </FormItem>
+                    
+                    <FormItem Label="Protein in Urine">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_examinationForm.ProteinUrine" Min="0" Placeholder="0" />
+                    </FormItem>
+                    
+                    <FormItem Label="Urine Reducing Substances">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_examinationForm.UrineReducingSubstances" Min="0" Placeholder="0" />
+                    </FormItem>
+                    
+                    <FormItem Label="Blood Glucose (mg/dL)">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_examinationForm.BloodGlucose" Min="0" Placeholder="0" />
+                    </FormItem>
+                    
+                    <Button Type="@ButtonType.Primary" HtmlType="submit" Loading="@_isSaving">
+                        Save Antenatal Clinical Examination
+                    </Button>
+                </Form>
+            </TabPane>
+
+            <TabPane Tab="Delivery Observation" Key="delivery">
+                <Form Model="@_deliveryForm" OnFinish="@OnSaveDeliveryAsync" Layout="@FormLayout.Vertical">
+                    <Divider>Gestational Timeline</Divider>
+                    
+                    <FormItem Label="Gestational Age at Delivery (weeks)">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_deliveryForm.GestationalAge" Min="0" Placeholder="0" />
+                    </FormItem>
+                    
+                    <FormItem Label="Gestational Age from LMP (weeks)">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_deliveryForm.GestationalAgeFromLmp" Min="0" Placeholder="0" />
+                    </FormItem>
+                    
+                    <Divider>Maternal Status</Divider>
+                    
+                    <FormItem Label="Maternal Condition at Delivery">
+                        <Select DataSource="@_maternalConditionOptions" @bind-Value="_deliveryForm.MaternalCondition" Placeholder="Select Maternal Condition" />
+                    </FormItem>
+                    
+                    <FormItem Label="Maternal Condition at Discharge">
+                        <Select DataSource="@_dischargeConditionOptions" @bind-Value="_deliveryForm.MaternalDischargingCondition" Placeholder="Select Discharge Condition" />
+                    </FormItem>
+                    
+                    <Divider>Neonatal Status</Divider>
+                    
+                    <FormItem Label="Neonatal Condition at Birth">
+                        <Select DataSource="@_neonatalConditionOptions" @bind-Value="_deliveryForm.NeonatalCondition" Placeholder="Select Neonatal Condition" />
+                    </FormItem>
+                    
+                    <FormItem Label="Neonatal Birth Weight (g)">
+                        <AntDesign.InputNumber TValue="double?" @bind-Value="_deliveryForm.NeonatalWeight" Min="0" Placeholder="0.0" Step="0.1" />
+                    </FormItem>
+                    
+                    <Divider>Delivery Characteristics</Divider>
+                    
+                    <FormItem Label="Fetal Presentation">
+                        <Select DataSource="@_presentationOptions" @bind-Value="_deliveryForm.Presentation" Placeholder="Select Presentation" />
+                    </FormItem>
+                    
+                    <FormItem Label="Delivery Location">
+                        <Select DataSource="@_deliveryLocationOptions" @bind-Value="_deliveryForm.DeliveryLocation" Placeholder="Select Delivery Location" />
+                    </FormItem>
+                    
+                    <FormItem Label="Birth Attendant">
+                        <Select DataSource="@_birthAttendantOptions" @bind-Value="_deliveryForm.BirthAttendant" Placeholder="Select Birth Attendant" />
+                    </FormItem>
+                    
+                    <FormItem Label="Mode of Delivery">
+                        <Select DataSource="@_deliveryModeOptions" @bind-Value="_deliveryForm.DeliveryMode" Placeholder="Select Delivery Mode" />
+                    </FormItem>
+                    
+                    <Divider>Active Management of Third Stage</Divider>
+                    
+                    <FormItem>
+                        <Checkbox Value="@(_deliveryForm.OxytocinAdministered ?? false)" ValueChanged="@((bool v) => { _deliveryForm.OxytocinAdministered = v; })" Label="Oxytocin Administered" />
+                    </FormItem>
+                    
+                    <FormItem>
+                        <Checkbox Value="@(_deliveryForm.ControlledCordTraction ?? false)" ValueChanged="@((bool v) => { _deliveryForm.ControlledCordTraction = v; })" Label="Controlled Cord Traction Performed" />
+                    </FormItem>
+                    
+                    <FormItem>
+                        <Checkbox Value="@(_deliveryForm.UterineMassage ?? false)" ValueChanged="@((bool v) => { _deliveryForm.UterineMassage = v; })" Label="Uterine Massage Performed" />
+                    </FormItem>
+                    
+                    <Divider>Maternal Services Provided</Divider>
+                    
+                    <FormItem>
+                        <Checkbox Value="@(_deliveryForm.BloodTransfusion ?? false)" ValueChanged="@((bool v) => { _deliveryForm.BloodTransfusion = v; })" Label="Blood Transfusion" />
+                    </FormItem>
+                    
+                    <FormItem>
+                        <Checkbox Value="@(_deliveryForm.AntibioticTherapy ?? false)" ValueChanged="@((bool v) => { _deliveryForm.AntibioticTherapy = v; })" Label="Antibiotic Therapy" />
+                    </FormItem>
+                    
+                    <FormItem>
+                        <Checkbox Value="@(_deliveryForm.NeonatalResuscitation ?? false)" ValueChanged="@((bool v) => { _deliveryForm.NeonatalResuscitation = v; })" Label="Neonatal Resuscitation" />
+                    </FormItem>
+                    
+                    <Divider>Program Integration</Divider>
+                    
+                    <FormItem Label="Program Integration Status">
+                        <Select DataSource="@_programIntegrationOptions" @bind-Value="_deliveryForm.ProgramIntegration" Placeholder="Select Program Integration" />
+                    </FormItem>
+                    
+                    <FormItem Label="Antiretroviral Prophylaxis (if applicable)">
+                        <Input @bind-Value="_deliveryForm.AntiretroviralProphylaxis" Placeholder="ARV medication for newborn" />
+                    </FormItem>
+                    
+                    <Divider>Complications & Outcomes</Divider>
+                    
+                    <FormItem>
+                        <Checkbox Value="@(_deliveryForm.HasComplications ?? false)" ValueChanged="@((bool v) => { _deliveryForm.HasComplications = v; })" Label="Complications Occurred" />
+                    </FormItem>
+                    
+                    <FormItem Label="Complications Description">
+                        <TextArea @bind-Value="_deliveryForm.ComplicationsDescription" Placeholder="Describe complications if any" Rows="3" />
+                    </FormItem>
+                    
+                    <FormItem>
+                        <Checkbox Value="@(_deliveryForm.WasReferred ?? false)" ValueChanged="@((bool v) => { _deliveryForm.WasReferred = v; })" Label="Referral Required" />
+                    </FormItem>
+                    
+                    <FormItem Label="Referral Destination">
+                        <Select DataSource="@_referralDestinationOptions" @bind-Value="_deliveryForm.ReferralDestination" Placeholder="Select Referral Destination" />
+                    </FormItem>
+                    
+                    <FormItem Label="Maternal Condition at Referral">
+                        <Select DataSource="@_referralConditionOptions" @bind-Value="_deliveryForm.MaternalConditionAtReferral" Placeholder="Select Condition" />
+                    </FormItem>
+                    
+                    <FormItem Label="Delivery Address">
+                        <TextArea @bind-Value="_deliveryForm.DeliveryAddress" Placeholder="Delivery location address/details" Rows="2" />
+                    </FormItem>
+                    
+                    <Button Type="@ButtonType.Primary" HtmlType="submit" Loading="@_isSaving">
+                        Save Delivery Observation
+                    </Button>
+                </Form>
+            </TabPane>
+
+            <TabPane Tab="Postpartum Observation" Key="postpartum">
+                <Form Model="@_postpartumForm" OnFinish="@OnSavePostpartumAsync" Layout="@FormLayout.Vertical">
+                    <Divider>Postnatal Care (PNC) Examination</Divider>
+                    
+                    <FormItem Label="PNC Examination Date">
+                        <AntDesign.DatePicker TValue="DateTime?" Value="@(_postpartumForm.PncDate?.DateTime)" ValueChanged="OnPncDateChanged" Placeholder="@("Select date")" />
+                    </FormItem>
+                    
+                    <FormItem Label="Blood Pressure (mmHg)">
+                        <Input @bind-Value="_postpartumForm.BloodPressure" Placeholder="e.g., 116/76" />
+                    </FormItem>
+                    
+                    <FormItem Label="Temperature (°C)">
+                        <AntDesign.InputNumber TValue="double?" @bind-Value="_postpartumForm.Temperature" Placeholder="0.0" Step="0.1" />
+                    </FormItem>
+                    
+                    <FormItem Label="Complications">
+                        <Select DataSource="@_complicationsOptions" @bind-Value="_postpartumForm.Complications" Placeholder="Select complication type" />
+                    </FormItem>
+                    
+                    <FormItem Label="Respiratory Rate">
+                        <Input @bind-Value="_postpartumForm.RespiratoryRate" Placeholder="Breaths per minute" />
+                    </FormItem>
+                    
+                    <FormItem Label="Pulse Rate">
+                        <Input @bind-Value="_postpartumForm.PulseRate" Placeholder="Beats per minute" />
+                    </FormItem>
+                    
+                    <Divider>Physical Assessment</Divider>
+                    
+                    <FormItem Label="Vaginal Bleeding (Lochia)">
+                        <Input @bind-Value="_postpartumForm.VaginalBleeding" Placeholder="Assessment findings" />
+                    </FormItem>
+                    
+                    <FormItem Label="Perineal Condition">
+                        <Input @bind-Value="_postpartumForm.PerinealCondition" Placeholder="Condition assessment" />
+                    </FormItem>
+                    
+                    <FormItem Label="Signs of Infection">
+                        <Input @bind-Value="_postpartumForm.InfectionSigns" Placeholder="Observed signs" />
+                    </FormItem>
+                    
+                    <FormItem Label="Uterine Contraction">
+                        <Input @bind-Value="_postpartumForm.UterineContraction" Placeholder="Contraction assessment" />
+                    </FormItem>
+                    
+                    <FormItem Label="Birth Canal Examination">
+                        <TextArea @bind-Value="_postpartumForm.BirthCanalExamination" Placeholder="Examination findings" Rows="2" />
+                    </FormItem>
+                    
+                    <FormItem Label="Breast Examination">
+                        <TextArea @bind-Value="_postpartumForm.BreastExamination" Placeholder="Breast assessment findings" Rows="2" />
+                    </FormItem>
+                    
+                    <FormItem Label="Milk Production">
+                        <Input @bind-Value="_postpartumForm.MilkProduction" Placeholder="Lactation status" />
+                    </FormItem>
+                    
+                    <Divider>Postpartum Management</Divider>
+                    
+                    <FormItem Label="High Risk/Complication Management">
+                        <TextArea @bind-Value="_postpartumForm.HighRiskComplicationManagement" Placeholder="Management provided" Rows="2" />
+                    </FormItem>
+                    
+                    <FormItem Label="Bowel Movements (BAB)">
+                        <Input @bind-Value="_postpartumForm.BowelMovements" Placeholder="Status" />
+                    </FormItem>
+                    
+                    <FormItem Label="Urination (BAK)">
+                        <Input @bind-Value="_postpartumForm.Urination" Placeholder="Status" />
+                    </FormItem>
+                    
+                    <FormItem Label="Postpartum Day Number">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_postpartumForm.PostpartumDay" Min="0" Placeholder="0" />
+                    </FormItem>
+                    
+                    <FormItem>
+                        <Checkbox Value="@((_postpartumForm.RecordedInKiaBook ?? "N") == "Y")" ValueChanged="@((bool v) => { _postpartumForm.RecordedInKiaBook = v ? "Y" : "N"; })">
+                            Recorded in KIA Book
+                        </Checkbox>
+                    </FormItem>
+                    
+                    <FormItem Label="Iron Supplementation">
+                        <Input @bind-Value="_postpartumForm.IronSupplementation" Placeholder="Iron tablet/bottle details" />
+                    </FormItem>
+                    
+                    <FormItem>
+                        <Checkbox Value="@((_postpartumForm.VitaminA ?? "N") == "Y")" ValueChanged="@((bool v) => { _postpartumForm.VitaminA = v ? "Y" : "N"; })">
+                            Vitamin A Provided
+                        </Checkbox>
+                    </FormItem>
+                    
+                    <FormItem Label="Referral Destination">
+                        <Select DataSource="@_referralDestinationOptions" @bind-Value="_postpartumForm.ReferralDestination" Placeholder="Select facility type" />
+                    </FormItem>
+                    
+                    <Divider>Program Integration</Divider>
+                    
+                    <FormItem>
+                        <Checkbox Value="@((_postpartumForm.ArtStatus ?? "N") == "Y")" ValueChanged="@((bool v) => { _postpartumForm.ArtStatus = v ? "Y" : "N"; })">
+                            ART (Antiretroviral Therapy) Provided
+                        </Checkbox>
+                    </FormItem>
+                    
+                    <FormItem Label="Anti-Malaria Information">
+                        <Input @bind-Value="_postpartumForm.AntiMalariaInfo" Placeholder="Medication notes" />
+                    </FormItem>
+                    
+                    <FormItem Label="Anti-TB Information">
+                        <Input @bind-Value="_postpartumForm.AntiTbcInfo" Placeholder="Medication notes" />
+                    </FormItem>
+                    
+                    <FormItem>
+                        <Checkbox Value="@((_postpartumForm.ThoraxPhotoStatus ?? "N") == "Y")" ValueChanged="@((bool v) => { _postpartumForm.ThoraxPhotoStatus = v ? "Y" : "N"; })">
+                            Thorax Photo Taken
+                        </Checkbox>
+                    </FormItem>
+                    
+                    <FormItem Label="CD4 Count (if complications)">
+                        <Input @bind-Value="_postpartumForm.Cd4IfComplications" Placeholder="CD4 count value" />
+                    </FormItem>
+                    
+                    <FormItem Label="Condition at Arrival">
+                        <Select DataSource="@_conditionOptions" @bind-Value="_postpartumForm.ConditionAtArrival" Placeholder="Select condition" />
+                    </FormItem>
+                    
+                    <FormItem Label="Condition at Discharge">
+                        <Select DataSource="@_conditionOptions" @bind-Value="_postpartumForm.ConditionAtDischarge" Placeholder="Select condition" />
+                    </FormItem>
+                    
+                    <Divider>Contraception Planning</Divider>
+                    
+                    <FormItem Label="Contraception Method">
+                        <Select DataSource="@_contraceptionOptions" @bind-Value="_postpartumForm.ContraceptionMethod" Placeholder="Select method" />
+                    </FormItem>
+                    
+                    <FormItem Label="Planned Date for Contraception">
+                        <AntDesign.DatePicker TValue="DateTime?" Value="@(_postpartumForm.ContraceptionPlannedDate?.DateTime)" ValueChanged="OnContraceptionPlannedDateChanged" Placeholder="@("Select date")" />
+                    </FormItem>
+                    
+                    <FormItem Label="Contraception Implementation Date">
+                        <AntDesign.DatePicker TValue="DateTime?" Value="@(_postpartumForm.ContraceptionImplementationDate?.DateTime)" ValueChanged="OnContraceptionImplementationDateChanged" Placeholder="@("Select date")" />
+                    </FormItem>
+                    
+                    <Button Type="@ButtonType.Primary" HtmlType="submit" Loading="@_isSaving">
+                        Save Postpartum Observation
+                    </Button>
+                </Form>
+            </TabPane>
+
+            <TabPane Tab="Partograph" Key="partograph">
+                <Form Model="@_partographForm" OnFinish="@OnSavePartographAsync" Layout="@FormLayout.Vertical">
+                    <Divider>Labor Admission</Divider>
+                    
+                    <FormItem Label="Admission Date">
+                        <AntDesign.DatePicker TValue="DateTime?" Value="@(_partographForm.AdmissionDate?.DateTime)" ValueChanged="OnAdmissionDateChanged" Placeholder="@("Select date")" />
+                    </FormItem>
+                    
+                    <FormItem Label="Admission Time">
+                        <Input @bind-Value="@_admissionTimeStr" Placeholder="HH:mm" />
+                    </FormItem>
+                    
+                    <Divider>Labor Onset</Divider>
+                    
+                    <FormItem Label="Onset of Labor Date">
+                        <AntDesign.DatePicker TValue="DateTime?" Value="@(_partographForm.OnsetOfLaborDate?.DateTime)" ValueChanged="OnOnsetOfLaborDateChanged" />
+                    </FormItem>
+                    
+                    <FormItem Label="Onset of Labor Time">
+                        <Input @bind-Value="@_onsetOfLaborTimeStr" Placeholder="HH:mm" />
+                    </FormItem>
+                    
+                    <Divider>Rupture of Membranes</Divider>
+                    
+                    <FormItem Label="Rupture of Membranes Date">
+                        <AntDesign.DatePicker TValue="DateTime?" Value="@(_partographForm.RuptureOfMembranesDate?.DateTime)" ValueChanged="OnRuptureOfMembranesDateChanged" />
+                    </FormItem>
+                    
+                    <FormItem Label="Rupture of Membranes Time">
+                        <Input @bind-Value="@_ruptureOfMembranesTimeStr" Placeholder="HH:mm" />
+                    </FormItem>
+                    
+                    <Divider>Cervical Assessment</Divider>
+                    
+                    <FormItem Label="Cervical Dilation">
+                        <Input @bind-Value="_partographForm.CervicalDilation" Placeholder="0-10 cm" />
+                    </FormItem>
+                    
+                    <FormItem Label="Cervical Effacement">
+                        <Input @bind-Value="_partographForm.CervicalEffacement" Placeholder="0-100%" />
+                    </FormItem>
+                    
+                    <Divider>Fetal Assessment</Divider>
+                    
+                    <FormItem Label="Fetal Descent">
+                        <Input @bind-Value="_partographForm.FetalDescent" Placeholder="Station: -5 to +5" />
+                    </FormItem>
+                    
+                    <FormItem Label="Molding">
+                        <Input @bind-Value="_partographForm.Molding" Placeholder="None, +, ++, +++" />
+                    </FormItem>
+                    
+                    <FormItem Label="Fetal Heart Rate Readings">
+                        <TextArea @bind-Value="_partographForm.FetalHeartRateReadings" Placeholder="Record FHR readings" Rows="3" />
+                    </FormItem>
+                    
+                    <FormItem Label="Amniotic Fluid Status">
+                        <Select DataSource="@_amnioticFluidOptions" @bind-Value="_partographForm.AmnioticFluidStatus" Placeholder="Select status" />
+                    </FormItem>
+                    
+                    <FormItem Label="Molding Monitoring">
+                        <TextArea @bind-Value="_partographForm.MoldingMonitoring" Placeholder="Monitor molding changes" Rows="3" />
+                    </FormItem>
+                    
+                    <Divider>Maternal Vital Signs</Divider>
+                    
+                    <FormItem Label="Pulse Rate Readings">
+                        <TextArea @bind-Value="_partographForm.PulseRateReadings" Placeholder="Record pulse readings (bpm)" Rows="3" />
+                    </FormItem>
+                    
+                    <FormItem Label="Blood Pressure Readings">
+                        <TextArea @bind-Value="_partographForm.BloodPressureReadings" Placeholder="Record BP readings (mmHg)" Rows="3" />
+                    </FormItem>
+                    
+                    <FormItem Label="Temperature Readings">
+                        <TextArea @bind-Value="_partographForm.TemperatureReadings" Placeholder="Record temperature readings (°C)" Rows="3" />
+                    </FormItem>
+                    
+                    <FormItem Label="Urine Output">
+                        <Input @bind-Value="_partographForm.UrineOutput" Placeholder="Volume and characteristics" />
+                    </FormItem>
+                    
+                    <Divider>Augmentation of Labor</Divider>
+                    
+                    <FormItem Label="Oxytocin Administration">
+                        <TextArea @bind-Value="_partographForm.OxytocinAdministration" Placeholder="Dose, time, and route" Rows="3" />
+                    </FormItem>
+                    
+                    <FormItem Label="IV Fluid Administration">
+                        <TextArea @bind-Value="_partographForm.IvFluidAdministration" Placeholder="Type and rate of IV fluids" Rows="3" />
+                    </FormItem>
+                    
+                    <FormItem Label="Other Medications">
+                        <TextArea @bind-Value="_partographForm.OtherMedications" Placeholder="List other medications" Rows="3" />
+                    </FormItem>
+                    
+                    <Divider>Clinical Notes</Divider>
+                    
+                    <FormItem Label="Labor Notes">
+                        <TextArea @bind-Value="_partographForm.LaborNotes" Placeholder="General labor progression notes" Rows="4" />
+                    </FormItem>
+                    
+                    <FormItem Label="Complications">
+                        <TextArea @bind-Value="_partographForm.Complications" Placeholder="Any complications noted" Rows="3" />
+                    </FormItem>
+                    
+                    <FormItem Label="Complication Actions">
+                        <TextArea @bind-Value="_partographForm.ComplicationActions" Placeholder="Actions taken for complications" Rows="3" />
+                    </FormItem>
+                    
+                    <Divider>Delivery Outcome</Divider>
+                    
+                    <FormItem Label="Delivery Date/Time">
+                        <AntDesign.DatePicker ShowTime="true" TValue="DateTime?" Value="@(_partographForm.DeliveryDateTime?.DateTime)" ValueChanged="OnDeliveryDateTimeChanged" />
+                    </FormItem>
+                    
+                    <FormItem Label="Postpartum Maternal Condition">
+                        <Select DataSource="@_conditionOptions" @bind-Value="_partographForm.PostpartumMaternalCondition" Placeholder="Select condition" />
+                    </FormItem>
+                    
+                    <FormItem Label="Placenta Delivery">
+                        <Input @bind-Value="_partographForm.PlacentaDelivery" Placeholder="Mode and time of delivery" />
+                    </FormItem>
+                    
+                    <FormItem Label="Third Stage Duration">
+                        <Input @bind-Value="_partographForm.ThirdStageDuration" Placeholder="Duration in minutes" />
+                    </FormItem>
+                    
+                    <FormItem Label="Maternal Hemorrhage Estimate (mL)">
+                        <AntDesign.InputNumber TValue="int?" @bind-Value="_partographForm.MaternalHemorrhageEstimate" Min="0" Placeholder="0" />
+                    </FormItem>
+                    
+                    <Divider>Postpartum Findings</Divider>
+                    
+                    <FormItem Label="Perineal Condition">
+                        <Input @bind-Value="_partographForm.PerinealCondition" Placeholder="Intact, tears, episiotomy, etc." />
+                    </FormItem>
+                    
+                    <FormItem Label="Bladder Status">
+                        <Input @bind-Value="_partographForm.BladderStatus" Placeholder="Empty, full, catheterized, etc." />
+                    </FormItem>
+                    
+                    <FormItem Label="Uterine Contraction Status">
+                        <Input @bind-Value="_partographForm.UterineContractionStatus" Placeholder="Frequency, intensity, duration" />
+                    </FormItem>
+                    
+                    <Button Type="@ButtonType.Primary" HtmlType="submit" Loading="@_isSaving">
+                        Save Partograph
+                    </Button>
+                </Form>
+            </TabPane>
+        </Tabs>
     }
 </div>
 
@@ -94,8 +615,47 @@
     public Guid AppointmentId { get; set; }
 
     private CreateAntenatalCareObservationRequest _antenatalForm = new();
+    private CreateAntenatalExaminationRequest _examinationForm = new();
+    private CreateDeliveryObservationRequest _deliveryForm = new();
+    private CreatePostpartumObservationRequest _postpartumForm = new();
+    private CreatePartographRequest _partographForm = new();
     private Guid? _existingObservationId;
+    private Guid? _existingExaminationId;
+    private Guid? _existingDeliveryObservationId;
+    private Guid? _existingPostpartumObservationId;
+    private Guid? _existingPartographId;
     private bool _isSaving = false;
+
+    // Select options
+    private List<string> _presentasiOptions = new() { "Kepala", "Bokong", "Lintang", "Tidak Teraba" };
+    private List<string> _gizOptions = new() { "NORMAL", "KEK" };
+    private List<string> _reflexOptions = new() { "+", "-", "Normal" };
+    private List<string> _yesNoOptions = new() { "+", "-" };
+    
+    // Delivery observation options
+    private List<string> _maternalConditionOptions = new() { "Alive", "Deceased", "Critical" };
+    private List<string> _dischargeConditionOptions = new() { "Good", "Fair", "Poor" };
+    private List<string> _neonatalConditionOptions = new() { "Alive", "Stillborn", "Macerated", "Fresh Stillbirth" };
+    private List<string> _presentationOptions = new() { "Vertex", "Breech", "Transverse", "Oblique" };
+    private List<string> _deliveryLocationOptions = new() { "Home", "Traditional Birth Home", "Clinic", "Hospital", "Tertiary Center" };
+    private List<string> _birthAttendantOptions = new() { "Family Member", "Traditional Birth Attendant", "Midwife", "Nurse", "Doctor" };
+    private List<string> _deliveryModeOptions = new() { "Spontaneous Vaginal", "Assisted Vaginal", "Cesarean Section", "Vacuum Extraction", "Forceps Extraction" };
+    private List<string> _programIntegrationOptions = new() { "Integrated", "Non-integrated", "Partial" };
+    private List<string> _referralDestinationOptions = new() { "Hospital", "Higher Level Facility", "Tertiary Center", "Clinic" };
+    private List<string> _referralConditionOptions = new() { "Good", "Fair", "Unstable", "Critical" };
+    
+    // Postpartum observation options
+    private List<string> _complicationsOptions = new() { "PPP (Postpartum Hemorrhage)", "Infection", "HDK (Hypertensive Disease)", "Others" };
+    private List<string> _conditionOptions = new() { "Alive", "Deceased" };
+    private List<string> _contraceptionOptions = new() { "AKDR (IUD)", "MOP (Male Sterilization)", "MOW (Female Sterilization)", "MAL (Lactational Amenorrhea)", "Condom", "Implan (Implant)", "Suntikan (Injectable)", "Pil (Pill)", "Konseling (Counseling)" };
+    
+    // Partograph options
+    private List<string> _amnioticFluidOptions = new() { "Clear", "Meconium-stained", "Absent", "Blood-stained" };
+    
+    // Time string helpers for Partograph
+    private string _admissionTimeStr = "";
+    private string _onsetOfLaborTimeStr = "";
+    private string _ruptureOfMembranesTimeStr = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -106,6 +666,10 @@
         {
             await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
             await LoadAntenatalCareObservationAsync();
+            await LoadAntenatalExaminationAsync();
+            await LoadDeliveryObservationAsync();
+            await LoadPostpartumObservationAsync();
+            await LoadPartographAsync();
             StateHasChanged();
         }
     }
@@ -116,6 +680,10 @@
         {
             await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
             await LoadAntenatalCareObservationAsync();
+            await LoadAntenatalExaminationAsync();
+            await LoadDeliveryObservationAsync();
+            await LoadPostpartumObservationAsync();
+            await LoadPartographAsync();
             StateHasChanged();
         }
     }
@@ -167,6 +735,183 @@
         }
     }
 
+    private async Task LoadAntenatalExaminationAsync()
+    {
+        try
+        {
+            _examinationForm = new CreateAntenatalExaminationRequest
+            {
+                AppointmentId = AppointmentId
+            };
+
+            try
+            {
+                var examination = await ApiClient.Api.V1.MaternalChildHealth.AntenatalExamination.Appointment[AppointmentId].GetAsync();
+
+                if (examination != null)
+                {
+                    _existingExaminationId = examination.Id;
+                    
+                    _examinationForm = new CreateAntenatalExaminationRequest
+                    {
+                        AppointmentId = AppointmentId,
+                        PregnancyWeeks = examination.PregnancyWeeks,
+                        Trimester = examination.Trimester,
+                        FetalHeartRate = examination.FetalHeartRate,
+                        HeadPosition = examination.HeadPosition,
+                        EstimatedFetalWeight = examination.EstimatedFetalWeight,
+                        Presentation = examination.Presentation,
+                        FetalCount = examination.FetalCount,
+                        ClinicalHistory = examination.ClinicalHistory,
+                        Height = examination.Height,
+                        Weight = examination.Weight,
+                        BloodPressure = examination.BloodPressure,
+                        UpperArmCircumference = examination.UpperArmCircumference,
+                        NutritionStatus = examination.NutritionStatus,
+                        FundusHeight = examination.FundusHeight,
+                        PatellaReflex = examination.PatellaReflex,
+                        Hemoglobin = examination.Hemoglobin,
+                        Anemia = examination.Anemia,
+                        ProteinUrine = examination.ProteinUrine,
+                        UrineReducingSubstances = examination.UrineReducingSubstances,
+                        BloodGlucose = examination.BloodGlucose
+                    };
+                }
+            }
+            catch
+            {
+                _notice?.Warning(new NotificationConfig { Message = "Info", Description = "Antenatal clinical examination data not found" });
+            }
+        }
+        catch (Exception ex)
+        {
+            _notice?.Error(new NotificationConfig { Message = "Error", Description = $"Failed to load data: {ex.Message}" });
+        }
+    }
+
+    private async Task LoadDeliveryObservationAsync()
+    {
+        try
+        {
+            _deliveryForm = new CreateDeliveryObservationRequest
+            {
+                AppointmentId = AppointmentId
+            };
+
+            try
+            {
+                var observation = await ApiClient.Api.V1.MaternalChildHealth.DeliveryObservation.Appointment[AppointmentId].GetAsync();
+
+                if (observation != null)
+                {
+                    _existingDeliveryObservationId = observation.Id;
+                    
+                    _deliveryForm = new CreateDeliveryObservationRequest
+                    {
+                        AppointmentId = AppointmentId,
+                        GestationalAge = observation.GestationalAge,
+                        GestationalAgeFromLmp = observation.GestationalAgeFromLmp,
+                        MaternalCondition = observation.MaternalCondition,
+                        MaternalDischargingCondition = observation.MaternalDischargingCondition,
+                        NeonatalCondition = observation.NeonatalCondition,
+                        NeonatalWeight = observation.NeonatalWeight,
+                        Presentation = observation.Presentation,
+                        DeliveryLocation = observation.DeliveryLocation,
+                        BirthAttendant = observation.BirthAttendant,
+                        DeliveryMode = observation.DeliveryMode,
+                        OxytocinAdministered = observation.OxytocinAdministered,
+                        ControlledCordTraction = observation.ControlledCordTraction,
+                        UterineMassage = observation.UterineMassage,
+                        BloodTransfusion = observation.BloodTransfusion,
+                        AntibioticTherapy = observation.AntibioticTherapy,
+                        NeonatalResuscitation = observation.NeonatalResuscitation,
+                        ProgramIntegration = observation.ProgramIntegration,
+                        AntiretroviralProphylaxis = observation.AntiretroviralProphylaxis,
+                        HasComplications = observation.HasComplications,
+                        ComplicationsDescription = observation.ComplicationsDescription,
+                        WasReferred = observation.WasReferred,
+                        ReferralDestination = observation.ReferralDestination,
+                        MaternalConditionAtReferral = observation.MaternalConditionAtReferral,
+                        DeliveryAddress = observation.DeliveryAddress
+                    };
+                }
+            }
+            catch
+            {
+                _notice?.Warning(new NotificationConfig { Message = "Info", Description = "Delivery observation data not found" });
+            }
+        }
+        catch (Exception ex)
+        {
+            _notice?.Error(new NotificationConfig { Message = "Error", Description = $"Failed to load data: {ex.Message}" });
+        }
+    }
+
+    private async Task LoadPostpartumObservationAsync()
+    {
+        try
+        {
+            _postpartumForm = new CreatePostpartumObservationRequest
+            {
+                AppointmentId = AppointmentId
+            };
+
+            try
+            {
+                var observation = await ApiClient.Api.V1.MaternalChildHealth.PostpartumObservation.Appointment[AppointmentId].GetAsync();
+
+                if (observation != null)
+                {
+                    _existingPostpartumObservationId = observation.Id;
+                    
+                    _postpartumForm = new CreatePostpartumObservationRequest
+                    {
+                        AppointmentId = observation.AppointmentId,
+                        PncDate = observation.PncDate,
+                        BloodPressure = observation.BloodPressure,
+                        Temperature = observation.Temperature,
+                        Complications = observation.Complications,
+                        RespiratoryRate = observation.RespiratoryRate,
+                        PulseRate = observation.PulseRate,
+                        VaginalBleeding = observation.VaginalBleeding,
+                        PerinealCondition = observation.PerinealCondition,
+                        InfectionSigns = observation.InfectionSigns,
+                        UterineContraction = observation.UterineContraction,
+                        BirthCanalExamination = observation.BirthCanalExamination,
+                        BreastExamination = observation.BreastExamination,
+                        MilkProduction = observation.MilkProduction,
+                        HighRiskComplicationManagement = observation.HighRiskComplicationManagement,
+                        BowelMovements = observation.BowelMovements,
+                        Urination = observation.Urination,
+                        PostpartumDay = observation.PostpartumDay,
+                        RecordedInKiaBook = observation.RecordedInKiaBook,
+                        IronSupplementation = observation.IronSupplementation,
+                        VitaminA = observation.VitaminA,
+                        ReferralDestination = observation.ReferralDestination,
+                        ArtStatus = observation.ArtStatus,
+                        AntiMalariaInfo = observation.AntiMalariaInfo,
+                        AntiTbcInfo = observation.AntiTbcInfo,
+                        ThoraxPhotoStatus = observation.ThoraxPhotoStatus,
+                        Cd4IfComplications = observation.Cd4IfComplications,
+                        ConditionAtArrival = observation.ConditionAtArrival,
+                        ConditionAtDischarge = observation.ConditionAtDischarge,
+                        ContraceptionMethod = observation.ContraceptionMethod,
+                        ContraceptionPlannedDate = observation.ContraceptionPlannedDate,
+                        ContraceptionImplementationDate = observation.ContraceptionImplementationDate
+                    };
+                }
+            }
+            catch
+            {
+                _notice?.Warning(new NotificationConfig { Message = "Info", Description = "Postpartum observation data not found" });
+            }
+        }
+        catch (Exception ex)
+        {
+            _notice?.Error(new NotificationConfig { Message = "Error", Description = $"Failed to load data: {ex.Message}" });
+        }
+    }
+
     private void OnLastMenstrualPeriodDateChanged(DateTime? dt)
     {
         _antenatalForm.LastMenstrualPeriodDate = dt.HasValue ? new DateTimeOffset(dt.Value) : null;
@@ -175,6 +920,188 @@
     private void OnEstimatedDeliveryDateChanged(DateTime? dt)
     {
         _antenatalForm.EstimatedDeliveryDate = dt.HasValue ? new DateTimeOffset(dt.Value) : null;
+    }
+
+    private void OnPncDateChanged(DateTime? dt)
+    {
+        _postpartumForm.PncDate = dt.HasValue ? new DateTimeOffset(dt.Value) : null;
+    }
+
+    private void OnContraceptionPlannedDateChanged(DateTime? dt)
+    {
+        _postpartumForm.ContraceptionPlannedDate = dt.HasValue ? new DateTimeOffset(dt.Value) : null;
+    }
+
+    private void OnContraceptionImplementationDateChanged(DateTime? dt)
+    {
+        _postpartumForm.ContraceptionImplementationDate = dt.HasValue ? new DateTimeOffset(dt.Value) : null;
+    }
+
+    private void OnAdmissionDateChanged(DateTime? dt)
+    {
+        _partographForm.AdmissionDate = dt.HasValue ? new DateTimeOffset(dt.Value) : null;
+    }
+
+    private void OnOnsetOfLaborDateChanged(DateTime? dt)
+    {
+        _partographForm.OnsetOfLaborDate = dt.HasValue ? new DateTimeOffset(dt.Value) : null;
+    }
+
+    private void OnRuptureOfMembranesDateChanged(DateTime? dt)
+    {
+        _partographForm.RuptureOfMembranesDate = dt.HasValue ? new DateTimeOffset(dt.Value) : null;
+    }
+
+    private void OnDeliveryDateTimeChanged(DateTime? dt)
+    {
+        _partographForm.DeliveryDateTime = dt.HasValue ? new DateTimeOffset(dt.Value) : null;
+    }
+
+    private async Task LoadPartographAsync()
+    {
+        try
+        {
+            _partographForm = new CreatePartographRequest
+            {
+                AppointmentId = AppointmentId
+            };
+
+            try
+            {
+                var partograph = await ApiClient.Api.V1.MaternalChildHealth.Partograph.Appointment[AppointmentId].GetAsync();
+
+                if (partograph != null)
+                {
+                    _existingPartographId = partograph.Id;
+                    
+                    _partographForm = new CreatePartographRequest
+                    {
+                        AppointmentId = AppointmentId,
+                        AdmissionDate = partograph.AdmissionDate,
+                        AdmissionTime = partograph.AdmissionTime,
+                        OnsetOfLaborDate = partograph.OnsetOfLaborDate,
+                        OnsetOfLaborTime = partograph.OnsetOfLaborTime,
+                        RuptureOfMembranesDate = partograph.RuptureOfMembranesDate,
+                        RuptureOfMembranesTime = partograph.RuptureOfMembranesTime,
+                        CervicalDilation = partograph.CervicalDilation,
+                        CervicalEffacement = partograph.CervicalEffacement,
+                        FetalDescent = partograph.FetalDescent,
+                        Molding = partograph.Molding,
+                        FetalHeartRateReadings = partograph.FetalHeartRateReadings,
+                        AmnioticFluidStatus = partograph.AmnioticFluidStatus,
+                        MoldingMonitoring = partograph.MoldingMonitoring,
+                        PulseRateReadings = partograph.PulseRateReadings,
+                        BloodPressureReadings = partograph.BloodPressureReadings,
+                        TemperatureReadings = partograph.TemperatureReadings,
+                        UrineOutput = partograph.UrineOutput,
+                        OxytocinAdministration = partograph.OxytocinAdministration,
+                        IvFluidAdministration = partograph.IvFluidAdministration,
+                        OtherMedications = partograph.OtherMedications,
+                        LaborNotes = partograph.LaborNotes,
+                        Complications = partograph.Complications,
+                        ComplicationActions = partograph.ComplicationActions,
+                        DeliveryDateTime = partograph.DeliveryDateTime,
+                        PostpartumMaternalCondition = partograph.PostpartumMaternalCondition,
+                        PlacentaDelivery = partograph.PlacentaDelivery,
+                        ThirdStageDuration = partograph.ThirdStageDuration,
+                        MaternalHemorrhageEstimate = partograph.MaternalHemorrhageEstimate,
+                        PerinealCondition = partograph.PerinealCondition,
+                        BladderStatus = partograph.BladderStatus,
+                        UterineContractionStatus = partograph.UterineContractionStatus
+                    };
+                    
+                    // Store time strings for editing
+                    _admissionTimeStr = partograph.AdmissionTime ?? "";
+                    _onsetOfLaborTimeStr = partograph.OnsetOfLaborTime ?? "";
+                    _ruptureOfMembranesTimeStr = partograph.RuptureOfMembranesTime ?? "";
+                }
+            }
+            catch
+            {
+                _notice?.Warning(new NotificationConfig { Message = "Info", Description = "Partograph data not found" });
+            }
+        }
+        catch (Exception ex)
+        {
+            _notice?.Error(new NotificationConfig { Message = "Error", Description = $"Failed to load data: {ex.Message}" });
+        }
+    }
+
+    private async Task OnSavePartographAsync()
+    {
+        try
+        {
+            _isSaving = true;
+            _partographForm.AppointmentId = AppointmentId;
+            
+            // Update time strings from form
+            _partographForm.AdmissionTime = _admissionTimeStr;
+            _partographForm.OnsetOfLaborTime = _onsetOfLaborTimeStr;
+            _partographForm.RuptureOfMembranesTime = _ruptureOfMembranesTimeStr;
+
+            if (_existingPartographId.HasValue)
+            {
+                // Convert to update request
+                var updateRequest = new UpdatePartographRequest
+                {
+                    AdmissionDate = _partographForm.AdmissionDate,
+                    AdmissionTime = _partographForm.AdmissionTime,
+                    OnsetOfLaborDate = _partographForm.OnsetOfLaborDate,
+                    OnsetOfLaborTime = _partographForm.OnsetOfLaborTime,
+                    RuptureOfMembranesDate = _partographForm.RuptureOfMembranesDate,
+                    RuptureOfMembranesTime = _partographForm.RuptureOfMembranesTime,
+                    CervicalDilation = _partographForm.CervicalDilation,
+                    CervicalEffacement = _partographForm.CervicalEffacement,
+                    FetalDescent = _partographForm.FetalDescent,
+                    Molding = _partographForm.Molding,
+                    FetalHeartRateReadings = _partographForm.FetalHeartRateReadings,
+                    AmnioticFluidStatus = _partographForm.AmnioticFluidStatus,
+                    MoldingMonitoring = _partographForm.MoldingMonitoring,
+                    PulseRateReadings = _partographForm.PulseRateReadings,
+                    BloodPressureReadings = _partographForm.BloodPressureReadings,
+                    TemperatureReadings = _partographForm.TemperatureReadings,
+                    UrineOutput = _partographForm.UrineOutput,
+                    OxytocinAdministration = _partographForm.OxytocinAdministration,
+                    IvFluidAdministration = _partographForm.IvFluidAdministration,
+                    OtherMedications = _partographForm.OtherMedications,
+                    LaborNotes = _partographForm.LaborNotes,
+                    Complications = _partographForm.Complications,
+                    ComplicationActions = _partographForm.ComplicationActions,
+                    DeliveryDateTime = _partographForm.DeliveryDateTime,
+                    PostpartumMaternalCondition = _partographForm.PostpartumMaternalCondition,
+                    PlacentaDelivery = _partographForm.PlacentaDelivery,
+                    ThirdStageDuration = _partographForm.ThirdStageDuration,
+                    MaternalHemorrhageEstimate = _partographForm.MaternalHemorrhageEstimate,
+                    PerinealCondition = _partographForm.PerinealCondition,
+                    BladderStatus = _partographForm.BladderStatus,
+                    UterineContractionStatus = _partographForm.UterineContractionStatus
+                };
+
+                var result = await ApiClient.Api.V1.MaternalChildHealth.Partograph[_existingPartographId.Value].PutAsync(updateRequest);
+                _notice?.Success(new NotificationConfig 
+                { 
+                    Message = "Success", 
+                    Description = "Partograph updated successfully" 
+                });
+            }
+            else
+            {
+                var result = await ApiClient.Api.V1.MaternalChildHealth.Partograph.PostAsync(_partographForm);
+                _existingPartographId = result?.Id;
+                _notice?.Success(new NotificationConfig 
+                { 
+                    Message = "Success", 
+                    Description = "Partograph saved successfully" 
+                });
+            }
+
+            _isSaving = false;
+        }
+        catch (Exception ex)
+        {
+            _isSaving = false;
+            _notice?.Error(new NotificationConfig { Message = "Error", Description = $"Failed to save: {ex.Message}" });
+        }
     }
 
     private async Task OnSaveAntenatalCareAsync()
@@ -201,6 +1128,204 @@
                 { 
                     Message = "Success", 
                     Description = "Pengamatan kehamilan berhasil disimpan" 
+                });
+            }
+
+            _isSaving = false;
+        }
+        catch (Exception ex)
+        {
+            _isSaving = false;
+            _notice?.Error(new NotificationConfig { Message = "Error", Description = $"Failed to save: {ex.Message}" });
+        }
+    }
+
+    private async Task OnSaveExaminationAsync()
+    {
+        try
+        {
+            _isSaving = true;
+            _examinationForm.AppointmentId = AppointmentId;
+
+            if (_existingExaminationId.HasValue)
+            {
+                // Convert CreateAntenatalExaminationRequest to UpdateAntenatalExaminationRequest
+                var updateRequest = new UpdateAntenatalExaminationRequest
+                {
+                    PregnancyWeeks = _examinationForm.PregnancyWeeks,
+                    Trimester = _examinationForm.Trimester,
+                    FetalHeartRate = _examinationForm.FetalHeartRate,
+                    HeadPosition = _examinationForm.HeadPosition,
+                    EstimatedFetalWeight = _examinationForm.EstimatedFetalWeight,
+                    Presentation = _examinationForm.Presentation,
+                    FetalCount = _examinationForm.FetalCount,
+                    ClinicalHistory = _examinationForm.ClinicalHistory,
+                    Height = _examinationForm.Height,
+                    Weight = _examinationForm.Weight,
+                    BloodPressure = _examinationForm.BloodPressure,
+                    UpperArmCircumference = _examinationForm.UpperArmCircumference,
+                    NutritionStatus = _examinationForm.NutritionStatus,
+                    FundusHeight = _examinationForm.FundusHeight,
+                    PatellaReflex = _examinationForm.PatellaReflex,
+                    Hemoglobin = _examinationForm.Hemoglobin,
+                    Anemia = _examinationForm.Anemia,
+                    ProteinUrine = _examinationForm.ProteinUrine,
+                    UrineReducingSubstances = _examinationForm.UrineReducingSubstances,
+                    BloodGlucose = _examinationForm.BloodGlucose
+                };
+
+                var result = await ApiClient.Api.V1.MaternalChildHealth.AntenatalExamination[_existingExaminationId.Value].PutAsync(updateRequest);
+                _notice?.Success(new NotificationConfig 
+                { 
+                    Message = "Success", 
+                    Description = "Antenatal clinical examination updated successfully" 
+                });
+            }
+            else
+            {
+                var result = await ApiClient.Api.V1.MaternalChildHealth.AntenatalExamination.PostAsync(_examinationForm);
+                _existingExaminationId = result?.Id;
+                _notice?.Success(new NotificationConfig 
+                { 
+                    Message = "Success", 
+                    Description = "Antenatal clinical examination saved successfully" 
+                });
+            }
+
+            _isSaving = false;
+        }
+        catch (Exception ex)
+        {
+            _isSaving = false;
+            _notice?.Error(new NotificationConfig { Message = "Error", Description = $"Failed to save: {ex.Message}" });
+        }
+    }
+
+    private async Task OnSaveDeliveryAsync()
+    {
+        try
+        {
+            _isSaving = true;
+            _deliveryForm.AppointmentId = AppointmentId;
+
+            if (_existingDeliveryObservationId.HasValue)
+            {
+                // Convert to update request
+                var updateRequest = new UpdateDeliveryObservationRequest
+                {
+                    GestationalAge = _deliveryForm.GestationalAge,
+                    GestationalAgeFromLmp = _deliveryForm.GestationalAgeFromLmp,
+                    MaternalCondition = _deliveryForm.MaternalCondition,
+                    MaternalDischargingCondition = _deliveryForm.MaternalDischargingCondition,
+                    NeonatalCondition = _deliveryForm.NeonatalCondition,
+                    NeonatalWeight = _deliveryForm.NeonatalWeight,
+                    Presentation = _deliveryForm.Presentation,
+                    DeliveryLocation = _deliveryForm.DeliveryLocation,
+                    BirthAttendant = _deliveryForm.BirthAttendant,
+                    DeliveryMode = _deliveryForm.DeliveryMode,
+                    OxytocinAdministered = _deliveryForm.OxytocinAdministered,
+                    ControlledCordTraction = _deliveryForm.ControlledCordTraction,
+                    UterineMassage = _deliveryForm.UterineMassage,
+                    BloodTransfusion = _deliveryForm.BloodTransfusion,
+                    AntibioticTherapy = _deliveryForm.AntibioticTherapy,
+                    NeonatalResuscitation = _deliveryForm.NeonatalResuscitation,
+                    ProgramIntegration = _deliveryForm.ProgramIntegration,
+                    AntiretroviralProphylaxis = _deliveryForm.AntiretroviralProphylaxis,
+                    HasComplications = _deliveryForm.HasComplications,
+                    ComplicationsDescription = _deliveryForm.ComplicationsDescription,
+                    WasReferred = _deliveryForm.WasReferred,
+                    ReferralDestination = _deliveryForm.ReferralDestination,
+                    MaternalConditionAtReferral = _deliveryForm.MaternalConditionAtReferral,
+                    DeliveryAddress = _deliveryForm.DeliveryAddress
+                };
+
+                var result = await ApiClient.Api.V1.MaternalChildHealth.DeliveryObservation[_existingDeliveryObservationId.Value].PutAsync(updateRequest);
+                _notice?.Success(new NotificationConfig 
+                { 
+                    Message = "Success", 
+                    Description = "Delivery observation updated successfully" 
+                });
+            }
+            else
+            {
+                var result = await ApiClient.Api.V1.MaternalChildHealth.DeliveryObservation.PostAsync(_deliveryForm);
+                _existingDeliveryObservationId = result?.Id;
+                _notice?.Success(new NotificationConfig 
+                { 
+                    Message = "Success", 
+                    Description = "Delivery observation saved successfully" 
+                });
+            }
+
+            _isSaving = false;
+        }
+        catch (Exception ex)
+        {
+            _isSaving = false;
+            _notice?.Error(new NotificationConfig { Message = "Error", Description = $"Failed to save: {ex.Message}" });
+        }
+    }
+
+    private async Task OnSavePostpartumAsync()
+    {
+        try
+        {
+            _isSaving = true;
+            _postpartumForm.AppointmentId = AppointmentId;
+
+            if (_existingPostpartumObservationId.HasValue)
+            {
+                // Convert to update request
+                var updateRequest = new UpdatePostpartumObservationRequest
+                {
+                    PncDate = _postpartumForm.PncDate,
+                    BloodPressure = _postpartumForm.BloodPressure,
+                    Temperature = _postpartumForm.Temperature,
+                    Complications = _postpartumForm.Complications,
+                    RespiratoryRate = _postpartumForm.RespiratoryRate,
+                    PulseRate = _postpartumForm.PulseRate,
+                    VaginalBleeding = _postpartumForm.VaginalBleeding,
+                    PerinealCondition = _postpartumForm.PerinealCondition,
+                    InfectionSigns = _postpartumForm.InfectionSigns,
+                    UterineContraction = _postpartumForm.UterineContraction,
+                    BirthCanalExamination = _postpartumForm.BirthCanalExamination,
+                    BreastExamination = _postpartumForm.BreastExamination,
+                    MilkProduction = _postpartumForm.MilkProduction,
+                    HighRiskComplicationManagement = _postpartumForm.HighRiskComplicationManagement,
+                    BowelMovements = _postpartumForm.BowelMovements,
+                    Urination = _postpartumForm.Urination,
+                    PostpartumDay = _postpartumForm.PostpartumDay,
+                    RecordedInKiaBook = _postpartumForm.RecordedInKiaBook,
+                    IronSupplementation = _postpartumForm.IronSupplementation,
+                    VitaminA = _postpartumForm.VitaminA,
+                    ReferralDestination = _postpartumForm.ReferralDestination,
+                    ArtStatus = _postpartumForm.ArtStatus,
+                    AntiMalariaInfo = _postpartumForm.AntiMalariaInfo,
+                    AntiTbcInfo = _postpartumForm.AntiTbcInfo,
+                    ThoraxPhotoStatus = _postpartumForm.ThoraxPhotoStatus,
+                    Cd4IfComplications = _postpartumForm.Cd4IfComplications,
+                    ConditionAtArrival = _postpartumForm.ConditionAtArrival,
+                    ConditionAtDischarge = _postpartumForm.ConditionAtDischarge,
+                    ContraceptionMethod = _postpartumForm.ContraceptionMethod,
+                    ContraceptionPlannedDate = _postpartumForm.ContraceptionPlannedDate,
+                    ContraceptionImplementationDate = _postpartumForm.ContraceptionImplementationDate
+                };
+
+                var result = await ApiClient.Api.V1.MaternalChildHealth.PostpartumObservation[_existingPostpartumObservationId.Value].PutAsync(updateRequest);
+                _notice?.Success(new NotificationConfig 
+                { 
+                    Message = "Success", 
+                    Description = "Postpartum observation updated successfully" 
+                });
+            }
+            else
+            {
+                var result = await ApiClient.Api.V1.MaternalChildHealth.PostpartumObservation.PostAsync(_postpartumForm);
+                _existingPostpartumObservationId = result?.Id;
+                _notice?.Success(new NotificationConfig 
+                { 
+                    Message = "Success", 
+                    Description = "Postpartum observation saved successfully" 
                 });
             }
 

@@ -3,6 +3,7 @@ using System;
 using MedizID.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedizID.API.Migrations
 {
     [DbContext(typeof(MedizIDDbContext))]
-    partial class MedizIDDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251225121323_AddPartograph")]
+    partial class AddPartograph
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1885,8 +1888,8 @@ namespace MedizID.API.Migrations
                     b.Property<DateTimeOffset?>("AdmissionDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("AdmissionTime")
-                        .HasColumnType("text");
+                    b.Property<TimeSpan?>("AdmissionTime")
+                        .HasColumnType("interval");
 
                     b.Property<string>("AmnioticFluidStatus")
                         .HasColumnType("text");
@@ -1942,8 +1945,8 @@ namespace MedizID.API.Migrations
                     b.Property<DateTimeOffset?>("OnsetOfLaborDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("OnsetOfLaborTime")
-                        .HasColumnType("text");
+                    b.Property<TimeSpan?>("OnsetOfLaborTime")
+                        .HasColumnType("interval");
 
                     b.Property<string>("OtherMedications")
                         .HasColumnType("text");
@@ -1966,8 +1969,8 @@ namespace MedizID.API.Migrations
                     b.Property<DateTimeOffset?>("RuptureOfMembranesDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("RuptureOfMembranesTime")
-                        .HasColumnType("text");
+                    b.Property<TimeSpan?>("RuptureOfMembranesTime")
+                        .HasColumnType("interval");
 
                     b.Property<string>("TemperatureReadings")
                         .HasColumnType("text");
