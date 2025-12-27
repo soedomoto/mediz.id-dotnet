@@ -9,6 +9,7 @@ using MedizID.UI.Services.Generated.Api.V1.Departments;
 using MedizID.UI.Services.Generated.Api.V1.Diagnosis;
 using MedizID.UI.Services.Generated.Api.V1.Facilities;
 using MedizID.UI.Services.Generated.Api.V1.FamilyPlanning;
+using MedizID.UI.Services.Generated.Api.V1.HIVCounseling;
 using MedizID.UI.Services.Generated.Api.V1.Immunization;
 using MedizID.UI.Services.Generated.Api.V1.Laboratorium;
 using MedizID.UI.Services.Generated.Api.V1.LaboratoriumTestMaster;
@@ -76,6 +77,11 @@ namespace MedizID.UI.Services.Generated.Api.V1
         public global::MedizID.UI.Services.Generated.Api.V1.FamilyPlanning.FamilyPlanningRequestBuilder FamilyPlanning
         {
             get => new global::MedizID.UI.Services.Generated.Api.V1.FamilyPlanning.FamilyPlanningRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The HIVCounseling property</summary>
+        public global::MedizID.UI.Services.Generated.Api.V1.HIVCounseling.HIVCounselingRequestBuilder HIVCounseling
+        {
+            get => new global::MedizID.UI.Services.Generated.Api.V1.HIVCounseling.HIVCounselingRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The Immunization property</summary>
         public global::MedizID.UI.Services.Generated.Api.V1.Immunization.ImmunizationRequestBuilder Immunization

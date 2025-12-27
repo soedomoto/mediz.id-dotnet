@@ -8,19 +8,711 @@
 @inject MedizIdApiClient ApiClient
 @inject AppointmentLayoutState LayoutState
 @inject INotificationService _notice
+@inject ILogger<HivCounseling> _logger
 @implements IAsyncDisposable
 
-<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - HIV Counseling" : "MedizID")
-</PageTitle>
+<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - HIV Counseling" : "MedizID")</PageTitle>
+
+<div style="padding: 24px; background-color: white; border-radius: 8px;">
+    @if (LayoutState.Appointment != null)
+    {
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2>HIV Counseling Assessment Form</h2>
+            @if (isSaving)
+            {
+                <span style="color: #1890ff;">Saving...</span>
+            }
+        </div>
+
+        <div>
+            <!-- Main Information Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Main Information</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Visit Status</label>
+                        <RadioGroup TValue="string" @bind-Value="form.VisitStatus">
+                            <Radio Value="@("DATANG SENDIRI")">Came Alone</Radio>
+                            <Radio Value="@("DIRUJUK")">Referred</Radio>
+                        </RadioGroup>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Mother's Name</label>
+                        <Input @bind-Value="form.MotherName" Type="InputType.Text" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Pregnancy Status</label>
+                        <Select TItemValue="string"
+                            TItem="OptionItem"
+                            DataSource="@pregnancyStatusOptions"
+                            @bind-Value="form.PregnancyStatus"
+                            LabelName="@nameof(OptionItem.Label)"
+                            ValueName="@nameof(OptionItem.Value)"
+                            Placeholder="- Select -"
+                            Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Last Child Age (Years)</label>
+                        <Input @bind-Value="@lastChildAgeStr" Type="InputType.Number" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Number of Children</label>
+                        <Input @bind-Value="@numChildrenStr" Type="InputType.Number" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Referral Status</label>
+                        <Input @bind-Value="form.ReferralStatus" Type="InputType.Text" Style="width: 100%;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Group Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Risk Group</h4>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Risk Group Classification</label>
+                    <Select TItemValue="string"
+                        TItem="OptionItem"
+                        DataSource="@riskGroupOptions"
+                        @bind-Value="form.RiskGroup"
+                        LabelName="@nameof(OptionItem.Label)"
+                        ValueName="@nameof(OptionItem.Value)"
+                        Placeholder="- Select -"
+                        Style="width: 100%;" />
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Risk Group Start Date</label>
+                        <DatePicker @bind-Value="form.RiskGroupStartDate" Style="width: 100%;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Partner Information Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Partner Information</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Has Regular Partner?</label>
+                        <RadioGroup TValue="bool?" @bind-Value="form.HasRegularPartner">
+                            <Radio Value="true">Yes</Radio>
+                            <Radio Value="false">No</Radio>
+                        </RadioGroup>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Has Female Partner?</label>
+                        <RadioGroup TValue="bool?" @bind-Value="form.HasFemalePartner">
+                            <Radio Value="true">Yes</Radio>
+                            <Radio Value="false">No</Radio>
+                        </RadioGroup>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Partner Pregnant?</label>
+                        <RadioGroup TValue="bool?" @bind-Value="form.PartnerPregnant">
+                            <Radio Value="true">Yes</Radio>
+                            <Radio Value="false">No</Radio>
+                        </RadioGroup>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Partner Name</label>
+                        <Input @bind-Value="form.PartnerName" Type="InputType.Text" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Partner Date of Birth</label>
+                        <DatePicker @bind-Value="form.PartnerDateOfBirth" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Partner HIV Status</label>
+                        <Select TItemValue="string"
+                            TItem="OptionItem"
+                            DataSource="@partnerHIVStatusOptions"
+                            @bind-Value="form.PartnerHIVStatus"
+                            LabelName="@nameof(OptionItem.Label)"
+                            ValueName="@nameof(OptionItem.Value)"
+                            Placeholder="- Select -"
+                            Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Partner Last Test Date</label>
+                        <DatePicker @bind-Value="form.PartnerLastTestDate" Style="width: 100%;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Special Population Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Special Population (WBP)</h4>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 8px;">Is Incarcerated (WBP)?</label>
+                    <RadioGroup TValue="bool?" @bind-Value="form.IsIncarcerated">
+                        <Radio Value="true">Yes</Radio>
+                        <Radio Value="false">No</Radio>
+                    </RadioGroup>
+                </div>
+            </div>
+
+            <!-- Pre-Test Counseling Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Pre-Test Counseling (KTS)</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Pre-Test Counseling Date</label>
+                        <DatePicker @bind-Value="form.PreTestCounselingDate" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Client Status</label>
+                        <RadioGroup TValue="string" @bind-Value="form.ClientStatus">
+                            <Radio Value="@("BARU")">New</Radio>
+                            <Radio Value="@("LAMA")">Returning</Radio>
+                        </RadioGroup>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Reasons Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Test Reasons (Multiple Select)</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    @foreach (var option in testReasonOptions)
+                    {
+                        <div>
+                            <Checkbox @bind-Value="testReasonsSelected[option.Value]">@option.Label</Checkbox>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Test Knowledge Source -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">How Did You Know About This Test?</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <RadioGroup TValue="string" @bind-Value="form.TestKnowledgeSource">
+                        @foreach (var option in testSourceOptions)
+                        {
+                            <Radio Value="@option.Value">@option.Label</Radio>
+                        }
+                    </RadioGroup>
+                </div>
+            </div>
+
+            <!-- Risk Exposure Assessment -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Risk Exposure Assessment</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Vaginal Sex Risk</label>
+                        <RadioGroup TValue="bool?" @bind-Value="form.VaginalSexRisk">
+                            <Radio Value="true">Yes</Radio>
+                            <Radio Value="false">No</Radio>
+                        </RadioGroup>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Risk Date</label>
+                        <DatePicker @bind-Value="form.VaginalSexRiskDate" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Anal Sex Risk</label>
+                        <RadioGroup TValue="bool?" @bind-Value="form.AnalSexRisk">
+                            <Radio Value="true">Yes</Radio>
+                            <Radio Value="false">No</Radio>
+                        </RadioGroup>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Risk Date</label>
+                        <DatePicker @bind-Value="form.AnalSexRiskDate" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Shared Needles Risk</label>
+                        <RadioGroup TValue="bool?" @bind-Value="form.SharedNeedlesRisk">
+                            <Radio Value="true">Yes</Radio>
+                            <Radio Value="false">No</Radio>
+                        </RadioGroup>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Risk Date</label>
+                        <DatePicker @bind-Value="form.SharedNeedlesRiskDate" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Blood Transfusion Risk</label>
+                        <RadioGroup TValue="bool?" @bind-Value="form.BloodTransfusionRisk">
+                            <Radio Value="true">Yes</Radio>
+                            <Radio Value="false">No</Radio>
+                        </RadioGroup>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Risk Date</label>
+                        <DatePicker @bind-Value="form.BloodTransfusionRiskDate" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Mother to Child Risk</label>
+                        <RadioGroup TValue="bool?" @bind-Value="form.MotherToChildRisk">
+                            <Radio Value="true">Yes</Radio>
+                            <Radio Value="false">No</Radio>
+                        </RadioGroup>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Risk Date</label>
+                        <DatePicker @bind-Value="form.MotherToChildRiskDate" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Other Risk (Description)</label>
+                        <Input @bind-Value="form.OtherRiskDescription" Type="InputType.Text" Style="width: 100%;" Placeholder="Describe other risk factors" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Risk Date</label>
+                        <DatePicker @bind-Value="form.OtherRiskDate" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Window Period Risk</label>
+                        <RadioGroup TValue="bool?" @bind-Value="form.WindowPeriodRisk">
+                            <Radio Value="true">Yes</Radio>
+                            <Radio Value="false">No</Radio>
+                        </RadioGroup>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Risk Date</label>
+                        <DatePicker @bind-Value="form.WindowPeriodRiskDate" Style="width: 100%;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Willingness -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Test Willingness</h4>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 8px;">Willing to Test?</label>
+                    <RadioGroup TValue="bool?" @bind-Value="form.WillingToTest">
+                        <Radio Value="true">Yes</Radio>
+                        <Radio Value="false">No</Radio>
+                    </RadioGroup>
+                </div>
+            </div>
+
+            <!-- Previous Test History -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Previous Test History</h4>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Previously Tested?</label>
+                    <RadioGroup TValue="bool?" @bind-Value="form.PreviouslyTested">
+                        <Radio Value="true">Yes</Radio>
+                        <Radio Value="false">No</Radio>
+                    </RadioGroup>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Previous Test Location</label>
+                        <Input @bind-Value="form.PreviousTestLocation" Type="InputType.Text" Style="width: 100%;" Placeholder="Where was the test done?" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Previous Test Date</label>
+                        <DatePicker @bind-Value="form.PreviousTestDate" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 8px;">Previous Test Result</label>
+                    <RadioGroup TValue="string" @bind-Value="form.PreviousTestResult">
+                        <Radio Value="@("REAKTIF")">Reactive</Radio>
+                        <Radio Value="@("NON REAKTIF")">Non-Reactive</Radio>
+                        <Radio Value="@("TIDAK TAHU")">Don't Know</Radio>
+                    </RadioGroup>
+                </div>
+            </div>
+
+            <!-- Observations -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Observations & Notes</h4>
+                
+                <TextArea @bind-Value="form.ObservationNotes" Rows="4" Placeholder="Additional observations or notes" Style="width: 100%;" />
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="margin: 24px 0; display: flex; gap: 12px;">
+                <Button Type="@ButtonType.Primary" OnClick="SaveHIVCounseling" Loading="isSaving">Save</Button>
+                <Button OnClick="ResetForm">Reset</Button>
+                <Button Danger OnClick="PrintForm">Print</Button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 48px 0;">
+            <p>Loading appointment details...</p>
+        </div>
+    }
+</div>
 
 @code {
     [Parameter]
     public Guid AppointmentId { get; set; }
 
+    private bool isSaving = false;
+    private HIVCounselingFormModel form = new();
+    
+    // String helpers
+    private string lastChildAgeStr = "";
+    private string numChildrenStr = "";
+    
+    // Test reasons selection
+    private Dictionary<string, bool> testReasonsSelected = new();
+
+    // Options
+    private List<OptionItem> pregnancyStatusOptions = new();
+    private List<OptionItem> riskGroupOptions = new();
+    private List<OptionItem> partnerHIVStatusOptions = new();
+    private List<OptionItem> testReasonOptions = new();
+    private List<OptionItem> testSourceOptions = new();
+
     protected override async Task OnInitializedAsync()
     {
         LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
         LayoutState.ActiveTabKey = "hiv-counseling";
+        
+        InitializeOptions();
+        
+        if (AppointmentId != Guid.Empty)
+        {
+            await LoadHIVCounselingData();
+        }
+    }
+
+    private void InitializeOptions()
+    {
+        pregnancyStatusOptions = new()
+        {
+            new() { Value = "Trimester I", Label = "Trimester I" },
+            new() { Value = "Trimester II", Label = "Trimester II" },
+            new() { Value = "Trimester III", Label = "Trimester III" },
+            new() { Value = "Tidak Hamil", Label = "Not Pregnant" },
+            new() { Value = "Tidak Tahu", Label = "Don't Know" }
+        };
+
+        riskGroupOptions = new()
+        {
+            new() { Value = "PS LANGSUNG", Label = "Direct Sex Worker" },
+            new() { Value = "PS TIDAK LANGSUNG", Label = "Indirect Sex Worker" },
+            new() { Value = "PELANGGAN PS", Label = "Sex Worker Client" },
+            new() { Value = "WARIA", Label = "Transgender Woman" },
+            new() { Value = "PASANGAN RISTI", Label = "Partner of High-Risk" },
+            new() { Value = "PENASUN", Label = "Drug Injector" },
+            new() { Value = "GAY/LSL", Label = "Gay/MSM" },
+            new() { Value = "LAINNYA", Label = "Other" }
+        };
+
+        partnerHIVStatusOptions = new()
+        {
+            new() { Value = "HIV POSITIF", Label = "HIV Positive" },
+            new() { Value = "HIV NEGATIF", Label = "HIV Negative" },
+            new() { Value = "TIDAK DIKETAHUI", Label = "Unknown" }
+        };
+
+        testReasonOptions = new()
+        {
+            new() { Value = "INGIN TAHU SAJA", Label = "Just Want to Know" },
+            new() { Value = "MERASA BERESIKO", Label = "Feel at Risk" },
+            new() { Value = "MUMPUNG GRATIS", Label = "Free Test" },
+            new() { Value = "TES ULANG(WINDOW PRIODE)", Label = "Window Period Retest" },
+            new() { Value = "UNTUK BEKERJA", Label = "For Work" },
+            new() { Value = "ADA GEJALA TERTENTU", Label = "Symptoms Present" },
+            new() { Value = "AKAN MENIKAH", Label = "Getting Married" },
+            new() { Value = "LAINNYA", Label = "Other" }
+        };
+
+        testSourceOptions = new()
+        {
+            new() { Value = "BROSUR", Label = "Brochure" },
+            new() { Value = "KORAN", Label = "Newspaper" },
+            new() { Value = "TV", Label = "TV" },
+            new() { Value = "PETUGAS KESEHATAN", Label = "Healthcare Worker" },
+            new() { Value = "TEMAN", Label = "Friend" },
+            new() { Value = "PETUGAS OUTREACH", Label = "Outreach Worker" },
+            new() { Value = "POSTER", Label = "Poster" },
+            new() { Value = "LAY KONSELOR", Label = "Lay Counselor" },
+            new() { Value = "LAINNYA", Label = "Other" }
+        };
+
+        // Initialize test reasons dictionary
+        foreach (var option in testReasonOptions)
+        {
+            testReasonsSelected[option.Value] = false;
+        }
+    }
+
+    private async Task LoadHIVCounselingData()
+    {
+        try
+        {
+            var response = await ApiClient.Api.V1.HIVCounseling.Appointment[AppointmentId].GetAsync();
+            
+            if (response != null)
+            {
+                form.Id = response.Id ?? Guid.Empty;
+                form.AppointmentId = response.AppointmentId ?? Guid.Empty;
+                form.VisitStatus = response.VisitStatus;
+                form.MotherName = response.MotherName;
+                form.PregnancyStatus = response.PregnancyStatus;
+                form.LastChildAge = response.LastChildAge ?? 0;
+                form.NumberOfChildren = response.NumberOfChildren ?? 0;
+                form.ReferralStatus = response.ReferralStatus;
+                form.RiskGroup = response.RiskGroup;
+                form.RiskGroupStartDate = response.RiskGroupStartDate?.DateTime;
+                form.HasRegularPartner = response.HasRegularPartner;
+                form.HasFemalePartner = response.HasFemalePartner;
+                form.PartnerPregnant = response.PartnerPregnant;
+                form.PartnerName = response.PartnerName;
+                form.PartnerDateOfBirth = response.PartnerDateOfBirth?.DateTime;
+                form.PartnerHIVStatus = response.PartnerHIVStatus;
+                form.PartnerLastTestDate = response.PartnerLastTestDate?.DateTime;
+                form.IsIncarcerated = response.IsIncarcerated;
+                form.PreTestCounselingDate = response.PreTestCounselingDate?.DateTime;
+                form.ClientStatus = response.ClientStatus;
+                form.TestKnowledgeSource = response.TestKnowledgeSource;
+                form.VaginalSexRisk = response.VaginalSexRisk;
+                form.VaginalSexRiskDate = response.VaginalSexRiskDate?.DateTime;
+                form.AnalSexRisk = response.AnalSexRisk;
+                form.AnalSexRiskDate = response.AnalSexRiskDate?.DateTime;
+                form.SharedNeedlesRisk = response.SharedNeedlesRisk;
+                form.SharedNeedlesRiskDate = response.SharedNeedlesRiskDate?.DateTime;
+                form.BloodTransfusionRisk = response.BloodTransfusionRisk;
+                form.BloodTransfusionRiskDate = response.BloodTransfusionRiskDate?.DateTime;
+                form.MotherToChildRisk = response.MotherToChildRisk;
+                form.MotherToChildRiskDate = response.MotherToChildRiskDate?.DateTime;
+                form.OtherRiskDescription = response.OtherRiskDescription;
+                form.OtherRiskDate = response.OtherRiskDate?.DateTime;
+                form.WindowPeriodRisk = response.WindowPeriodRisk;
+                form.WindowPeriodRiskDate = response.WindowPeriodRiskDate?.DateTime;
+                form.WillingToTest = response.WillingToTest;
+                form.PreviouslyTested = response.PreviouslyTested;
+                form.PreviousTestLocation = response.PreviousTestLocation;
+                form.PreviousTestDate = response.PreviousTestDate?.DateTime;
+                form.PreviousTestResult = response.PreviousTestResult;
+                form.ObservationNotes = response.ObservationNotes;
+
+                lastChildAgeStr = form.LastChildAge.ToString();
+                numChildrenStr = form.NumberOfChildren.ToString();
+
+                // Load test reasons
+                if (response.TestReasons != null)
+                {
+                    foreach (var reason in response.TestReasons)
+                    {
+                        if (testReasonsSelected.ContainsKey(reason))
+                        {
+                            testReasonsSelected[reason] = true;
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogInformation($"No existing HIV counseling record found for appointment {AppointmentId}");
+        }
+    }
+
+    private async Task SaveHIVCounseling()
+    {
+        try
+        {
+            isSaving = true;
+
+            int.TryParse(lastChildAgeStr, out int lastChildAge);
+            int.TryParse(numChildrenStr, out int numChildren);
+
+            var selectedReasons = testReasonsSelected
+                .Where(x => x.Value)
+                .Select(x => x.Key)
+                .ToList();
+
+            var request = new CreateHIVCounselingRequest
+            {
+                AppointmentId = AppointmentId,
+                VisitStatus = form.VisitStatus,
+                MotherName = form.MotherName,
+                PregnancyStatus = form.PregnancyStatus,
+                LastChildAge = lastChildAge,
+                NumberOfChildren = numChildren,
+                ReferralStatus = form.ReferralStatus,
+                RiskGroup = form.RiskGroup,
+                RiskGroupStartDate = form.RiskGroupStartDate,
+                HasRegularPartner = form.HasRegularPartner,
+                HasFemalePartner = form.HasFemalePartner,
+                PartnerPregnant = form.PartnerPregnant,
+                PartnerName = form.PartnerName,
+                PartnerDateOfBirth = form.PartnerDateOfBirth,
+                PartnerHIVStatus = form.PartnerHIVStatus,
+                PartnerLastTestDate = form.PartnerLastTestDate,
+                IsIncarcerated = form.IsIncarcerated,
+                PreTestCounselingDate = form.PreTestCounselingDate,
+                ClientStatus = form.ClientStatus,
+                TestReasons = selectedReasons,
+                TestKnowledgeSource = form.TestKnowledgeSource,
+                VaginalSexRisk = form.VaginalSexRisk,
+                VaginalSexRiskDate = form.VaginalSexRiskDate,
+                AnalSexRisk = form.AnalSexRisk,
+                AnalSexRiskDate = form.AnalSexRiskDate,
+                SharedNeedlesRisk = form.SharedNeedlesRisk,
+                SharedNeedlesRiskDate = form.SharedNeedlesRiskDate,
+                BloodTransfusionRisk = form.BloodTransfusionRisk,
+                BloodTransfusionRiskDate = form.BloodTransfusionRiskDate,
+                MotherToChildRisk = form.MotherToChildRisk,
+                MotherToChildRiskDate = form.MotherToChildRiskDate,
+                OtherRiskDescription = form.OtherRiskDescription,
+                OtherRiskDate = form.OtherRiskDate,
+                WindowPeriodRisk = form.WindowPeriodRisk,
+                WindowPeriodRiskDate = form.WindowPeriodRiskDate,
+                WillingToTest = form.WillingToTest,
+                PreviouslyTested = form.PreviouslyTested,
+                PreviousTestLocation = form.PreviousTestLocation,
+                PreviousTestDate = form.PreviousTestDate,
+                PreviousTestResult = form.PreviousTestResult,
+                ObservationNotes = form.ObservationNotes
+            };
+
+            if (form.Id != Guid.Empty)
+            {
+                var updateRequest = new UpdateHIVCounselingRequest
+                {
+                    Id = form.Id,
+                    AppointmentId = AppointmentId,
+                    VisitStatus = form.VisitStatus,
+                    MotherName = form.MotherName,
+                    PregnancyStatus = form.PregnancyStatus,
+                    LastChildAge = lastChildAge,
+                    NumberOfChildren = numChildren,
+                    ReferralStatus = form.ReferralStatus,
+                    RiskGroup = form.RiskGroup,
+                    RiskGroupStartDate = form.RiskGroupStartDate,
+                    HasRegularPartner = form.HasRegularPartner,
+                    HasFemalePartner = form.HasFemalePartner,
+                    PartnerPregnant = form.PartnerPregnant,
+                    PartnerName = form.PartnerName,
+                    PartnerDateOfBirth = form.PartnerDateOfBirth,
+                    PartnerHIVStatus = form.PartnerHIVStatus,
+                    PartnerLastTestDate = form.PartnerLastTestDate,
+                    IsIncarcerated = form.IsIncarcerated,
+                    PreTestCounselingDate = form.PreTestCounselingDate,
+                    ClientStatus = form.ClientStatus,
+                    TestReasons = selectedReasons,
+                    TestKnowledgeSource = form.TestKnowledgeSource,
+                    VaginalSexRisk = form.VaginalSexRisk,
+                    VaginalSexRiskDate = form.VaginalSexRiskDate,
+                    AnalSexRisk = form.AnalSexRisk,
+                    AnalSexRiskDate = form.AnalSexRiskDate,
+                    SharedNeedlesRisk = form.SharedNeedlesRisk,
+                    SharedNeedlesRiskDate = form.SharedNeedlesRiskDate,
+                    BloodTransfusionRisk = form.BloodTransfusionRisk,
+                    BloodTransfusionRiskDate = form.BloodTransfusionRiskDate,
+                    MotherToChildRisk = form.MotherToChildRisk,
+                    MotherToChildRiskDate = form.MotherToChildRiskDate,
+                    OtherRiskDescription = form.OtherRiskDescription,
+                    OtherRiskDate = form.OtherRiskDate,
+                    WindowPeriodRisk = form.WindowPeriodRisk,
+                    WindowPeriodRiskDate = form.WindowPeriodRiskDate,
+                    WillingToTest = form.WillingToTest,
+                    PreviouslyTested = form.PreviouslyTested,
+                    PreviousTestLocation = form.PreviousTestLocation,
+                    PreviousTestDate = form.PreviousTestDate,
+                    PreviousTestResult = form.PreviousTestResult,
+                    ObservationNotes = form.ObservationNotes
+                };
+
+                await ApiClient.Api.V1.HIVCounseling[form.Id].PutAsync(updateRequest);
+
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "HIV counseling record updated successfully",
+                    NotificationType = NotificationType.Success
+                });
+            }
+            else
+            {
+                await ApiClient.Api.V1.HIVCounseling.PostAsync(request);
+
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "HIV counseling record created successfully",
+                    NotificationType = NotificationType.Success
+                });
+
+                await LoadHIVCounselingData();
+            }
+        }
+        catch (Exception ex)
+        {
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error saving HIV counseling record: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+            _logger.LogError(ex, "Error saving HIV counseling");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        form = new();
+        lastChildAgeStr = "";
+        numChildrenStr = "";
+        foreach (var key in testReasonsSelected.Keys.ToList())
+        {
+            testReasonsSelected[key] = false;
+        }
+        StateHasChanged();
+    }
+
+    private void PrintForm()
+    {
+        // TODO: Implement print
     }
 
     private async void OnAuthenticationChanged(bool isAuthenticated)
@@ -28,6 +720,7 @@
         if (isAuthenticated && AppointmentId != Guid.Empty)
         {
             await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadHIVCounselingData();
             StateHasChanged();
         }
     }
@@ -38,4 +731,54 @@
         await Task.CompletedTask;
     }
 
+    private class HIVCounselingFormModel
+    {
+        public Guid Id { get; set; }
+        public Guid AppointmentId { get; set; }
+        public string? VisitStatus { get; set; }
+        public string? MotherName { get; set; }
+        public string? PregnancyStatus { get; set; }
+        public int LastChildAge { get; set; }
+        public int NumberOfChildren { get; set; }
+        public string? ReferralStatus { get; set; }
+        public string? RiskGroup { get; set; }
+        public DateTime? RiskGroupStartDate { get; set; }
+        public bool? HasRegularPartner { get; set; }
+        public bool? HasFemalePartner { get; set; }
+        public bool? PartnerPregnant { get; set; }
+        public string? PartnerName { get; set; }
+        public DateTime? PartnerDateOfBirth { get; set; }
+        public string? PartnerHIVStatus { get; set; }
+        public DateTime? PartnerLastTestDate { get; set; }
+        public bool? IsIncarcerated { get; set; }
+        public DateTime? PreTestCounselingDate { get; set; }
+        public string? ClientStatus { get; set; }
+        public string? TestKnowledgeSource { get; set; }
+        public bool? VaginalSexRisk { get; set; }
+        public DateTime? VaginalSexRiskDate { get; set; }
+        public bool? AnalSexRisk { get; set; }
+        public DateTime? AnalSexRiskDate { get; set; }
+        public bool? SharedNeedlesRisk { get; set; }
+        public DateTime? SharedNeedlesRiskDate { get; set; }
+        public bool? BloodTransfusionRisk { get; set; }
+        public DateTime? BloodTransfusionRiskDate { get; set; }
+        public bool? MotherToChildRisk { get; set; }
+        public DateTime? MotherToChildRiskDate { get; set; }
+        public string? OtherRiskDescription { get; set; }
+        public DateTime? OtherRiskDate { get; set; }
+        public bool? WindowPeriodRisk { get; set; }
+        public DateTime? WindowPeriodRiskDate { get; set; }
+        public bool? WillingToTest { get; set; }
+        public bool? PreviouslyTested { get; set; }
+        public string? PreviousTestLocation { get; set; }
+        public DateTime? PreviousTestDate { get; set; }
+        public string? PreviousTestResult { get; set; }
+        public string? ObservationNotes { get; set; }
+    }
+
+    private class OptionItem
+    {
+        public string Value { get; set; }
+        public string Label { get; set; }
+    }
 }
