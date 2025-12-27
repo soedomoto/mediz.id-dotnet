@@ -135,6 +135,12 @@ public enum STIVisitReasonEnum
     Sakit
 }
 
+public enum STIPregnancyStatusEnum
+{
+    Hamil,
+    TidakHamil
+}
+
 public enum AppointmentStatusEnum
 {
     Scheduled,

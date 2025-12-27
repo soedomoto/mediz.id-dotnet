@@ -12,38 +12,506 @@ namespace MedizID.UI.Services.Generated.Models
     public partial class UpdateAdolescentHealthRequest : IParsable
     #pragma warning restore CS1591
     {
-        /// <summary>The contraception property</summary>
+        /// <summary>The abortion property</summary>
+        public bool? Abortion { get; set; }
+        /// <summary>The abortionNotes property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? Contraception { get; set; }
+        public string? AbortionNotes { get; set; }
 #nullable restore
 #else
-        public string Contraception { get; set; }
+        public string AbortionNotes { get; set; }
 #endif
-        /// <summary>The counseling property</summary>
+        /// <summary>The activityAssessment property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? Counseling { get; set; }
+        public string? ActivityAssessment { get; set; }
 #nullable restore
 #else
-        public string Counseling { get; set; }
+        public string ActivityAssessment { get; set; }
 #endif
-        /// <summary>The healthConcern property</summary>
+        /// <summary>The aids property</summary>
+        public bool? Aids { get; set; }
+        /// <summary>The aidsNotes property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? HealthConcern { get; set; }
+        public string? AidsNotes { get; set; }
 #nullable restore
 #else
-        public string HealthConcern { get; set; }
+        public string AidsNotes { get; set; }
 #endif
-        /// <summary>The sexualActivity property</summary>
+        /// <summary>The alcoholUse property</summary>
+        public bool? AlcoholUse { get; set; }
+        /// <summary>The alcoholUseNotes property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? SexualActivity { get; set; }
+        public string? AlcoholUseNotes { get; set; }
 #nullable restore
 #else
-        public string SexualActivity { get; set; }
+        public string AlcoholUseNotes { get; set; }
 #endif
+        /// <summary>The anemia property</summary>
+        public bool? Anemia { get; set; }
+        /// <summary>The anemiaNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? AnemiaNotes { get; set; }
+#nullable restore
+#else
+        public string AnemiaNotes { get; set; }
+#endif
+        /// <summary>The childAbuse property</summary>
+        public bool? ChildAbuse { get; set; }
+        /// <summary>The childAbuseNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ChildAbuseNotes { get; set; }
+#nullable restore
+#else
+        public string ChildAbuseNotes { get; set; }
+#endif
+        /// <summary>The childOrder property</summary>
+        public int? ChildOrder { get; set; }
+        /// <summary>The chronicEnergyDeficiency property</summary>
+        public bool? ChronicEnergyDeficiency { get; set; }
+        /// <summary>The chronicEnergyDeficiencyNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ChronicEnergyDeficiencyNotes { get; set; }
+#nullable restore
+#else
+        public string ChronicEnergyDeficiencyNotes { get; set; }
+#endif
+        /// <summary>The citizenship property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Citizenship { get; set; }
+#nullable restore
+#else
+        public string Citizenship { get; set; }
+#endif
+        /// <summary>The clientDecision property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ClientDecision { get; set; }
+#nullable restore
+#else
+        public string ClientDecision { get; set; }
+#endif
+        /// <summary>The counselor property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Counselor { get; set; }
+#nullable restore
+#else
+        public string Counselor { get; set; }
+#endif
+        /// <summary>The desiredPregnancy property</summary>
+        public bool? DesiredPregnancy { get; set; }
+        /// <summary>The desiredPregnancyNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? DesiredPregnancyNotes { get; set; }
+#nullable restore
+#else
+        public string DesiredPregnancyNotes { get; set; }
+#endif
+        /// <summary>The diagnosis property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Diagnosis { get; set; }
+#nullable restore
+#else
+        public string Diagnosis { get; set; }
+#endif
+        /// <summary>The drugAbuse property</summary>
+        public bool? DrugAbuse { get; set; }
+        /// <summary>The drugAbuseNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? DrugAbuseNotes { get; set; }
+#nullable restore
+#else
+        public string DrugAbuseNotes { get; set; }
+#endif
+        /// <summary>The drugsAssessment property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? DrugsAssessment { get; set; }
+#nullable restore
+#else
+        public string DrugsAssessment { get; set; }
+#endif
+        /// <summary>The earlyMarriage property</summary>
+        public bool? EarlyMarriage { get; set; }
+        /// <summary>The earlyMarriageNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? EarlyMarriageNotes { get; set; }
+#nullable restore
+#else
+        public string EarlyMarriageNotes { get; set; }
+#endif
+        /// <summary>The eatingAssessment property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? EatingAssessment { get; set; }
+#nullable restore
+#else
+        public string EatingAssessment { get; set; }
+#endif
+        /// <summary>The employmentEducationAssessment property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? EmploymentEducationAssessment { get; set; }
+#nullable restore
+#else
+        public string EmploymentEducationAssessment { get; set; }
+#endif
+        /// <summary>The fatherEducation property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? FatherEducation { get; set; }
+#nullable restore
+#else
+        public string FatherEducation { get; set; }
+#endif
+        /// <summary>The fatherOccupation property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? FatherOccupation { get; set; }
+#nullable restore
+#else
+        public string FatherOccupation { get; set; }
+#endif
+        /// <summary>The gadgetAddiction property</summary>
+        public bool? GadgetAddiction { get; set; }
+        /// <summary>The gadgetAddictionNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? GadgetAddictionNotes { get; set; }
+#nullable restore
+#else
+        public string GadgetAddictionNotes { get; set; }
+#endif
+        /// <summary>The grade property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Grade { get; set; }
+#nullable restore
+#else
+        public string Grade { get; set; }
+#endif
+        /// <summary>The height property</summary>
+        public double? Height { get; set; }
+        /// <summary>The hiv property</summary>
+        public bool? Hiv { get; set; }
+        /// <summary>The hivNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? HivNotes { get; set; }
+#nullable restore
+#else
+        public string HivNotes { get; set; }
+#endif
+        /// <summary>The homeAssessment property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? HomeAssessment { get; set; }
+#nullable restore
+#else
+        public string HomeAssessment { get; set; }
+#endif
+        /// <summary>The learningDifficulty property</summary>
+        public bool? LearningDifficulty { get; set; }
+        /// <summary>The learningDifficultyNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? LearningDifficultyNotes { get; set; }
+#nullable restore
+#else
+        public string LearningDifficultyNotes { get; set; }
+#endif
+        /// <summary>The mainComplaint property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? MainComplaint { get; set; }
+#nullable restore
+#else
+        public string MainComplaint { get; set; }
+#endif
+        /// <summary>The mainProblem property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? MainProblem { get; set; }
+#nullable restore
+#else
+        public string MainProblem { get; set; }
+#endif
+        /// <summary>The maritalStatus property</summary>
+        public int? MaritalStatus { get; set; }
+        /// <summary>The medicalHistory property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? MedicalHistory { get; set; }
+#nullable restore
+#else
+        public string MedicalHistory { get; set; }
+#endif
+        /// <summary>The menstrualDisorder property</summary>
+        public bool? MenstrualDisorder { get; set; }
+        /// <summary>The menstrualDisorderNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? MenstrualDisorderNotes { get; set; }
+#nullable restore
+#else
+        public string MenstrualDisorderNotes { get; set; }
+#endif
+        /// <summary>The mentalDisability property</summary>
+        public bool? MentalDisability { get; set; }
+        /// <summary>The mentalDisabilityNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? MentalDisabilityNotes { get; set; }
+#nullable restore
+#else
+        public string MentalDisabilityNotes { get; set; }
+#endif
+        /// <summary>The motherEducation property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? MotherEducation { get; set; }
+#nullable restore
+#else
+        public string MotherEducation { get; set; }
+#endif
+        /// <summary>The motherOccupation property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? MotherOccupation { get; set; }
+#nullable restore
+#else
+        public string MotherOccupation { get; set; }
+#endif
+        /// <summary>The nutritionDisorder property</summary>
+        public bool? NutritionDisorder { get; set; }
+        /// <summary>The nutritionDisorderNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? NutritionDisorderNotes { get; set; }
+#nullable restore
+#else
+        public string NutritionDisorderNotes { get; set; }
+#endif
+        /// <summary>The obesity property</summary>
+        public bool? Obesity { get; set; }
+        /// <summary>The obesityNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ObesityNotes { get; set; }
+#nullable restore
+#else
+        public string ObesityNotes { get; set; }
+#endif
+        /// <summary>The observations property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Observations { get; set; }
+#nullable restore
+#else
+        public string Observations { get; set; }
+#endif
+        /// <summary>The occupation property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Occupation { get; set; }
+#nullable restore
+#else
+        public string Occupation { get; set; }
+#endif
+        /// <summary>The otherProblems property</summary>
+        public bool? OtherProblems { get; set; }
+        /// <summary>The otherProblemsNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? OtherProblemsNotes { get; set; }
+#nullable restore
+#else
+        public string OtherProblemsNotes { get; set; }
+#endif
+        /// <summary>The otherSubstanceUse property</summary>
+        public bool? OtherSubstanceUse { get; set; }
+        /// <summary>The otherSubstanceUseNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? OtherSubstanceUseNotes { get; set; }
+#nullable restore
+#else
+        public string OtherSubstanceUseNotes { get; set; }
+#endif
+        /// <summary>The parentStatus property</summary>
+        public int? ParentStatus { get; set; }
+        /// <summary>The physicalDisability property</summary>
+        public bool? PhysicalDisability { get; set; }
+        /// <summary>The physicalDisabilityNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? PhysicalDisabilityNotes { get; set; }
+#nullable restore
+#else
+        public string PhysicalDisabilityNotes { get; set; }
+#endif
+        /// <summary>The pregnancy property</summary>
+        public bool? Pregnancy { get; set; }
+        /// <summary>The pregnancyNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? PregnancyNotes { get; set; }
+#nullable restore
+#else
+        public string PregnancyNotes { get; set; }
+#endif
+        /// <summary>The premaritalSex property</summary>
+        public bool? PremaritalSex { get; set; }
+        /// <summary>The premaritalSexNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? PremaritalSexNotes { get; set; }
+#nullable restore
+#else
+        public string PremaritalSexNotes { get; set; }
+#endif
+        /// <summary>The problemBackground property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ProblemBackground { get; set; }
+#nullable restore
+#else
+        public string ProblemBackground { get; set; }
+#endif
+        /// <summary>The psychologicalIssues property</summary>
+        public bool? PsychologicalIssues { get; set; }
+        /// <summary>The psychologicalIssuesNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? PsychologicalIssuesNotes { get; set; }
+#nullable restore
+#else
+        public string PsychologicalIssuesNotes { get; set; }
+#endif
+        /// <summary>The reproductiveInfection property</summary>
+        public bool? ReproductiveInfection { get; set; }
+        /// <summary>The reproductiveInfectionNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ReproductiveInfectionNotes { get; set; }
+#nullable restore
+#else
+        public string ReproductiveInfectionNotes { get; set; }
+#endif
+        /// <summary>The residence property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Residence { get; set; }
+#nullable restore
+#else
+        public string Residence { get; set; }
+#endif
+        /// <summary>The safetyAssessment property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SafetyAssessment { get; set; }
+#nullable restore
+#else
+        public string SafetyAssessment { get; set; }
+#endif
+        /// <summary>The schoolName property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SchoolName { get; set; }
+#nullable restore
+#else
+        public string SchoolName { get; set; }
+#endif
+        /// <summary>The sexualityAssessment property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SexualityAssessment { get; set; }
+#nullable restore
+#else
+        public string SexualityAssessment { get; set; }
+#endif
+        /// <summary>The sexuallyTransmittedInfection property</summary>
+        public bool? SexuallyTransmittedInfection { get; set; }
+        /// <summary>The sexuallyTransmittedInfectionNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SexuallyTransmittedInfectionNotes { get; set; }
+#nullable restore
+#else
+        public string SexuallyTransmittedInfectionNotes { get; set; }
+#endif
+        /// <summary>The sexualOrientation property</summary>
+        public bool? SexualOrientation { get; set; }
+        /// <summary>The sexualOrientationNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SexualOrientationNotes { get; set; }
+#nullable restore
+#else
+        public string SexualOrientationNotes { get; set; }
+#endif
+        /// <summary>The smoking property</summary>
+        public bool? Smoking { get; set; }
+        /// <summary>The smokingNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SmokingNotes { get; set; }
+#nullable restore
+#else
+        public string SmokingNotes { get; set; }
+#endif
+        /// <summary>The solutionAlternatives property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SolutionAlternatives { get; set; }
+#nullable restore
+#else
+        public string SolutionAlternatives { get; set; }
+#endif
+        /// <summary>The suicideDepressionAssessment property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? SuicideDepressionAssessment { get; set; }
+#nullable restore
+#else
+        public string SuicideDepressionAssessment { get; set; }
+#endif
+        /// <summary>The teenageDelivery property</summary>
+        public bool? TeenageDelivery { get; set; }
+        /// <summary>The teenageDeliveryNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? TeenageDeliveryNotes { get; set; }
+#nullable restore
+#else
+        public string TeenageDeliveryNotes { get; set; }
+#endif
+        /// <summary>The totalSiblings property</summary>
+        public int? TotalSiblings { get; set; }
+        /// <summary>The unwantedPregnancy property</summary>
+        public bool? UnwantedPregnancy { get; set; }
+        /// <summary>The unwantedPregnancyNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? UnwantedPregnancyNotes { get; set; }
+#nullable restore
+#else
+        public string UnwantedPregnancyNotes { get; set; }
+#endif
+        /// <summary>The weight property</summary>
+        public double? Weight { get; set; }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
@@ -62,10 +530,94 @@ namespace MedizID.UI.Services.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "contraception", n => { Contraception = n.GetStringValue(); } },
-                { "counseling", n => { Counseling = n.GetStringValue(); } },
-                { "healthConcern", n => { HealthConcern = n.GetStringValue(); } },
-                { "sexualActivity", n => { SexualActivity = n.GetStringValue(); } },
+                { "abortion", n => { Abortion = n.GetBoolValue(); } },
+                { "abortionNotes", n => { AbortionNotes = n.GetStringValue(); } },
+                { "activityAssessment", n => { ActivityAssessment = n.GetStringValue(); } },
+                { "aids", n => { Aids = n.GetBoolValue(); } },
+                { "aidsNotes", n => { AidsNotes = n.GetStringValue(); } },
+                { "alcoholUse", n => { AlcoholUse = n.GetBoolValue(); } },
+                { "alcoholUseNotes", n => { AlcoholUseNotes = n.GetStringValue(); } },
+                { "anemia", n => { Anemia = n.GetBoolValue(); } },
+                { "anemiaNotes", n => { AnemiaNotes = n.GetStringValue(); } },
+                { "childAbuse", n => { ChildAbuse = n.GetBoolValue(); } },
+                { "childAbuseNotes", n => { ChildAbuseNotes = n.GetStringValue(); } },
+                { "childOrder", n => { ChildOrder = n.GetIntValue(); } },
+                { "chronicEnergyDeficiency", n => { ChronicEnergyDeficiency = n.GetBoolValue(); } },
+                { "chronicEnergyDeficiencyNotes", n => { ChronicEnergyDeficiencyNotes = n.GetStringValue(); } },
+                { "citizenship", n => { Citizenship = n.GetStringValue(); } },
+                { "clientDecision", n => { ClientDecision = n.GetStringValue(); } },
+                { "counselor", n => { Counselor = n.GetStringValue(); } },
+                { "desiredPregnancy", n => { DesiredPregnancy = n.GetBoolValue(); } },
+                { "desiredPregnancyNotes", n => { DesiredPregnancyNotes = n.GetStringValue(); } },
+                { "diagnosis", n => { Diagnosis = n.GetStringValue(); } },
+                { "drugAbuse", n => { DrugAbuse = n.GetBoolValue(); } },
+                { "drugAbuseNotes", n => { DrugAbuseNotes = n.GetStringValue(); } },
+                { "drugsAssessment", n => { DrugsAssessment = n.GetStringValue(); } },
+                { "earlyMarriage", n => { EarlyMarriage = n.GetBoolValue(); } },
+                { "earlyMarriageNotes", n => { EarlyMarriageNotes = n.GetStringValue(); } },
+                { "eatingAssessment", n => { EatingAssessment = n.GetStringValue(); } },
+                { "employmentEducationAssessment", n => { EmploymentEducationAssessment = n.GetStringValue(); } },
+                { "fatherEducation", n => { FatherEducation = n.GetStringValue(); } },
+                { "fatherOccupation", n => { FatherOccupation = n.GetStringValue(); } },
+                { "gadgetAddiction", n => { GadgetAddiction = n.GetBoolValue(); } },
+                { "gadgetAddictionNotes", n => { GadgetAddictionNotes = n.GetStringValue(); } },
+                { "grade", n => { Grade = n.GetStringValue(); } },
+                { "height", n => { Height = n.GetDoubleValue(); } },
+                { "hiv", n => { Hiv = n.GetBoolValue(); } },
+                { "hivNotes", n => { HivNotes = n.GetStringValue(); } },
+                { "homeAssessment", n => { HomeAssessment = n.GetStringValue(); } },
+                { "learningDifficulty", n => { LearningDifficulty = n.GetBoolValue(); } },
+                { "learningDifficultyNotes", n => { LearningDifficultyNotes = n.GetStringValue(); } },
+                { "mainComplaint", n => { MainComplaint = n.GetStringValue(); } },
+                { "mainProblem", n => { MainProblem = n.GetStringValue(); } },
+                { "maritalStatus", n => { MaritalStatus = n.GetIntValue(); } },
+                { "medicalHistory", n => { MedicalHistory = n.GetStringValue(); } },
+                { "menstrualDisorder", n => { MenstrualDisorder = n.GetBoolValue(); } },
+                { "menstrualDisorderNotes", n => { MenstrualDisorderNotes = n.GetStringValue(); } },
+                { "mentalDisability", n => { MentalDisability = n.GetBoolValue(); } },
+                { "mentalDisabilityNotes", n => { MentalDisabilityNotes = n.GetStringValue(); } },
+                { "motherEducation", n => { MotherEducation = n.GetStringValue(); } },
+                { "motherOccupation", n => { MotherOccupation = n.GetStringValue(); } },
+                { "nutritionDisorder", n => { NutritionDisorder = n.GetBoolValue(); } },
+                { "nutritionDisorderNotes", n => { NutritionDisorderNotes = n.GetStringValue(); } },
+                { "obesity", n => { Obesity = n.GetBoolValue(); } },
+                { "obesityNotes", n => { ObesityNotes = n.GetStringValue(); } },
+                { "observations", n => { Observations = n.GetStringValue(); } },
+                { "occupation", n => { Occupation = n.GetStringValue(); } },
+                { "otherProblems", n => { OtherProblems = n.GetBoolValue(); } },
+                { "otherProblemsNotes", n => { OtherProblemsNotes = n.GetStringValue(); } },
+                { "otherSubstanceUse", n => { OtherSubstanceUse = n.GetBoolValue(); } },
+                { "otherSubstanceUseNotes", n => { OtherSubstanceUseNotes = n.GetStringValue(); } },
+                { "parentStatus", n => { ParentStatus = n.GetIntValue(); } },
+                { "physicalDisability", n => { PhysicalDisability = n.GetBoolValue(); } },
+                { "physicalDisabilityNotes", n => { PhysicalDisabilityNotes = n.GetStringValue(); } },
+                { "pregnancy", n => { Pregnancy = n.GetBoolValue(); } },
+                { "pregnancyNotes", n => { PregnancyNotes = n.GetStringValue(); } },
+                { "premaritalSex", n => { PremaritalSex = n.GetBoolValue(); } },
+                { "premaritalSexNotes", n => { PremaritalSexNotes = n.GetStringValue(); } },
+                { "problemBackground", n => { ProblemBackground = n.GetStringValue(); } },
+                { "psychologicalIssues", n => { PsychologicalIssues = n.GetBoolValue(); } },
+                { "psychologicalIssuesNotes", n => { PsychologicalIssuesNotes = n.GetStringValue(); } },
+                { "reproductiveInfection", n => { ReproductiveInfection = n.GetBoolValue(); } },
+                { "reproductiveInfectionNotes", n => { ReproductiveInfectionNotes = n.GetStringValue(); } },
+                { "residence", n => { Residence = n.GetStringValue(); } },
+                { "safetyAssessment", n => { SafetyAssessment = n.GetStringValue(); } },
+                { "schoolName", n => { SchoolName = n.GetStringValue(); } },
+                { "sexualOrientation", n => { SexualOrientation = n.GetBoolValue(); } },
+                { "sexualOrientationNotes", n => { SexualOrientationNotes = n.GetStringValue(); } },
+                { "sexualityAssessment", n => { SexualityAssessment = n.GetStringValue(); } },
+                { "sexuallyTransmittedInfection", n => { SexuallyTransmittedInfection = n.GetBoolValue(); } },
+                { "sexuallyTransmittedInfectionNotes", n => { SexuallyTransmittedInfectionNotes = n.GetStringValue(); } },
+                { "smoking", n => { Smoking = n.GetBoolValue(); } },
+                { "smokingNotes", n => { SmokingNotes = n.GetStringValue(); } },
+                { "solutionAlternatives", n => { SolutionAlternatives = n.GetStringValue(); } },
+                { "suicideDepressionAssessment", n => { SuicideDepressionAssessment = n.GetStringValue(); } },
+                { "teenageDelivery", n => { TeenageDelivery = n.GetBoolValue(); } },
+                { "teenageDeliveryNotes", n => { TeenageDeliveryNotes = n.GetStringValue(); } },
+                { "totalSiblings", n => { TotalSiblings = n.GetIntValue(); } },
+                { "unwantedPregnancy", n => { UnwantedPregnancy = n.GetBoolValue(); } },
+                { "unwantedPregnancyNotes", n => { UnwantedPregnancyNotes = n.GetStringValue(); } },
+                { "weight", n => { Weight = n.GetDoubleValue(); } },
             };
         }
         /// <summary>
@@ -75,10 +627,94 @@ namespace MedizID.UI.Services.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteStringValue("contraception", Contraception);
-            writer.WriteStringValue("counseling", Counseling);
-            writer.WriteStringValue("healthConcern", HealthConcern);
-            writer.WriteStringValue("sexualActivity", SexualActivity);
+            writer.WriteBoolValue("abortion", Abortion);
+            writer.WriteStringValue("abortionNotes", AbortionNotes);
+            writer.WriteStringValue("activityAssessment", ActivityAssessment);
+            writer.WriteBoolValue("aids", Aids);
+            writer.WriteStringValue("aidsNotes", AidsNotes);
+            writer.WriteBoolValue("alcoholUse", AlcoholUse);
+            writer.WriteStringValue("alcoholUseNotes", AlcoholUseNotes);
+            writer.WriteBoolValue("anemia", Anemia);
+            writer.WriteStringValue("anemiaNotes", AnemiaNotes);
+            writer.WriteBoolValue("childAbuse", ChildAbuse);
+            writer.WriteStringValue("childAbuseNotes", ChildAbuseNotes);
+            writer.WriteIntValue("childOrder", ChildOrder);
+            writer.WriteBoolValue("chronicEnergyDeficiency", ChronicEnergyDeficiency);
+            writer.WriteStringValue("chronicEnergyDeficiencyNotes", ChronicEnergyDeficiencyNotes);
+            writer.WriteStringValue("citizenship", Citizenship);
+            writer.WriteStringValue("clientDecision", ClientDecision);
+            writer.WriteStringValue("counselor", Counselor);
+            writer.WriteBoolValue("desiredPregnancy", DesiredPregnancy);
+            writer.WriteStringValue("desiredPregnancyNotes", DesiredPregnancyNotes);
+            writer.WriteStringValue("diagnosis", Diagnosis);
+            writer.WriteBoolValue("drugAbuse", DrugAbuse);
+            writer.WriteStringValue("drugAbuseNotes", DrugAbuseNotes);
+            writer.WriteStringValue("drugsAssessment", DrugsAssessment);
+            writer.WriteBoolValue("earlyMarriage", EarlyMarriage);
+            writer.WriteStringValue("earlyMarriageNotes", EarlyMarriageNotes);
+            writer.WriteStringValue("eatingAssessment", EatingAssessment);
+            writer.WriteStringValue("employmentEducationAssessment", EmploymentEducationAssessment);
+            writer.WriteStringValue("fatherEducation", FatherEducation);
+            writer.WriteStringValue("fatherOccupation", FatherOccupation);
+            writer.WriteBoolValue("gadgetAddiction", GadgetAddiction);
+            writer.WriteStringValue("gadgetAddictionNotes", GadgetAddictionNotes);
+            writer.WriteStringValue("grade", Grade);
+            writer.WriteDoubleValue("height", Height);
+            writer.WriteBoolValue("hiv", Hiv);
+            writer.WriteStringValue("hivNotes", HivNotes);
+            writer.WriteStringValue("homeAssessment", HomeAssessment);
+            writer.WriteBoolValue("learningDifficulty", LearningDifficulty);
+            writer.WriteStringValue("learningDifficultyNotes", LearningDifficultyNotes);
+            writer.WriteStringValue("mainComplaint", MainComplaint);
+            writer.WriteStringValue("mainProblem", MainProblem);
+            writer.WriteIntValue("maritalStatus", MaritalStatus);
+            writer.WriteStringValue("medicalHistory", MedicalHistory);
+            writer.WriteBoolValue("menstrualDisorder", MenstrualDisorder);
+            writer.WriteStringValue("menstrualDisorderNotes", MenstrualDisorderNotes);
+            writer.WriteBoolValue("mentalDisability", MentalDisability);
+            writer.WriteStringValue("mentalDisabilityNotes", MentalDisabilityNotes);
+            writer.WriteStringValue("motherEducation", MotherEducation);
+            writer.WriteStringValue("motherOccupation", MotherOccupation);
+            writer.WriteBoolValue("nutritionDisorder", NutritionDisorder);
+            writer.WriteStringValue("nutritionDisorderNotes", NutritionDisorderNotes);
+            writer.WriteBoolValue("obesity", Obesity);
+            writer.WriteStringValue("obesityNotes", ObesityNotes);
+            writer.WriteStringValue("observations", Observations);
+            writer.WriteStringValue("occupation", Occupation);
+            writer.WriteBoolValue("otherProblems", OtherProblems);
+            writer.WriteStringValue("otherProblemsNotes", OtherProblemsNotes);
+            writer.WriteBoolValue("otherSubstanceUse", OtherSubstanceUse);
+            writer.WriteStringValue("otherSubstanceUseNotes", OtherSubstanceUseNotes);
+            writer.WriteIntValue("parentStatus", ParentStatus);
+            writer.WriteBoolValue("physicalDisability", PhysicalDisability);
+            writer.WriteStringValue("physicalDisabilityNotes", PhysicalDisabilityNotes);
+            writer.WriteBoolValue("pregnancy", Pregnancy);
+            writer.WriteStringValue("pregnancyNotes", PregnancyNotes);
+            writer.WriteBoolValue("premaritalSex", PremaritalSex);
+            writer.WriteStringValue("premaritalSexNotes", PremaritalSexNotes);
+            writer.WriteStringValue("problemBackground", ProblemBackground);
+            writer.WriteBoolValue("psychologicalIssues", PsychologicalIssues);
+            writer.WriteStringValue("psychologicalIssuesNotes", PsychologicalIssuesNotes);
+            writer.WriteBoolValue("reproductiveInfection", ReproductiveInfection);
+            writer.WriteStringValue("reproductiveInfectionNotes", ReproductiveInfectionNotes);
+            writer.WriteStringValue("residence", Residence);
+            writer.WriteStringValue("safetyAssessment", SafetyAssessment);
+            writer.WriteStringValue("schoolName", SchoolName);
+            writer.WriteStringValue("sexualityAssessment", SexualityAssessment);
+            writer.WriteBoolValue("sexuallyTransmittedInfection", SexuallyTransmittedInfection);
+            writer.WriteStringValue("sexuallyTransmittedInfectionNotes", SexuallyTransmittedInfectionNotes);
+            writer.WriteBoolValue("sexualOrientation", SexualOrientation);
+            writer.WriteStringValue("sexualOrientationNotes", SexualOrientationNotes);
+            writer.WriteBoolValue("smoking", Smoking);
+            writer.WriteStringValue("smokingNotes", SmokingNotes);
+            writer.WriteStringValue("solutionAlternatives", SolutionAlternatives);
+            writer.WriteStringValue("suicideDepressionAssessment", SuicideDepressionAssessment);
+            writer.WriteBoolValue("teenageDelivery", TeenageDelivery);
+            writer.WriteStringValue("teenageDeliveryNotes", TeenageDeliveryNotes);
+            writer.WriteIntValue("totalSiblings", TotalSiblings);
+            writer.WriteBoolValue("unwantedPregnancy", UnwantedPregnancy);
+            writer.WriteStringValue("unwantedPregnancyNotes", UnwantedPregnancyNotes);
+            writer.WriteDoubleValue("weight", Weight);
         }
     }
 }

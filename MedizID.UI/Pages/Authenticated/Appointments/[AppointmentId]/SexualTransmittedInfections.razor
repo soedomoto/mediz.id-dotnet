@@ -1,26 +1,370 @@
 @page "/appointments/{AppointmentId:guid}/sexual-transmitted-infections"
 @layout AppointmentLayout
 @using System.Threading.Tasks
-@using System.ComponentModel.DataAnnotations
-@using Microsoft.AspNetCore.Components.Forms
 @using MedizID.UI.Services.Generated.Models
 @inject ILocalStorageService LocalStorage
 @inject MedizIdApiClient ApiClient
 @inject AppointmentLayoutState LayoutState
 @inject INotificationService _notice
+@inject ILogger<SexualTransmittedInfections> _logger
 @implements IAsyncDisposable
 
-<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Sexual Transmitted Infections" : "MedizID")
-</PageTitle>
+<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Sexual Transmitted Infections" : "MedizID")</PageTitle>
+
+<div style="padding: 24px; background-color: white; border-radius: 8px;">
+    @if (LayoutState.Appointment != null)
+    {
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2>Sexual Transmitted Infections Assessment</h2>
+            @if (isSaving)
+            {
+                <span style="color: #1890ff;">Saving...</span>
+            }
+        </div>
+
+        <div>
+            <!-- Data Kunjungan Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Data Kunjungan</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label>Nama Ibu Kandung</label>
+                        <Input @bind-Value="form.MotherName" Placeholder="Nama Ibu Kandung" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label>Status Kunjungan</label>
+                        <Select TItemValue="string" TItem="OptionItem"
+                                DataSource="@visitStatusOptions"
+                                @bind-Value="form.VisitStatus"
+                                LabelName="@nameof(OptionItem.Label)"
+                                ValueName="@nameof(OptionItem.Value)"
+                                Placeholder="- Select -"
+                                Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label>Status Rujukan</label>
+                        <Input @bind-Value="form.ReferralStatus" Placeholder="Status Rujukan" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label>Kelompok Risiko</label>
+                        <Select TItemValue="string" TItem="OptionItem"
+                                DataSource="@riskGroupOptions"
+                                @bind-Value="form.RiskGroup"
+                                LabelName="@nameof(OptionItem.Label)"
+                                ValueName="@nameof(OptionItem.Value)"
+                                Placeholder="- Select -"
+                                Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label>Kunjungan Ke</label>
+                        <Input @bind-Value="@visitNumberStr" Type="InputType.Number" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label>Alasan Kunjungan</label>
+                        <Select TItemValue="string" TItem="OptionItem"
+                                DataSource="@visitReasonOptions"
+                                @bind-Value="form.VisitReason"
+                                LabelName="@nameof(OptionItem.Label)"
+                                ValueName="@nameof(OptionItem.Value)"
+                                Placeholder="- Select -"
+                                Style="width: 100%;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anamnesa Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Anamnesa</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label>Status Kehamilan</label>
+                        <Select TItemValue="string" TItem="OptionItem"
+                                DataSource="@pregnancyStatusOptions"
+                                @bind-Value="form.PregnancyStatus"
+                                LabelName="@nameof(OptionItem.Label)"
+                                ValueName="@nameof(OptionItem.Value)"
+                                Placeholder="- Select -"
+                                Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label>Hubungan Seks Terakhir (Hari yang Lalu)</label>
+                        <Input @bind-Value="@lastSexualContactStr" Type="InputType.Number" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label>
+                            <Checkbox @bind-Checked="condomLastContactChecked" />
+                            Kondom Hubungan Seks Terakhir
+                        </label>
+                    </div>
+                    <div>
+                        <label>Jumlah Pasangan Seks 1 MG Terakhir</label>
+                        <Input @bind-Value="@sexPartnerCountStr" Type="InputType.Number" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label>
+                            <Checkbox @bind-Checked="condomLastMonthContactChecked" />
+                            Kondom Hubungan Seks 1 MG Terakhir
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <Checkbox @bind-Checked="condomWithPartnerChecked" />
+                            Kondom Hubungan Dengan Pacar 1 MG Terakhir
+                        </label>
+                    </div>
+                </div>
+
+                <div style="margin: 16px 0;">
+                    <label>
+                        <Checkbox @bind-Checked="vaginalDousingChecked" />
+                        Cuci Vagina (Khusus WPS)
+                    </label>
+                </div>
+
+                <div style="margin: 16px 0;">
+                    <label>Hasil Anamnesa Lainnya</label>
+                    <TextArea @bind-Value="form.OtherAnamnesisNotes" Rows="3" Placeholder="Catatan tambahan" Style="width: 100%;" />
+                </div>
+            </div>
+
+            <!-- Pemeriksaan Fisik Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Pemeriksaan Fisik - Tanda Klinis</h4>
+                <p style="font-size: 12px; color: #666;">Boleh diisi lebih dari satu</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                    @foreach (var sign in clinicalSignOptions)
+                    {
+                        <div>
+                            <label>
+                                <Checkbox @bind-Checked="selectedClinicalSigns[sign.Value]" />
+                                @sign.Label
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Diagnosis Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Diagnosis</h4>
+                <p style="font-size: 12px; color: #666;">Boleh diisi lebih dari satu</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                    @foreach (var dx in diagnosisOptions)
+                    {
+                        <div>
+                            <label>
+                                <Checkbox @bind-Checked="selectedDiagnoses[dx.Value]" />
+                                @dx.Label
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Laboratorium Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Rujuk Laboratorium</h4>
+                
+                <div style="margin-bottom: 16px;">
+                    <label>
+                        <Checkbox @bind-Checked="laboratoryReferralChecked" />
+                        Ada Rujukan Laboratorium
+                    </label>
+                </div>
+
+                @if (laboratoryReferralChecked)
+                {
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <label>Jenis Pemeriksaan</label>
+                            <TextArea @bind-Value="form.LaboratoryTests" Rows="3" Placeholder="Jenis pemeriksaan laboratorium" Style="width: 100%;" />
+                        </div>
+                        <div>
+                            <label>Hasil Pemeriksaan</label>
+                            <TextArea @bind-Value="form.LaboratoryResults" Rows="3" Placeholder="Hasil pemeriksaan" Style="width: 100%;" />
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Treatment & Follow-up Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Penatalaksanaan</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label>Pengobatan</label>
+                        <TextArea @bind-Value="form.Treatment" Rows="3" Placeholder="Jenis dan dosis obat" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label>Pasangan</label>
+                        <TextArea @bind-Value="form.Partner" Rows="2" Placeholder="Informasi pasangan" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+                    <div>
+                        <label>Catatan Tambahan</label>
+                        <TextArea @bind-Value="form.Notes" Rows="3" Placeholder="Catatan atau pengamatan tambahan" Style="width: 100%;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="margin: 24px 0; display: flex; gap: 12px;">
+                <Button Type="@ButtonType.Primary" OnClick="SaveSTI" Loading="isSaving">Save</Button>
+                <Button OnClick="ResetForm">Reset</Button>
+                <Button Danger OnClick="PrintForm">Print</Button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 48px 0;">
+            <p>Loading appointment details...</p>
+        </div>
+    }
+</div>
 
 @code {
     [Parameter]
     public Guid AppointmentId { get; set; }
 
+    private bool isSaving = false;
+
+    private STIFormModel form = new();
+
+    // String helpers for number inputs
+    private string visitNumberStr = "";
+    private string lastSexualContactStr = "";
+    private string sexPartnerCountStr = "";
+
+    // Checkbox wrapper variables for nullable bool fields
+    private bool condomLastContactChecked = false;
+    private bool condomLastMonthContactChecked = false;
+    private bool condomWithPartnerChecked = false;
+    private bool vaginalDousingChecked = false;
+    private bool laboratoryReferralChecked = false;
+
+    // Clinical signs selection
+    private Dictionary<string, bool> selectedClinicalSigns = new();
+    
+    // Diagnosis selection
+    private Dictionary<string, bool> selectedDiagnoses = new();
+
+    // Options
+    private List<OptionItem> visitStatusOptions = new();
+    private List<OptionItem> riskGroupOptions = new();
+    private List<OptionItem> visitReasonOptions = new();
+    private List<OptionItem> pregnancyStatusOptions = new();
+    private List<OptionItem> clinicalSignOptions = new();
+    private List<OptionItem> diagnosisOptions = new();
+
     protected override async Task OnInitializedAsync()
     {
         LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
         LayoutState.ActiveTabKey = "sexual-transmitted-infections";
+        
+        InitializeOptions();
+        
+        if (AppointmentId != Guid.Empty)
+        {
+            await LoadSTIData();
+        }
+    }
+
+    private void InitializeOptions()
+    {
+        visitStatusOptions = new()
+        {
+            new() { Value = "DatangSendiri", Label = "Datang Sendiri" },
+            new() { Value = "Dirujuk", Label = "Dirujuk" }
+        };
+
+        riskGroupOptions = new()
+        {
+            new() { Value = "WPS", Label = "WPS" },
+            new() { Value = "PPS", Label = "PPS" },
+            new() { Value = "Waria", Label = "Waria" },
+            new() { Value = "LSL", Label = "LSL" },
+            new() { Value = "Penasun", Label = "Penasun" },
+            new() { Value = "PasanganRisti", Label = "Pasangan Risti" },
+            new() { Value = "PelangganPS", Label = "Pelanggan PS" },
+            new() { Value = "LainLain", Label = "Lain-lain" }
+        };
+
+        visitReasonOptions = new()
+        {
+            new() { Value = "Penapisan", Label = "Penapisan" },
+            new() { Value = "Sakit", Label = "Sakit" }
+        };
+
+        pregnancyStatusOptions = new()
+        {
+            new() { Value = "Hamil", Label = "Hamil" },
+            new() { Value = "TidakHamil", Label = "Tidak Hamil" }
+        };
+
+        clinicalSignOptions = new()
+        {
+            new() { Value = "01", Label = "Duh Tubuh" },
+            new() { Value = "02", Label = "Gatal" },
+            new() { Value = "03", Label = "Kencing Sakit" },
+            new() { Value = "04", Label = "Nyeri Perut" },
+            new() { Value = "05", Label = "Lecet" },
+            new() { Value = "06", Label = "Bintil Sakit" },
+            new() { Value = "07", Label = "Luka/Ulkus" },
+            new() { Value = "08", Label = "Jengger" },
+            new() { Value = "09", Label = "Benjolan" },
+            new() { Value = "99", Label = "Tidak Ada" }
+        };
+
+        diagnosisOptions = new()
+        {
+            new() { Value = "01", Label = "DTV" },
+            new() { Value = "02", Label = "Uretra (Pria)" },
+            new() { Value = "03", Label = "Servisitis (Wanita)" },
+            new() { Value = "04", Label = "Anoresitis" },
+            new() { Value = "05", Label = "Faringitis" },
+            new() { Value = "06", Label = "Ulkus Genital" },
+            new() { Value = "07", Label = "Tumbuhan Genital/Vegetasi" },
+            new() { Value = "08", Label = "Bubo Inguinal" },
+            new() { Value = "09", Label = "Penyakit Radang Panggul" },
+            new() { Value = "10", Label = "DTU" },
+            new() { Value = "11", Label = "Pembengkakan Skrotum" },
+            new() { Value = "12", Label = "DTA" },
+            new() { Value = "13", Label = "Konjungtivitis Neonatorum" }
+        };
+
+        // Initialize selection dictionaries
+        foreach (var sign in clinicalSignOptions)
+        {
+            selectedClinicalSigns[sign.Value] = false;
+        }
+
+        foreach (var dx in diagnosisOptions)
+        {
+            selectedDiagnoses[dx.Value] = false;
+        }
     }
 
     private async void OnAuthenticationChanged(bool isAuthenticated)
@@ -28,8 +372,207 @@
         if (isAuthenticated && AppointmentId != Guid.Empty)
         {
             await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadSTIData();
             StateHasChanged();
         }
+    }
+
+    private async Task LoadSTIData()
+    {
+        try
+        {
+            var response = await ApiClient.Api.V1.STI.Appointment[AppointmentId].GetAsync();
+            
+            if (response != null && response.Id != Guid.Empty)
+            {
+                form.Id = response.Id ?? Guid.Empty;
+                form.AppointmentId = response.AppointmentId ?? Guid.Empty;
+                form.MotherName = response.MotherName;
+                form.VisitStatus = response.VisitStatus;
+                form.ReferralStatus = response.ReferralStatus;
+                form.RiskGroup = response.RiskGroup;
+                form.VisitNumber = response.VisitNumber;
+                form.VisitReason = response.VisitReason;
+                form.PregnancyStatus = response.PregnancyStatus;
+                form.LastSexualContactDaysAgo = response.LastSexualContactDaysAgo;
+                condomLastContactChecked = response.CondomLastContact ?? false;
+                form.SexPartnerCountLastMonth = response.SexPartnerCountLastMonth;
+                condomLastMonthContactChecked = response.CondomLastMonthContact ?? false;
+                condomWithPartnerChecked = response.CondomWithPartner ?? false;
+                vaginalDousingChecked = response.VaginalDouching ?? false;
+                form.OtherAnamnesisNotes = response.OtherAnamnesisNotes;
+                form.ClinicalSigns = response.ClinicalSigns;
+                form.Diagnosis = response.Diagnosis;
+                laboratoryReferralChecked = response.LaboratoryReferral ?? false;
+                form.LaboratoryTests = response.LaboratoryTests;
+                form.LaboratoryResults = response.LaboratoryResults;
+                form.Treatment = response.Treatment;
+                form.Partner = response.Partner;
+                form.Notes = response.Notes;
+
+                // Parse clinical signs
+                if (!string.IsNullOrEmpty(form.ClinicalSigns))
+                {
+                    var signs = form.ClinicalSigns.Split(',');
+                    foreach (var sign in signs)
+                    {
+                        if (selectedClinicalSigns.ContainsKey(sign.Trim()))
+                            selectedClinicalSigns[sign.Trim()] = true;
+                    }
+                }
+
+                // Parse diagnoses
+                if (!string.IsNullOrEmpty(form.Diagnosis))
+                {
+                    var dxList = form.Diagnosis.Split(',');
+                    foreach (var dx in dxList)
+                    {
+                        if (selectedDiagnoses.ContainsKey(dx.Trim()))
+                            selectedDiagnoses[dx.Trim()] = true;
+                    }
+                }
+
+                visitNumberStr = form.VisitNumber?.ToString() ?? "";
+                lastSexualContactStr = form.LastSexualContactDaysAgo?.ToString() ?? "";
+                sexPartnerCountStr = form.SexPartnerCountLastMonth?.ToString() ?? "";
+            }
+        }
+        catch (Exception)
+        {
+            _logger.LogInformation($"No existing STI record found for appointment {AppointmentId}");
+        }
+    }
+
+    private async Task SaveSTI()
+    {
+        try
+        {
+            isSaving = true;
+
+            int.TryParse(visitNumberStr, out int visitNumber);
+            int.TryParse(lastSexualContactStr, out int lastSexualContact);
+            int.TryParse(sexPartnerCountStr, out int sexPartnerCount);
+
+            // Build clinical signs string
+            var clinicalSigns = string.Join(",", selectedClinicalSigns
+                .Where(x => x.Value)
+                .Select(x => x.Key));
+
+            // Build diagnosis string
+            var diagnosis = string.Join(",", selectedDiagnoses
+                .Where(x => x.Value)
+                .Select(x => x.Key));
+
+            var request = new CreateSTIRequest
+            {
+                AppointmentId = AppointmentId,
+                MotherName = form.MotherName,
+                VisitStatus = form.VisitStatus,
+                ReferralStatus = form.ReferralStatus,
+                RiskGroup = form.RiskGroup,
+                VisitNumber = visitNumber > 0 ? visitNumber : null,
+                VisitReason = form.VisitReason,
+                PregnancyStatus = form.PregnancyStatus,
+                LastSexualContactDaysAgo = lastSexualContact > 0 ? lastSexualContact : null,
+                CondomLastContact = condomLastContactChecked,
+                SexPartnerCountLastMonth = sexPartnerCount > 0 ? sexPartnerCount : null,
+                CondomLastMonthContact = condomLastMonthContactChecked,
+                CondomWithPartner = condomWithPartnerChecked,
+                VaginalDouching = vaginalDousingChecked,
+                OtherAnamnesisNotes = form.OtherAnamnesisNotes,
+                ClinicalSigns = string.IsNullOrEmpty(clinicalSigns) ? null : clinicalSigns,
+                Diagnosis = string.IsNullOrEmpty(diagnosis) ? null : diagnosis,
+                LaboratoryReferral = laboratoryReferralChecked,
+                LaboratoryTests = form.LaboratoryTests,
+                LaboratoryResults = form.LaboratoryResults,
+                Treatment = form.Treatment,
+                Partner = form.Partner,
+                Notes = form.Notes
+            };
+
+            if (form.Id != Guid.Empty)
+            {
+                var updateRequest = new UpdateSTIRequest
+                {
+                    MotherName = form.MotherName,
+                    VisitStatus = form.VisitStatus,
+                    ReferralStatus = form.ReferralStatus,
+                    RiskGroup = form.RiskGroup,
+                    VisitNumber = visitNumber > 0 ? visitNumber : null,
+                    VisitReason = form.VisitReason,
+                    PregnancyStatus = form.PregnancyStatus,
+                    LastSexualContactDaysAgo = lastSexualContact > 0 ? lastSexualContact : null,
+                    CondomLastContact = condomLastContactChecked,
+                    SexPartnerCountLastMonth = sexPartnerCount > 0 ? sexPartnerCount : null,
+                    CondomLastMonthContact = condomLastMonthContactChecked,
+                    CondomWithPartner = condomWithPartnerChecked,
+                    VaginalDouching = vaginalDousingChecked,
+                    OtherAnamnesisNotes = form.OtherAnamnesisNotes,
+                    ClinicalSigns = string.IsNullOrEmpty(clinicalSigns) ? null : clinicalSigns,
+                    Diagnosis = string.IsNullOrEmpty(diagnosis) ? null : diagnosis,
+                    LaboratoryReferral = laboratoryReferralChecked,
+                    LaboratoryTests = form.LaboratoryTests,
+                    LaboratoryResults = form.LaboratoryResults,
+                    Treatment = form.Treatment,
+                    Partner = form.Partner,
+                    Notes = form.Notes
+                };
+                await ApiClient.Api.V1.STI[form.Id].PutAsync(updateRequest);
+            }
+            else
+            {
+                await ApiClient.Api.V1.STI.PostAsync(request);
+            }
+
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "STI record saved successfully",
+                NotificationType = NotificationType.Success
+            });
+        }
+        catch (Exception ex)
+        {
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = $"Error saving STI record: {ex.Message}",
+                NotificationType = NotificationType.Error
+            });
+            _logger.LogError(ex, "Error saving STI record");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void PrintForm()
+    {
+        // TODO: Implement print
+    }
+
+    private void ResetForm()
+    {
+        form = new STIFormModel();
+        visitNumberStr = "";
+        lastSexualContactStr = "";
+        sexPartnerCountStr = "";
+        condomLastContactChecked = false;
+        condomLastMonthContactChecked = false;
+        condomWithPartnerChecked = false;
+        vaginalDousingChecked = false;
+        laboratoryReferralChecked = false;
+        
+        foreach (var key in selectedClinicalSigns.Keys.ToList())
+        {
+            selectedClinicalSigns[key] = false;
+        }
+        
+        foreach (var key in selectedDiagnoses.Keys.ToList())
+        {
+            selectedDiagnoses[key] = false;
+        }
+        
+        StateHasChanged();
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
@@ -38,4 +581,38 @@
         await Task.CompletedTask;
     }
 
+    // Models
+    private class STIFormModel
+    {
+        public Guid Id { get; set; }
+        public Guid AppointmentId { get; set; }
+        public string? MotherName { get; set; }
+        public string? VisitStatus { get; set; }
+        public string? ReferralStatus { get; set; }
+        public string? RiskGroup { get; set; }
+        public int? VisitNumber { get; set; }
+        public string? VisitReason { get; set; }
+        public string? PregnancyStatus { get; set; }
+        public int? LastSexualContactDaysAgo { get; set; }
+        public bool? CondomLastContact { get; set; }
+        public int? SexPartnerCountLastMonth { get; set; }
+        public bool? CondomLastMonthContact { get; set; }
+        public bool? CondomWithPartner { get; set; }
+        public bool? VaginalDouching { get; set; }
+        public string? OtherAnamnesisNotes { get; set; }
+        public string? ClinicalSigns { get; set; }
+        public string? Diagnosis { get; set; }
+        public bool? LaboratoryReferral { get; set; }
+        public string? LaboratoryTests { get; set; }
+        public string? LaboratoryResults { get; set; }
+        public string? Treatment { get; set; }
+        public string? Partner { get; set; }
+        public string? Notes { get; set; }
+    }
+
+    private class OptionItem
+    {
+        public string Value { get; set; }
+        public string Label { get; set; }
+    }
 }

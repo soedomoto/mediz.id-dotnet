@@ -3,6 +3,7 @@ using System;
 using MedizID.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedizID.API.Migrations
 {
     [DbContext(typeof(MedizIDDbContext))]
-    partial class MedizIDDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251226095402_UpdateAdolescentHealthFields")]
+    partial class UpdateAdolescentHealthFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2592,76 +2595,32 @@ namespace MedizID.API.Migrations
                     b.Property<Guid>("AppointmentId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ClinicalSigns")
-                        .HasColumnType("text");
-
-                    b.Property<bool?>("CondomLastContact")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool?>("CondomLastMonthContact")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool?>("CondomWithPartner")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Diagnosis")
-                        .HasColumnType("text");
-
-                    b.Property<bool?>("LaboratoryReferral")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LaboratoryResults")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LaboratoryTests")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("LastSexualContactDaysAgo")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("MotherName")
+                    b.Property<string>("DiagnosisSTI")
                         .HasColumnType("text");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
-                    b.Property<string>("OtherAnamnesisNotes")
-                        .HasColumnType("text");
-
                     b.Property<string>("Partner")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("PregnancyStatus")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ReferralStatus")
                         .HasColumnType("text");
 
                     b.Property<string>("RiskGroup")
                         .HasColumnType("text");
 
-                    b.Property<int?>("SexPartnerCountLastMonth")
-                        .HasColumnType("integer");
+                    b.Property<string>("Symptoms")
+                        .HasColumnType("text");
 
                     b.Property<string>("Treatment")
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool?>("VaginalDouching")
-                        .HasColumnType("boolean");
-
-                    b.Property<int?>("VisitNumber")
-                        .HasColumnType("integer");
 
                     b.Property<int?>("VisitReason")
                         .HasColumnType("integer");
 
                     b.Property<string>("VisitStatus")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");

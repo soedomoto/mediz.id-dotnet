@@ -14,6 +14,20 @@ namespace MedizID.UI.Services.Generated.Models
     {
         /// <summary>The appointmentId property</summary>
         public Guid? AppointmentId { get; set; }
+        /// <summary>The clinicalSigns property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ClinicalSigns { get; set; }
+#nullable restore
+#else
+        public string ClinicalSigns { get; set; }
+#endif
+        /// <summary>The condomLastContact property</summary>
+        public bool? CondomLastContact { get; set; }
+        /// <summary>The condomLastMonthContact property</summary>
+        public bool? CondomLastMonthContact { get; set; }
+        /// <summary>The condomWithPartner property</summary>
+        public bool? CondomWithPartner { get; set; }
         /// <summary>The createdAt property</summary>
         public DateTimeOffset? CreatedAt { get; set; }
         /// <summary>The diagnosis property</summary>
@@ -26,6 +40,74 @@ namespace MedizID.UI.Services.Generated.Models
 #endif
         /// <summary>The id property</summary>
         public Guid? Id { get; set; }
+        /// <summary>The laboratoryReferral property</summary>
+        public bool? LaboratoryReferral { get; set; }
+        /// <summary>The laboratoryResults property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? LaboratoryResults { get; set; }
+#nullable restore
+#else
+        public string LaboratoryResults { get; set; }
+#endif
+        /// <summary>The laboratoryTests property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? LaboratoryTests { get; set; }
+#nullable restore
+#else
+        public string LaboratoryTests { get; set; }
+#endif
+        /// <summary>The lastSexualContactDaysAgo property</summary>
+        public int? LastSexualContactDaysAgo { get; set; }
+        /// <summary>The motherName property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? MotherName { get; set; }
+#nullable restore
+#else
+        public string MotherName { get; set; }
+#endif
+        /// <summary>The notes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Notes { get; set; }
+#nullable restore
+#else
+        public string Notes { get; set; }
+#endif
+        /// <summary>The otherAnamnesisNotes property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? OtherAnamnesisNotes { get; set; }
+#nullable restore
+#else
+        public string OtherAnamnesisNotes { get; set; }
+#endif
+        /// <summary>The partner property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Partner { get; set; }
+#nullable restore
+#else
+        public string Partner { get; set; }
+#endif
+        /// <summary>The pregnancyStatus property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? PregnancyStatus { get; set; }
+#nullable restore
+#else
+        public string PregnancyStatus { get; set; }
+#endif
+        /// <summary>The referralStatus property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ReferralStatus { get; set; }
+#nullable restore
+#else
+        public string ReferralStatus { get; set; }
+#endif
         /// <summary>The riskGroup property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -34,14 +116,8 @@ namespace MedizID.UI.Services.Generated.Models
 #else
         public string RiskGroup { get; set; }
 #endif
-        /// <summary>The screening property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? Screening { get; set; }
-#nullable restore
-#else
-        public string Screening { get; set; }
-#endif
+        /// <summary>The sexPartnerCountLastMonth property</summary>
+        public int? SexPartnerCountLastMonth { get; set; }
         /// <summary>The treatment property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -52,6 +128,18 @@ namespace MedizID.UI.Services.Generated.Models
 #endif
         /// <summary>The updatedAt property</summary>
         public DateTimeOffset? UpdatedAt { get; set; }
+        /// <summary>The vaginalDouching property</summary>
+        public bool? VaginalDouching { get; set; }
+        /// <summary>The visitNumber property</summary>
+        public int? VisitNumber { get; set; }
+        /// <summary>The visitReason property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? VisitReason { get; set; }
+#nullable restore
+#else
+        public string VisitReason { get; set; }
+#endif
         /// <summary>The visitStatus property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -79,13 +167,30 @@ namespace MedizID.UI.Services.Generated.Models
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "appointmentId", n => { AppointmentId = n.GetGuidValue(); } },
+                { "clinicalSigns", n => { ClinicalSigns = n.GetStringValue(); } },
+                { "condomLastContact", n => { CondomLastContact = n.GetBoolValue(); } },
+                { "condomLastMonthContact", n => { CondomLastMonthContact = n.GetBoolValue(); } },
+                { "condomWithPartner", n => { CondomWithPartner = n.GetBoolValue(); } },
                 { "createdAt", n => { CreatedAt = n.GetDateTimeOffsetValue(); } },
                 { "diagnosis", n => { Diagnosis = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetGuidValue(); } },
+                { "laboratoryReferral", n => { LaboratoryReferral = n.GetBoolValue(); } },
+                { "laboratoryResults", n => { LaboratoryResults = n.GetStringValue(); } },
+                { "laboratoryTests", n => { LaboratoryTests = n.GetStringValue(); } },
+                { "lastSexualContactDaysAgo", n => { LastSexualContactDaysAgo = n.GetIntValue(); } },
+                { "motherName", n => { MotherName = n.GetStringValue(); } },
+                { "notes", n => { Notes = n.GetStringValue(); } },
+                { "otherAnamnesisNotes", n => { OtherAnamnesisNotes = n.GetStringValue(); } },
+                { "partner", n => { Partner = n.GetStringValue(); } },
+                { "pregnancyStatus", n => { PregnancyStatus = n.GetStringValue(); } },
+                { "referralStatus", n => { ReferralStatus = n.GetStringValue(); } },
                 { "riskGroup", n => { RiskGroup = n.GetStringValue(); } },
-                { "screening", n => { Screening = n.GetStringValue(); } },
+                { "sexPartnerCountLastMonth", n => { SexPartnerCountLastMonth = n.GetIntValue(); } },
                 { "treatment", n => { Treatment = n.GetStringValue(); } },
                 { "updatedAt", n => { UpdatedAt = n.GetDateTimeOffsetValue(); } },
+                { "vaginalDouching", n => { VaginalDouching = n.GetBoolValue(); } },
+                { "visitNumber", n => { VisitNumber = n.GetIntValue(); } },
+                { "visitReason", n => { VisitReason = n.GetStringValue(); } },
                 { "visitStatus", n => { VisitStatus = n.GetStringValue(); } },
             };
         }
@@ -97,13 +202,30 @@ namespace MedizID.UI.Services.Generated.Models
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteGuidValue("appointmentId", AppointmentId);
+            writer.WriteStringValue("clinicalSigns", ClinicalSigns);
+            writer.WriteBoolValue("condomLastContact", CondomLastContact);
+            writer.WriteBoolValue("condomLastMonthContact", CondomLastMonthContact);
+            writer.WriteBoolValue("condomWithPartner", CondomWithPartner);
             writer.WriteDateTimeOffsetValue("createdAt", CreatedAt);
             writer.WriteStringValue("diagnosis", Diagnosis);
             writer.WriteGuidValue("id", Id);
+            writer.WriteBoolValue("laboratoryReferral", LaboratoryReferral);
+            writer.WriteStringValue("laboratoryResults", LaboratoryResults);
+            writer.WriteStringValue("laboratoryTests", LaboratoryTests);
+            writer.WriteIntValue("lastSexualContactDaysAgo", LastSexualContactDaysAgo);
+            writer.WriteStringValue("motherName", MotherName);
+            writer.WriteStringValue("notes", Notes);
+            writer.WriteStringValue("otherAnamnesisNotes", OtherAnamnesisNotes);
+            writer.WriteStringValue("partner", Partner);
+            writer.WriteStringValue("pregnancyStatus", PregnancyStatus);
+            writer.WriteStringValue("referralStatus", ReferralStatus);
             writer.WriteStringValue("riskGroup", RiskGroup);
-            writer.WriteStringValue("screening", Screening);
+            writer.WriteIntValue("sexPartnerCountLastMonth", SexPartnerCountLastMonth);
             writer.WriteStringValue("treatment", Treatment);
             writer.WriteDateTimeOffsetValue("updatedAt", UpdatedAt);
+            writer.WriteBoolValue("vaginalDouching", VaginalDouching);
+            writer.WriteIntValue("visitNumber", VisitNumber);
+            writer.WriteStringValue("visitReason", VisitReason);
             writer.WriteStringValue("visitStatus", VisitStatus);
         }
     }

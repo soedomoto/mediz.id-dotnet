@@ -4,23 +4,403 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 @using MedizID.UI.Services.Generated.Models
+@using System.Reflection
 @inject ILocalStorageService LocalStorage
 @inject MedizIdApiClient ApiClient
 @inject AppointmentLayoutState LayoutState
 @inject INotificationService _notice
+@inject ILogger<AdolescentHealth> _logger
 @implements IAsyncDisposable
 
-<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Adolescent Health" : "MedizID")
-</PageTitle>
+<PageTitle>@(LayoutState.Appointment != null ? LayoutState.Appointment.PatientName + " - Adolescent Health" : "MedizID")</PageTitle>
+
+<div style="padding: 24px; background-color: white; border-radius: 8px;">
+    @if (LayoutState.Appointment != null)
+    {
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2>Adolescent Health Assessment (PKPR)</h2>
+            @if (isSaving)
+            {
+                <span style="color: #1890ff;">Saving...</span>
+            }
+        </div>
+
+        <div>
+            <!-- Demographic Information Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Demographic Information</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Citizenship</label>
+                        <Select TItemValue="string" TItem="OptionItem"
+                                DataSource="@citizenshipOptions"
+                                @bind-Value="form.Citizenship"
+                                LabelName="@nameof(OptionItem.Label)"
+                                ValueName="@nameof(OptionItem.Value)"
+                                Placeholder="- Select -"
+                                Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Residence</label>
+                        <Select TItemValue="string" TItem="OptionItem"
+                                DataSource="@residenceOptions"
+                                @bind-Value="form.Residence"
+                                LabelName="@nameof(OptionItem.Label)"
+                                ValueName="@nameof(OptionItem.Value)"
+                                Placeholder="- Select -"
+                                Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">School Name</label>
+                        <Input @bind-Value="form.SchoolName" Placeholder="School name" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Grade/Class</label>
+                        <Input @bind-Value="form.Grade" Placeholder="Grade" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Child Order</label>
+                        <Input @bind-Value="@childOrderStr" Type="InputType.Number" Placeholder="0" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Total Siblings</label>
+                        <Input @bind-Value="@totalSiblingsStr" Type="InputType.Number" Placeholder="0" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="margin-top: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Occupation</label>
+                    <Input @bind-Value="form.Occupation" Placeholder="Occupation" Style="width: 100%;" />
+                </div>
+            </div>
+
+            <!-- Parent Information Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Parent Information</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Father Education</label>
+                        <Select TItemValue="string" TItem="OptionItem"
+                                DataSource="@educationOptions"
+                                @bind-Value="form.FatherEducation"
+                                LabelName="@nameof(OptionItem.Label)"
+                                ValueName="@nameof(OptionItem.Value)"
+                                Placeholder="- Select -"
+                                Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Father Occupation</label>
+                        <Input @bind-Value="form.FatherOccupation" Placeholder="Occupation" Style="width: 100%;" />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Mother Education</label>
+                        <Select TItemValue="string" TItem="OptionItem"
+                                DataSource="@educationOptions"
+                                @bind-Value="form.MotherEducation"
+                                LabelName="@nameof(OptionItem.Label)"
+                                ValueName="@nameof(OptionItem.Value)"
+                                Placeholder="- Select -"
+                                Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Mother Occupation</label>
+                        <Input @bind-Value="form.MotherOccupation" Placeholder="Occupation" Style="width: 100%;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Information Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Status Information</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Marital Status</label>
+                        <RadioGroup TValue="int?" @bind-Value="form.MaritalStatus">
+                            <Radio TValue="int?" Value="1">Single</Radio>
+                            <Radio TValue="int?" Value="2">Married</Radio>
+                            <Radio TValue="int?" Value="3">Divorced</Radio>
+                            <Radio TValue="int?" Value="4">Other</Radio>
+                        </RadioGroup>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Parent Status</label>
+                        <RadioGroup TValue="int?" @bind-Value="form.ParentStatus">
+                            <Radio TValue="int?" Value="3">Married</Radio>
+                            <Radio TValue="int?" Value="4">Separated</Radio>
+                            <Radio TValue="int?" Value="1">Single Parent</Radio>
+                            <Radio TValue="int?" Value="2">Other</Radio>
+                        </RadioGroup>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Physical Measurements Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Physical Measurements</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Weight (kg)</label>
+                        <Input @bind-Value="@weightStr" Type="InputType.Number" Placeholder="Weight" Style="width: 100%;" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px;">Height (cm)</label>
+                        <Input @bind-Value="@heightStr" Type="InputType.Number" Placeholder="Height" Style="width: 100%;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Information Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Medical Information</h4>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Main Complaint</label>
+                    <TextArea @bind-Value="form.MainComplaint" Rows="2" Placeholder="Main complaint" Style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Medical History</label>
+                    <TextArea @bind-Value="form.MedicalHistory" Rows="2" Placeholder="Medical history" Style="width: 100%;" />
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 8px;">Diagnosis</label>
+                    <TextArea @bind-Value="form.Diagnosis" Rows="2" Placeholder="Diagnosis" Style="width: 100%;" />
+                </div>
+            </div>
+
+            <!-- Health Conditions Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Health Conditions & Issues</h4>
+                
+                @foreach (var condition in healthConditions)
+                {
+                    <div style="margin-bottom: 16px; padding: 12px; background: white; border-radius: 4px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                            <Checkbox Checked="condition.IsPresent" CheckedChanged="@((bool value) => { condition.IsPresent = value; StateHasChanged(); })" Style="margin-right: 12px;"></Checkbox>
+                            <label style="margin: 0;">@condition.Label</label>
+                        </div>
+                        @if (condition.IsPresent)
+                        {
+                            <TextArea @bind-Value="@condition.Notes" Rows="2" Placeholder="Please describe..." Style="width: 100%;" />
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Anamnesis Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">Anamnesis</h4>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Main Problem</label>
+                    <TextArea @bind-Value="form.MainProblem" Rows="3" Placeholder="Main problem" Style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Problem Background</label>
+                    <TextArea @bind-Value="form.ProblemBackground" Rows="3" Placeholder="Background" Style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Solution Alternatives</label>
+                    <TextArea @bind-Value="form.SolutionAlternatives" Rows="3" Placeholder="Alternatives" Style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Client Decision</label>
+                    <TextArea @bind-Value="form.ClientDecision" Rows="3" Placeholder="Decision" Style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Observations</label>
+                    <TextArea @bind-Value="form.Observations" Rows="3" Placeholder="Observations" Style="width: 100%;" />
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 8px;">Counselor Name</label>
+                    <Input @bind-Value="form.Counselor" Placeholder="Counselor name" Style="width: 100%;" />
+                </div>
+            </div>
+
+            <!-- HEEADSS Assessment Section -->
+            <div style="margin: 24px 0; padding: 16px; background: #f9f9f9; border-left: 4px solid #1890ff;">
+                <h4 style="margin-top: 0;">HEEADSS Assessment</h4>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Home</label>
+                    <TextArea @bind-Value="form.HomeAssessment" Rows="2" Placeholder="Home situation" Style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Education/Employment</label>
+                    <TextArea @bind-Value="form.EmploymentEducationAssessment" Rows="2" Placeholder="School/work" Style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Eating</label>
+                    <TextArea @bind-Value="form.EatingAssessment" Rows="2" Placeholder="Diet habits" Style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Activity</label>
+                    <TextArea @bind-Value="form.ActivityAssessment" Rows="2" Placeholder="Physical activity" Style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Drugs</label>
+                    <TextArea @bind-Value="form.DrugsAssessment" Rows="2" Placeholder="Substance use" Style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Sexuality</label>
+                    <TextArea @bind-Value="form.SexualityAssessment" Rows="2" Placeholder="Sexual health" Style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px;">Safety</label>
+                    <TextArea @bind-Value="form.SafetyAssessment" Rows="2" Placeholder="Safety concerns" Style="width: 100%;" />
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 8px;">Suicide/Depression</label>
+                    <TextArea @bind-Value="form.SuicideDepressionAssessment" Rows="2" Placeholder="Mental health concerns" Style="width: 100%;" />
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="margin: 24px 0; display: flex; gap: 12px;">
+                <Button Type="@ButtonType.Primary" OnClick="SaveAdolescentHealth" Loading="isSaving">Save</Button>
+                <Button OnClick="ResetForm">Reset</Button>
+                <Button Danger OnClick="PrintForm">Print</Button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 48px 0;">
+            <p>Loading appointment details...</p>
+        </div>
+    }
+</div>
 
 @code {
+#nullable enable
     [Parameter]
     public Guid AppointmentId { get; set; }
+
+    private bool isSaving = false;
+
+    private AdolescentHealthFormModel form = new();
+
+    // String helpers for number inputs
+    private string childOrderStr = "";
+    private string totalSiblingsStr = "";
+    private string weightStr = "";
+    private string heightStr = "";
+
+    // Options
+    private List<OptionItem> citizenshipOptions = new();
+    private List<OptionItem> residenceOptions = new();
+    private List<OptionItem> educationOptions = new();
+    
+    // Health Conditions
+    private List<HealthConditionItem> healthConditions = new();
 
     protected override async Task OnInitializedAsync()
     {
         LayoutState.OnAuthenticationChanged += OnAuthenticationChanged;
         LayoutState.ActiveTabKey = "adolescent-health";
+        
+        InitializeOptions();
+        InitializeHealthConditions();
+        
+        if (AppointmentId != Guid.Empty)
+        {
+            await LoadAdolescentHealthData();
+        }
+    }
+
+    private void InitializeOptions()
+    {
+        citizenshipOptions = new()
+        {
+            new() { Value = "INDONESIA", Label = "Indonesia" },
+            new() { Value = "ASING", Label = "Asing (Foreign)" }
+        };
+
+        residenceOptions = new()
+        {
+            new() { Value = "Rumah Orang Tua", Label = "Rumah Orang Tua (Parents' House)" },
+            new() { Value = "Rumah Sendiri", Label = "Rumah Sendiri (Own House)" },
+            new() { Value = "Rumah Saudara", Label = "Rumah Saudara (Relative's House)" },
+            new() { Value = "Kontrakan", Label = "Kontrakan (Rental)" },
+            new() { Value = "Asrama", Label = "Asrama (Dormitory)" },
+            new() { Value = "Lainnya", Label = "Lainnya (Other)" }
+        };
+
+        educationOptions = new()
+        {
+            new() { Value = "TIDAK/BELUM SEKOLAH", Label = "No School" },
+            new() { Value = "BELUM TAMAT SD/SEDERAJAT", Label = "Elementary (Incomplete)" },
+            new() { Value = "TAMAT SD/SEDERAJAT", Label = "Elementary (Complete)" },
+            new() { Value = "SLTP/SEDERAJAT", Label = "Junior High" },
+            new() { Value = "SLTA/SEDERAJAT", Label = "High School" },
+            new() { Value = "DIPLOMA I", Label = "Diploma I" },
+            new() { Value = "DIPLOMA II", Label = "Diploma II" },
+            new() { Value = "AKADEMI/DIPLOMA III/SARJANA MUDA", Label = "Diploma III/Associate" },
+            new() { Value = "DIPLOMA IV/STRATA I", Label = "Bachelor's" },
+            new() { Value = "STRATA II", Label = "Master's" },
+            new() { Value = "STRATA III", Label = "PhD" }
+        };
+    }
+
+    private void InitializeHealthConditions()
+    {
+        healthConditions = new()
+        {
+            new() { Field = "MenstrualDisorder", Label = "1. Menstrual Disorder" },
+            new() { Field = "PremaritalSex", Label = "2. Premarital Sex" },
+            new() { Field = "Pregnancy", Label = "3. Adolescent Pregnancy" },
+            new() { Field = "DesiredPregnancy", Label = "   a. Desired Pregnancy" },
+            new() { Field = "UnwantedPregnancy", Label = "   b. Unwanted Pregnancy" },
+            new() { Field = "TeenageDelivery", Label = "4. Teenage Delivery" },
+            new() { Field = "Abortion", Label = "5. Abortion" },
+            new() { Field = "NutritionDisorder", Label = "6. Nutrition Disorder" },
+            new() { Field = "Anemia", Label = "   a. Anemia" },
+            new() { Field = "ChronicEnergyDeficiency", Label = "   b. Chronic Energy Deficiency (KEK)" },
+            new() { Field = "Obesity", Label = "   c. Obesity" },
+            new() { Field = "DrugAbuse", Label = "7. Drug/Substance Abuse" },
+            new() { Field = "Smoking", Label = "   a. Smoking" },
+            new() { Field = "AlcoholUse", Label = "   b. Alcohol Use" },
+            new() { Field = "OtherSubstanceUse", Label = "   c. Other Substance Use" },
+            new() { Field = "SexuallyTransmittedInfection", Label = "8. Sexually Transmitted Infection" },
+            new() { Field = "ReproductiveInfection", Label = "9. Reproductive Tract Infection" },
+            new() { Field = "HIV", Label = "10. HIV" },
+            new() { Field = "AIDS", Label = "11. AIDS" },
+            new() { Field = "PsychologicalIssues", Label = "12. Psychological/Mental Issues" },
+            new() { Field = "GadgetAddiction", Label = "13. Gadget Addiction" },
+            new() { Field = "SexualOrientation", Label = "14. Sexual Orientation Issues" },
+            new() { Field = "MentalDisability", Label = "15. Mental Disability" },
+            new() { Field = "EarlyMarriage", Label = "16. Early Marriage" },
+            new() { Field = "ChildAbuse", Label = "17. Child Abuse/Violence" },
+            new() { Field = "PhysicalDisability", Label = "18. Physical Disability" },
+            new() { Field = "LearningDifficulty", Label = "19. Learning Difficulty" },
+            new() { Field = "OtherProblems", Label = "20. Other Problems" }
+        };
     }
 
     private async void OnAuthenticationChanged(bool isAuthenticated)
@@ -28,8 +408,412 @@
         if (isAuthenticated && AppointmentId != Guid.Empty)
         {
             await LayoutState.FetchAppointmentAsync(ApiClient, AppointmentId);
+            await LoadAdolescentHealthData();
             StateHasChanged();
         }
+    }
+
+    private async Task LoadAdolescentHealthData()
+    {
+        try
+        {
+            var response = await ApiClient.Api.V1.AdolescentHealth.Appointments[AppointmentId].GetAsync();
+            
+            if (response != null)
+            {
+                form.Id = response.Id ?? Guid.Empty;
+                form.AppointmentId = response.AppointmentId ?? Guid.Empty;
+                form.Citizenship = response.Citizenship;
+                form.Residence = response.Residence;
+                form.SchoolName = response.SchoolName;
+                form.Grade = response.Grade;
+                form.ChildOrder = response.ChildOrder;
+                form.TotalSiblings = response.TotalSiblings;
+                form.Occupation = response.Occupation;
+                form.FatherEducation = response.FatherEducation;
+                form.FatherOccupation = response.FatherOccupation;
+                form.MotherEducation = response.MotherEducation;
+                form.MotherOccupation = response.MotherOccupation;
+                form.MaritalStatus = response.MaritalStatus;
+                form.ParentStatus = response.ParentStatus;
+                form.Weight = response.Weight.HasValue ? (decimal)response.Weight.Value : null;
+                form.Height = response.Height.HasValue ? (decimal)response.Height.Value : null;
+                form.MainComplaint = response.MainComplaint;
+                form.MedicalHistory = response.MedicalHistory;
+                form.Diagnosis = response.Diagnosis;
+                form.MainProblem = response.MainProblem;
+                form.ProblemBackground = response.ProblemBackground;
+                form.SolutionAlternatives = response.SolutionAlternatives;
+                form.ClientDecision = response.ClientDecision;
+                form.Observations = response.Observations;
+                form.Counselor = response.Counselor;
+                form.HomeAssessment = response.HomeAssessment;
+                form.EmploymentEducationAssessment = response.EmploymentEducationAssessment;
+                form.EatingAssessment = response.EatingAssessment;
+                form.ActivityAssessment = response.ActivityAssessment;
+                form.DrugsAssessment = response.DrugsAssessment;
+                form.SexualityAssessment = response.SexualityAssessment;
+                form.SafetyAssessment = response.SafetyAssessment;
+                form.SuicideDepressionAssessment = response.SuicideDepressionAssessment;
+
+                // Load health conditions
+                LoadHealthConditionValues(response);
+
+                childOrderStr = form.ChildOrder?.ToString() ?? "";
+                totalSiblingsStr = form.TotalSiblings?.ToString() ?? "";
+                weightStr = form.Weight?.ToString() ?? "";
+                heightStr = form.Height?.ToString() ?? "";
+            }
+        }
+        catch (Exception)
+        {
+            _logger.LogInformation($"No existing adolescent health record found for appointment {AppointmentId}");
+        }
+    }
+
+    private void LoadHealthConditionValues(AdolescentHealthResponse response)
+    {
+        foreach (var condition in healthConditions)
+        {
+            switch (condition.Field)
+            {
+                case "MenstrualDisorder":
+                    condition.IsPresent = response.MenstrualDisorder ?? false;
+                    condition.Notes = response.MenstrualDisorderNotes;
+                    break;
+                case "PremaritalSex":
+                    condition.IsPresent = response.PremaritalSex ?? false;
+                    condition.Notes = response.PremaritalSexNotes;
+                    break;
+                case "Pregnancy":
+                    condition.IsPresent = response.Pregnancy ?? false;
+                    condition.Notes = response.PregnancyNotes;
+                    break;
+                case "DesiredPregnancy":
+                    condition.IsPresent = response.DesiredPregnancy ?? false;
+                    condition.Notes = response.DesiredPregnancyNotes;
+                    break;
+                case "UnwantedPregnancy":
+                    condition.IsPresent = response.UnwantedPregnancy ?? false;
+                    condition.Notes = response.UnwantedPregnancyNotes;
+                    break;
+                case "TeenageDelivery":
+                    condition.IsPresent = response.TeenageDelivery ?? false;
+                    condition.Notes = response.TeenageDeliveryNotes;
+                    break;
+                case "Abortion":
+                    condition.IsPresent = response.Abortion ?? false;
+                    condition.Notes = response.AbortionNotes;
+                    break;
+                case "NutritionDisorder":
+                    condition.IsPresent = response.NutritionDisorder ?? false;
+                    condition.Notes = response.NutritionDisorderNotes;
+                    break;
+                case "Anemia":
+                    condition.IsPresent = response.Anemia ?? false;
+                    condition.Notes = response.AnemiaNotes;
+                    break;
+                case "ChronicEnergyDeficiency":
+                    condition.IsPresent = response.ChronicEnergyDeficiency ?? false;
+                    condition.Notes = response.ChronicEnergyDeficiencyNotes;
+                    break;
+                case "Obesity":
+                    condition.IsPresent = response.Obesity ?? false;
+                    condition.Notes = response.ObesityNotes;
+                    break;
+                case "DrugAbuse":
+                    condition.IsPresent = response.DrugAbuse ?? false;
+                    condition.Notes = response.DrugAbuseNotes;
+                    break;
+                case "Smoking":
+                    condition.IsPresent = response.Smoking ?? false;
+                    condition.Notes = response.SmokingNotes;
+                    break;
+                case "AlcoholUse":
+                    condition.IsPresent = response.AlcoholUse ?? false;
+                    condition.Notes = response.AlcoholUseNotes;
+                    break;
+                case "OtherSubstanceUse":
+                    condition.IsPresent = response.OtherSubstanceUse ?? false;
+                    condition.Notes = response.OtherSubstanceUseNotes;
+                    break;
+                case "SexuallyTransmittedInfection":
+                    condition.IsPresent = response.SexuallyTransmittedInfection ?? false;
+                    condition.Notes = response.SexuallyTransmittedInfectionNotes;
+                    break;
+                case "ReproductiveInfection":
+                    condition.IsPresent = response.ReproductiveInfection ?? false;
+                    condition.Notes = response.ReproductiveInfectionNotes;
+                    break;
+                case "HIV":
+                    // HIV field not available in response
+                    break;
+                case "AIDS":
+                    // AIDS field not available in response
+                    break;
+                case "PsychologicalIssues":
+                    condition.IsPresent = response.PsychologicalIssues ?? false;
+                    condition.Notes = response.PsychologicalIssuesNotes;
+                    break;
+                case "GadgetAddiction":
+                    condition.IsPresent = response.GadgetAddiction ?? false;
+                    condition.Notes = response.GadgetAddictionNotes;
+                    break;
+                case "SexualOrientation":
+                    condition.IsPresent = response.SexualOrientation ?? false;
+                    condition.Notes = response.SexualOrientationNotes;
+                    break;
+                case "MentalDisability":
+                    condition.IsPresent = response.MentalDisability ?? false;
+                    condition.Notes = response.MentalDisabilityNotes;
+                    break;
+                case "EarlyMarriage":
+                    condition.IsPresent = response.EarlyMarriage ?? false;
+                    condition.Notes = response.EarlyMarriageNotes;
+                    break;
+                case "ChildAbuse":
+                    condition.IsPresent = response.ChildAbuse ?? false;
+                    condition.Notes = response.ChildAbuseNotes;
+                    break;
+                case "PhysicalDisability":
+                    condition.IsPresent = response.PhysicalDisability ?? false;
+                    condition.Notes = response.PhysicalDisabilityNotes;
+                    break;
+                case "LearningDifficulty":
+                    condition.IsPresent = response.LearningDifficulty ?? false;
+                    condition.Notes = response.LearningDifficultyNotes;
+                    break;
+                case "OtherProblems":
+                    condition.IsPresent = response.OtherProblems ?? false;
+                    condition.Notes = response.OtherProblemsNotes;
+                    break;
+            }
+        }
+    }
+
+    private async Task SaveAdolescentHealth()
+    {
+        try
+        {
+            isSaving = true;
+
+            int.TryParse(childOrderStr, out int childOrder);
+            int.TryParse(totalSiblingsStr, out int totalSiblings);
+            decimal.TryParse(weightStr, out decimal weight);
+            decimal.TryParse(heightStr, out decimal height);
+
+            var request = new CreateAdolescentHealthRequest
+            {
+                AppointmentId = AppointmentId,
+                Citizenship = form.Citizenship,
+                Residence = form.Residence,
+                SchoolName = form.SchoolName,
+                Grade = form.Grade,
+                ChildOrder = childOrder > 0 ? childOrder : null,
+                TotalSiblings = totalSiblings > 0 ? totalSiblings : null,
+                Occupation = form.Occupation,
+                FatherEducation = form.FatherEducation,
+                FatherOccupation = form.FatherOccupation,
+                MotherEducation = form.MotherEducation,
+                MotherOccupation = form.MotherOccupation,
+                MaritalStatus = form.MaritalStatus,
+                ParentStatus = form.ParentStatus,
+                Weight = weight > 0 ? (double)weight : null,
+                Height = height > 0 ? (double)height : null,
+                MainComplaint = form.MainComplaint,
+                MedicalHistory = form.MedicalHistory,
+                Diagnosis = form.Diagnosis,
+                MainProblem = form.MainProblem,
+                ProblemBackground = form.ProblemBackground,
+                SolutionAlternatives = form.SolutionAlternatives,
+                ClientDecision = form.ClientDecision,
+                Observations = form.Observations,
+                Counselor = form.Counselor,
+                HomeAssessment = form.HomeAssessment,
+                EmploymentEducationAssessment = form.EmploymentEducationAssessment,
+                EatingAssessment = form.EatingAssessment,
+                ActivityAssessment = form.ActivityAssessment,
+                DrugsAssessment = form.DrugsAssessment,
+                SexualityAssessment = form.SexualityAssessment,
+                SafetyAssessment = form.SafetyAssessment,
+                SuicideDepressionAssessment = form.SuicideDepressionAssessment
+            };
+
+            // Add health conditions
+            foreach (var condition in healthConditions)
+            {
+                switch (condition.Field)
+                {
+                    case "MenstrualDisorder":
+                        request.MenstrualDisorder = condition.IsPresent;
+                        request.MenstrualDisorderNotes = condition.Notes;
+                        break;
+                    case "PremaritalSex":
+                        request.PremaritalSex = condition.IsPresent;
+                        request.PremaritalSexNotes = condition.Notes;
+                        break;
+                    case "Pregnancy":
+                        request.Pregnancy = condition.IsPresent;
+                        request.PregnancyNotes = condition.Notes;
+                        break;
+                    case "DesiredPregnancy":
+                        request.DesiredPregnancy = condition.IsPresent;
+                        request.DesiredPregnancyNotes = condition.Notes;
+                        break;
+                    case "UnwantedPregnancy":
+                        request.UnwantedPregnancy = condition.IsPresent;
+                        request.UnwantedPregnancyNotes = condition.Notes;
+                        break;
+                    case "TeenageDelivery":
+                        request.TeenageDelivery = condition.IsPresent;
+                        request.TeenageDeliveryNotes = condition.Notes;
+                        break;
+                    case "Abortion":
+                        request.Abortion = condition.IsPresent;
+                        request.AbortionNotes = condition.Notes;
+                        break;
+                    case "NutritionDisorder":
+                        request.NutritionDisorder = condition.IsPresent;
+                        request.NutritionDisorderNotes = condition.Notes;
+                        break;
+                    case "Anemia":
+                        request.Anemia = condition.IsPresent;
+                        request.AnemiaNotes = condition.Notes;
+                        break;
+                    case "ChronicEnergyDeficiency":
+                        request.ChronicEnergyDeficiency = condition.IsPresent;
+                        request.ChronicEnergyDeficiencyNotes = condition.Notes;
+                        break;
+                    case "Obesity":
+                        request.Obesity = condition.IsPresent;
+                        request.ObesityNotes = condition.Notes;
+                        break;
+                    case "DrugAbuse":
+                        request.DrugAbuse = condition.IsPresent;
+                        request.DrugAbuseNotes = condition.Notes;
+                        break;
+                    case "Smoking":
+                        request.Smoking = condition.IsPresent;
+                        request.SmokingNotes = condition.Notes;
+                        break;
+                    case "AlcoholUse":
+                        request.AlcoholUse = condition.IsPresent;
+                        request.AlcoholUseNotes = condition.Notes;
+                        break;
+                    case "OtherSubstanceUse":
+                        request.OtherSubstanceUse = condition.IsPresent;
+                        request.OtherSubstanceUseNotes = condition.Notes;
+                        break;
+                    case "SexuallyTransmittedInfection":
+                        request.SexuallyTransmittedInfection = condition.IsPresent;
+                        request.SexuallyTransmittedInfectionNotes = condition.Notes;
+                        break;
+                    case "ReproductiveInfection":
+                        request.ReproductiveInfection = condition.IsPresent;
+                        request.ReproductiveInfectionNotes = condition.Notes;
+                        break;
+                    case "HIV":
+                        // HIV field not available in request
+                        break;
+                    case "AIDS":
+                        // AIDS field not available in request
+                        break;
+                    case "PsychologicalIssues":
+                        request.PsychologicalIssues = condition.IsPresent;
+                        request.PsychologicalIssuesNotes = condition.Notes;
+                        break;
+                    case "GadgetAddiction":
+                        request.GadgetAddiction = condition.IsPresent;
+                        request.GadgetAddictionNotes = condition.Notes;
+                        break;
+                    case "SexualOrientation":
+                        request.SexualOrientation = condition.IsPresent;
+                        request.SexualOrientationNotes = condition.Notes;
+                        break;
+                    case "MentalDisability":
+                        request.MentalDisability = condition.IsPresent;
+                        request.MentalDisabilityNotes = condition.Notes;
+                        break;
+                    case "EarlyMarriage":
+                        request.EarlyMarriage = condition.IsPresent;
+                        request.EarlyMarriageNotes = condition.Notes;
+                        break;
+                    case "ChildAbuse":
+                        request.ChildAbuse = condition.IsPresent;
+                        request.ChildAbuseNotes = condition.Notes;
+                        break;
+                    case "PhysicalDisability":
+                        request.PhysicalDisability = condition.IsPresent;
+                        request.PhysicalDisabilityNotes = condition.Notes;
+                        break;
+                    case "LearningDifficulty":
+                        request.LearningDifficulty = condition.IsPresent;
+                        request.LearningDifficultyNotes = condition.Notes;
+                        break;
+                    case "OtherProblems":
+                        request.OtherProblems = condition.IsPresent;
+                        request.OtherProblemsNotes = condition.Notes;
+                        break;
+                }
+            }
+
+            if (form.Id != Guid.Empty)
+            {
+                var updateRequest = new UpdateAdolescentHealthRequest();
+                // Copy properties from request to update request
+                var requestType = typeof(CreateAdolescentHealthRequest);
+                var updateType = typeof(UpdateAdolescentHealthRequest);
+                foreach (var prop in requestType.GetProperties())
+                {
+                    var updateProp = updateType.GetProperty(prop.Name);
+                    if (updateProp != null && updateProp.CanWrite)
+                    {
+                        updateProp.SetValue(updateRequest, prop.GetValue(request));
+                    }
+                }
+                await ApiClient.Api.V1.AdolescentHealth.Appointments[AppointmentId].PutAsync(updateRequest);
+            }
+            else
+            {
+                await ApiClient.Api.V1.AdolescentHealth.Appointments[AppointmentId].PostAsync(request);
+            }
+
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Adolescent health data saved successfully",
+                NotificationType = NotificationType.Success
+            });
+        }
+        catch (Exception ex)
+        {
+            await _notice.Open(new NotificationConfig()
+            {
+                Message = "Error saving adolescent health data",
+                NotificationType = NotificationType.Error
+            });
+            _logger.LogError(ex, "Error saving adolescent health");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void PrintForm()
+    {
+        // TODO: Implement print
+    }
+
+    private void ResetForm()
+    {
+        form = new AdolescentHealthFormModel();
+        foreach (var condition in healthConditions)
+        {
+            condition.IsPresent = false;
+            condition.Notes = "";
+        }
+        childOrderStr = totalSiblingsStr = weightStr = heightStr = "";
+        StateHasChanged();
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
@@ -38,4 +822,56 @@
         await Task.CompletedTask;
     }
 
+    // Models
+    private class AdolescentHealthFormModel
+    {
+        public Guid Id { get; set; }
+        public Guid AppointmentId { get; set; }
+        public string? Citizenship { get; set; }
+        public string? Residence { get; set; }
+        public string? SchoolName { get; set; }
+        public string? Grade { get; set; }
+        public int? ChildOrder { get; set; }
+        public int? TotalSiblings { get; set; }
+        public string? Occupation { get; set; }
+        public string? FatherEducation { get; set; }
+        public string? FatherOccupation { get; set; }
+        public string? MotherEducation { get; set; }
+        public string? MotherOccupation { get; set; }
+        public int? MaritalStatus { get; set; }
+        public int? ParentStatus { get; set; }
+        public decimal? Weight { get; set; }
+        public decimal? Height { get; set; }
+        public string? MainComplaint { get; set; }
+        public string? MedicalHistory { get; set; }
+        public string? Diagnosis { get; set; }
+        public string? MainProblem { get; set; }
+        public string? ProblemBackground { get; set; }
+        public string? SolutionAlternatives { get; set; }
+        public string? ClientDecision { get; set; }
+        public string? Observations { get; set; }
+        public string? Counselor { get; set; }
+        public string? HomeAssessment { get; set; }
+        public string? EmploymentEducationAssessment { get; set; }
+        public string? EatingAssessment { get; set; }
+        public string? ActivityAssessment { get; set; }
+        public string? DrugsAssessment { get; set; }
+        public string? SexualityAssessment { get; set; }
+        public string? SafetyAssessment { get; set; }
+        public string? SuicideDepressionAssessment { get; set; }
+    }
+
+    private class HealthConditionItem
+    {
+        public string Field { get; set; } = string.Empty;
+        public string Label { get; set; } = string.Empty;
+        public bool IsPresent { get; set; }
+        public string? Notes { get; set; }
+    }
+
+    private class OptionItem
+    {
+        public string Value { get; set; } = string.Empty;
+        public string Label { get; set; } = string.Empty;
+    }
 }

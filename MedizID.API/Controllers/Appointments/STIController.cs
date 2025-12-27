@@ -25,6 +25,42 @@ public class STIController : ControllerBase
     }
 
     /// <summary>
+    /// Get STI record by appointment
+    /// </summary>
+    [HttpGet("appointment/{appointmentId}")]
+    [ProducesResponseType(typeof(STIResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetSTIByAppointment(Guid appointmentId)
+    {
+        try
+        {
+            var sti = await _context.STIs
+                .FirstOrDefaultAsync(s => s.AppointmentId == appointmentId);
+
+            if (sti == null)
+            {
+                // Return empty record for new appointments
+                return Ok(new STIResponse
+                {
+                    AppointmentId = appointmentId,
+                    Id = Guid.Empty
+                });
+            }
+
+            return Ok(MapToResponse(sti));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error fetching STI record for appointment {appointmentId}");
+            return StatusCode(500, new ErrorResponse
+            {
+                ErrorCode = "INTERNAL_SERVER_ERROR",
+                Message = "An error occurred while fetching STI record"
+            });
+        }
+    }
+
+    /// <summary>
     /// Create STI record
     /// </summary>
     [HttpPost]
@@ -34,10 +70,10 @@ public class STIController : ControllerBase
     {
         try
         {
-            var medicalRecord = await _context.Appointments
+            var appointment = await _context.Appointments
                 .FirstOrDefaultAsync(m => m.Id == request.AppointmentId);
 
-            if (medicalRecord == null)
+            if (appointment == null)
             {
                 throw new NotFoundException($"Appointment with ID {request.AppointmentId} not found");
             }
@@ -46,11 +82,28 @@ public class STIController : ControllerBase
             {
                 Id = Guid.NewGuid(),
                 AppointmentId = request.AppointmentId,
-                VisitStatus = request.VisitStatus != null ? Enum.Parse<STIVisitStatusEnum>(request.VisitStatus) : STIVisitStatusEnum.DatangSendiri,
-                RiskGroup = request.RiskGroup != null ? Enum.Parse<STIRiskGroupEnum>(request.RiskGroup) : null,
-                Symptoms = request.Screening,
-                DiagnosisSTI = request.Diagnosis,
+                MotherName = request.MotherName,
+                VisitStatus = !string.IsNullOrEmpty(request.VisitStatus) ? Enum.Parse<STIVisitStatusEnum>(request.VisitStatus) : null,
+                ReferralStatus = request.ReferralStatus,
+                RiskGroup = !string.IsNullOrEmpty(request.RiskGroup) ? Enum.Parse<STIRiskGroupEnum>(request.RiskGroup) : null,
+                VisitNumber = request.VisitNumber,
+                VisitReason = !string.IsNullOrEmpty(request.VisitReason) ? Enum.Parse<STIVisitReasonEnum>(request.VisitReason) : null,
+                PregnancyStatus = !string.IsNullOrEmpty(request.PregnancyStatus) ? Enum.Parse<STIPregnancyStatusEnum>(request.PregnancyStatus) : null,
+                LastSexualContactDaysAgo = request.LastSexualContactDaysAgo,
+                CondomLastContact = request.CondomLastContact,
+                SexPartnerCountLastMonth = request.SexPartnerCountLastMonth,
+                CondomLastMonthContact = request.CondomLastMonthContact,
+                CondomWithPartner = request.CondomWithPartner,
+                VaginalDouching = request.VaginalDouching,
+                OtherAnamnesisNotes = request.OtherAnamnesisNotes,
+                ClinicalSigns = request.ClinicalSigns,
+                Diagnosis = request.Diagnosis,
+                LaboratoryReferral = request.LaboratoryReferral,
+                LaboratoryTests = request.LaboratoryTests,
+                LaboratoryResults = request.LaboratoryResults,
                 Treatment = request.Treatment,
+                Partner = request.Partner,
+                Notes = request.Notes,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -59,19 +112,7 @@ public class STIController : ControllerBase
 
             _logger.LogInformation($"STI record created: {sti.Id}");
 
-            var response = new STIResponse
-            {
-                Id = sti.Id,
-                AppointmentId = sti.AppointmentId,
-                VisitStatus = sti.VisitStatus.ToString(),
-                RiskGroup = sti.RiskGroup?.ToString() ?? "",
-                Screening = sti.Symptoms,
-                Diagnosis = sti.DiagnosisSTI,
-                Treatment = sti.Treatment,
-                CreatedAt = sti.CreatedAt
-            };
-
-            return CreatedAtAction(nameof(GetSTIRecord), new { stiId = sti.Id }, response);
+            return CreatedAtAction(nameof(GetSTIRecord), new { stiId = sti.Id }, MapToResponse(sti));
         }
         catch (NotFoundException ex)
         {
@@ -93,56 +134,6 @@ public class STIController : ControllerBase
     }
 
     /// <summary>
-    /// Get all STI records with pagination
-    /// </summary>
-    [HttpGet]
-    [ProducesResponseType(typeof(PagedResult<STIResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetSTIRecords([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-    {
-        try
-        {
-            if (page < 1) page = 1;
-            if (pageSize < 1 || pageSize > 100) pageSize = 10;
-
-            var query = _context.STIs.AsQueryable();
-            var total = await query.CountAsync();
-
-            var stiRecords = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(s => new STIResponse
-                {
-                    Id = s.Id,
-                    AppointmentId = s.AppointmentId,
-                    VisitStatus = s.VisitStatus.ToString(),
-                    RiskGroup = s.RiskGroup != null ? s.RiskGroup.ToString() : "",
-                    Screening = s.Symptoms,
-                    Diagnosis = s.DiagnosisSTI,
-                    Treatment = s.Treatment,
-                    CreatedAt = s.CreatedAt
-                })
-                .ToListAsync();
-
-            return Ok(new PagedResult<STIResponse>
-            {
-                Items = stiRecords,
-                Total = total,
-                Page = page,
-                PageSize = pageSize
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching STI records");
-            return StatusCode(500, new ErrorResponse
-            {
-                ErrorCode = "INTERNAL_SERVER_ERROR",
-                Message = "An error occurred while fetching STI records"
-            });
-        }
-    }
-
-    /// <summary>
     /// Get STI record by ID
     /// </summary>
     [HttpGet("{stiId}")]
@@ -159,19 +150,7 @@ public class STIController : ControllerBase
                 throw new NotFoundException($"STI record with ID {stiId} not found");
             }
 
-            var response = new STIResponse
-            {
-                Id = sti.Id,
-                AppointmentId = sti.AppointmentId,
-                VisitStatus = sti.VisitStatus.ToString(),
-                RiskGroup = sti.RiskGroup?.ToString() ?? "",
-                Screening = sti.Symptoms,
-                Diagnosis = sti.DiagnosisSTI,
-                Treatment = sti.Treatment,
-                CreatedAt = sti.CreatedAt
-            };
-
-            return Ok(response);
+            return Ok(MapToResponse(sti));
         }
         catch (NotFoundException ex)
         {
@@ -184,68 +163,6 @@ public class STIController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Error fetching STI record {stiId}");
-            return StatusCode(500, new ErrorResponse
-            {
-                ErrorCode = "INTERNAL_SERVER_ERROR",
-                Message = "An error occurred while fetching STI record"
-            });
-        }
-    }
-
-    /// <summary>
-    /// Get STI record by appointment
-    /// </summary>
-    [HttpGet("appointment/{appointmentId}")]
-    [ProducesResponseType(typeof(STIResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetSTIByAppointment(Guid appointmentId)
-    {
-        try
-        {
-            var appointment = await _context.Appointments
-                .Include(a => a.Anamnesis)
-                .FirstOrDefaultAsync(a => a.Id == appointmentId);
-
-            if (appointment == null)
-            {
-                throw new NotFoundException($"Appointment with ID {appointmentId} not found");
-            }
-
-            var medicalRecordIds = appointment.Anamnesis.Select(m => m.Id).ToList();
-            var sti = await _context.STIs
-                .Where(s => medicalRecordIds.Contains(s.AppointmentId))
-                .FirstOrDefaultAsync();
-
-            if (sti == null)
-            {
-                throw new NotFoundException("No STI record found for this appointment");
-            }
-
-            var response = new STIResponse
-            {
-                Id = sti.Id,
-                AppointmentId = sti.AppointmentId,
-                VisitStatus = sti.VisitStatus.ToString(),
-                RiskGroup = sti.RiskGroup?.ToString() ?? "",
-                Screening = sti.Symptoms,
-                Diagnosis = sti.DiagnosisSTI,
-                Treatment = sti.Treatment,
-                CreatedAt = sti.CreatedAt
-            };
-
-            return Ok(response);
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new ErrorResponse
-            {
-                ErrorCode = ex.ErrorCode,
-                Message = ex.Message
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error fetching STI record for appointment {appointmentId}");
             return StatusCode(500, new ErrorResponse
             {
                 ErrorCode = "INTERNAL_SERVER_ERROR",
@@ -271,39 +188,46 @@ public class STIController : ControllerBase
                 throw new NotFoundException($"STI record with ID {stiId} not found");
             }
 
-            if (!string.IsNullOrEmpty(request.VisitStatus))
-                sti.VisitStatus = Enum.Parse<STIVisitStatusEnum>(request.VisitStatus);
+            // Update Data Kunjungan
+            if (request.MotherName != null) sti.MotherName = request.MotherName;
+            if (!string.IsNullOrEmpty(request.VisitStatus)) sti.VisitStatus = Enum.Parse<STIVisitStatusEnum>(request.VisitStatus);
+            if (request.ReferralStatus != null) sti.ReferralStatus = request.ReferralStatus;
+            if (!string.IsNullOrEmpty(request.RiskGroup)) sti.RiskGroup = Enum.Parse<STIRiskGroupEnum>(request.RiskGroup);
+            if (request.VisitNumber.HasValue) sti.VisitNumber = request.VisitNumber;
+            if (!string.IsNullOrEmpty(request.VisitReason)) sti.VisitReason = Enum.Parse<STIVisitReasonEnum>(request.VisitReason);
 
-            if (!string.IsNullOrEmpty(request.RiskGroup))
-                sti.RiskGroup = Enum.Parse<STIRiskGroupEnum>(request.RiskGroup);
+            // Update Anamnesa
+            if (!string.IsNullOrEmpty(request.PregnancyStatus)) sti.PregnancyStatus = Enum.Parse<STIPregnancyStatusEnum>(request.PregnancyStatus);
+            if (request.LastSexualContactDaysAgo.HasValue) sti.LastSexualContactDaysAgo = request.LastSexualContactDaysAgo;
+            if (request.CondomLastContact.HasValue) sti.CondomLastContact = request.CondomLastContact;
+            if (request.SexPartnerCountLastMonth.HasValue) sti.SexPartnerCountLastMonth = request.SexPartnerCountLastMonth;
+            if (request.CondomLastMonthContact.HasValue) sti.CondomLastMonthContact = request.CondomLastMonthContact;
+            if (request.CondomWithPartner.HasValue) sti.CondomWithPartner = request.CondomWithPartner;
+            if (request.VaginalDouching.HasValue) sti.VaginalDouching = request.VaginalDouching;
+            if (request.OtherAnamnesisNotes != null) sti.OtherAnamnesisNotes = request.OtherAnamnesisNotes;
 
-            if (!string.IsNullOrEmpty(request.Screening))
-                sti.Symptoms = request.Screening;
+            // Update Pemeriksaan Fisik & Diagnosis
+            if (request.ClinicalSigns != null) sti.ClinicalSigns = request.ClinicalSigns;
+            if (request.Diagnosis != null) sti.Diagnosis = request.Diagnosis;
 
-            if (!string.IsNullOrEmpty(request.Diagnosis))
-                sti.DiagnosisSTI = request.Diagnosis;
+            // Update Laboratorium
+            if (request.LaboratoryReferral.HasValue) sti.LaboratoryReferral = request.LaboratoryReferral;
+            if (request.LaboratoryTests != null) sti.LaboratoryTests = request.LaboratoryTests;
+            if (request.LaboratoryResults != null) sti.LaboratoryResults = request.LaboratoryResults;
 
-            if (!string.IsNullOrEmpty(request.Treatment))
-                sti.Treatment = request.Treatment;
+            // Update Treatment & Follow-up
+            if (request.Treatment != null) sti.Treatment = request.Treatment;
+            if (request.Partner != null) sti.Partner = request.Partner;
+            if (request.Notes != null) sti.Notes = request.Notes;
+
+            sti.UpdatedAt = DateTime.UtcNow;
 
             _context.STIs.Update(sti);
             await _context.SaveChangesAsync();
 
             _logger.LogInformation($"STI record updated: {sti.Id}");
 
-            var response = new STIResponse
-            {
-                Id = sti.Id,
-                AppointmentId = sti.AppointmentId,
-                VisitStatus = sti.VisitStatus.ToString(),
-                RiskGroup = sti.RiskGroup?.ToString() ?? "",
-                Screening = sti.Symptoms,
-                Diagnosis = sti.DiagnosisSTI,
-                Treatment = sti.Treatment,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            return Ok(response);
+            return Ok(MapToResponse(sti));
         }
         catch (NotFoundException ex)
         {
@@ -366,4 +290,38 @@ public class STIController : ControllerBase
             });
         }
     }
+
+    private STIResponse MapToResponse(STI sti)
+    {
+        return new STIResponse
+        {
+            Id = sti.Id,
+            AppointmentId = sti.AppointmentId,
+            MotherName = sti.MotherName,
+            VisitStatus = sti.VisitStatus?.ToString(),
+            ReferralStatus = sti.ReferralStatus,
+            RiskGroup = sti.RiskGroup?.ToString(),
+            VisitNumber = sti.VisitNumber,
+            VisitReason = sti.VisitReason?.ToString(),
+            PregnancyStatus = sti.PregnancyStatus?.ToString(),
+            LastSexualContactDaysAgo = sti.LastSexualContactDaysAgo,
+            CondomLastContact = sti.CondomLastContact,
+            SexPartnerCountLastMonth = sti.SexPartnerCountLastMonth,
+            CondomLastMonthContact = sti.CondomLastMonthContact,
+            CondomWithPartner = sti.CondomWithPartner,
+            VaginalDouching = sti.VaginalDouching,
+            OtherAnamnesisNotes = sti.OtherAnamnesisNotes,
+            ClinicalSigns = sti.ClinicalSigns,
+            Diagnosis = sti.Diagnosis,
+            LaboratoryReferral = sti.LaboratoryReferral,
+            LaboratoryTests = sti.LaboratoryTests,
+            LaboratoryResults = sti.LaboratoryResults,
+            Treatment = sti.Treatment,
+            Partner = sti.Partner,
+            Notes = sti.Notes,
+            CreatedAt = sti.CreatedAt,
+            UpdatedAt = sti.UpdatedAt
+        };
+    }
 }
+
